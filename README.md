@@ -11,8 +11,8 @@ To use QuickPed, visit <https://magnusdv.shinyapps.io/quickped>.
 
 ## What is QuickPed?
 
-QuickPed is a web-app for creating and plotting pedigrees on the fly.
-Once the pedigree is created, you may save the plot as an image, or
+QuickPed is a web application for creating and plotting pedigrees on the
+fly. Once the pedigree is created, you may save the plot as an image, or
 store the pedigree data in a *ped formatted* text file. Such files are
 commonly required as input to software for pedigree analysis.
 
