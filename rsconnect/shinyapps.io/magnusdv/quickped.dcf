@@ -1,0 +1,12 @@
+name: quickped
+title: quickped
+username:
+account: magnusdv
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3296214
+bundleId: 3906214
+url: https://magnusdv.shinyapps.io/quickped/
+when: 1606336591.56684
+asMultiple: FALSE
+asStatic: FALSE
