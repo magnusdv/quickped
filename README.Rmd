@@ -26,14 +26,15 @@ QuickPed is powered by the [pedtools](https://CRAN.R-project.org/package=pedtool
 
 
 ## What is *ped format*?
-For a simple example, consider the following pedigree:
+For a simple illustration, consider this pedigree:
+
 ```{r trio-ped, echo = F, fig.height = 1.8, fig.width = 2.2, out.width = "25%", fig.align = "center"}
 df = data.frame(id = 1:3, fid = c(0,0,1), mid = c(0,0,2), sex = c(1,2,2), aff = c(1,1,2))
 x = pedtools::as.ped(df[1:4])
 plot(x, aff = which(df$aff == 2), margins = c(1,1,1,1))
 ```
 
-A text file describing this pedigree may contain the following:
+A text file describing this pedigree may contain the following.
 
 ```{r, echo = F, comment = NA}
 print(df, row.names = F)
@@ -47,4 +48,4 @@ The columns are:
 * `sex`: Sex (1 = male; 2 = female; 0 = unknown)
 * `aff`: Affection status (1 = unaffected; 2 = affected; 0 = unknown)
 
-The ped format is not completely standardised, and different software may use slightly different versions. For example, a first column with *Family ID* is sometimes required, while the `aff` column may not be needed in non-medical applications. These and other details are accommodated by QuickPed.
+The ped format is not completely standardised, and different software may use slightly different versions. For example, a first column with *Family ID* is sometimes required, while the `aff` column may not be needed in non-medical applications. These and other details may be specified when using QuickPed.

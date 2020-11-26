@@ -23,10 +23,11 @@ plotting.
 
 ## What is *ped format*?
 
-For a simple example, consider the following pedigree:
+For a simple illustration, consider this pedigree:
+
 <img src="README_files/figure-gfm/trio-ped-1.png" width="25%" style="display: block; margin: auto;" />
 
-A text file describing this pedigree may contain the following:
+A text file describing this pedigree may contain the following.
 
 ``` 
  id fid mid sex aff
@@ -46,5 +47,5 @@ The columns are:
 The ped format is not completely standardised, and different software
 may use slightly different versions. For example, a first column with
 *Family ID* is sometimes required, while the `aff` column may not be
-needed in non-medical applications. These and other details are
-accommodated by QuickPed.
+needed in non-medical applications. These and other details may be
+specified when using QuickPed.
