@@ -27,7 +27,6 @@ ui = fluidPage(
 
 
   # Application title
-  #titlePanel("QuickPed: An Interactive Pedigree Creator"),
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
@@ -39,7 +38,9 @@ ui = fluidPage(
 
   p(strong("Instructions: ", .noWS = "outside"),
     "Construct the pedigree by selecting pedigree members (by clicking on them in the plot) and using appropriate buttons.
-    If needed, replace the numerical labels by other names, and use the ",
+    For example, new children can be created by selecting one or two individuals and pressing either ",
+    em("Add son", .noWS = "outside"), " or ", em("Add daughter", .noWS = "outside"),
+    ". If needed, replace the default labels by other names, and use the ",
     em("Toggle aff", .noWS = "outside"),
     " button to switch affection status of selected individuals."),
 
@@ -84,7 +85,7 @@ ui = fluidPage(
             actionButton("affection", "Toggle aff", width = "100%"),
             actionButton("remove", "Remove", width = "100%"),
             div(style="margin-bottom:20px"),
-            disabled(actionButton("back", "Take back", width = "100%", class = "btn btn-warning")),
+            disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning")),
             actionButton("reset", "Reset", width = "100%", class = "btn btn-danger"),
           ),
           wellPanel(
@@ -230,7 +231,7 @@ server = function(input, output, session) {
         return()
     currentPed(newped)
     prevPed(currPed)
-    enable("back")
+    enable("undo")
   })
 
   observeEvent(input$adddaughter, {
@@ -244,7 +245,7 @@ server = function(input, output, session) {
 
     currentPed(newped)
     prevPed(currPed)
-    enable("back")
+    enable("undo")
   })
 
   observeEvent(input$addparents, {
@@ -259,7 +260,7 @@ server = function(input, output, session) {
 
     currentPed(newped)
     prevPed(currPed)
-    enable("back")
+    enable("undo")
     sel(character(0))
   })
 
@@ -268,7 +269,7 @@ server = function(input, output, session) {
     newped = swapSex(currPed, sel(), verbose = FALSE)
     currentPed(newped)
     prevPed(currPed)
-    enable("back")
+    enable("undo")
     sel(character(0))
   })
 
@@ -283,7 +284,7 @@ server = function(input, output, session) {
     currentPed(newped)
     prevPed(currPed)
     affected(setdiff(affected(), id))
-    enable("back")
+    enable("undo")
     sel(character(0))
   })
 
@@ -296,19 +297,19 @@ server = function(input, output, session) {
     sel(character(0))
   })
 
-  observeEvent(input$back, {
+  observeEvent(input$undo, {
     currentPed(prevPed())
     prevPed(nuclearPed())
     sel(character(0))
-    disable("back")
+    disable("undo")
   })
 
   observeEvent(input$reset, {
+    currPed = currentPed()
     currentPed(nuclearPed())
-    prevPed(nuclearPed())
+    prevPed(currPed)
     sel(character(0))
     affected(character(0))
-    disable("back")
   })
 
 
