@@ -63,14 +63,18 @@ ui = fluidPage(
             sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
             sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
             br(),
-            downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%")
+            downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px")
           ),
 
           wellPanel(
-            h4(strong("Labels"), .noWS = "before"),
+            fluidRow(
+              column(width = 6, h4(strong("Labels"), .noWS = "before")),
+              column(width = 6, actionButton("lab123", "1-2-3", width = "100%",
+                                             style = "background-color: lightgray; margin-left:0px; margin-right:0px"))
+            ),
             uiOutput("labels"),
             actionButton("updateLabs", "Update", width = "100%",
-                         class = "btn btn-success", style = "margin-top: 10px"),
+                         class = "btn btn-success", style = "margin-top: 10px; margin-left:0px; margin-right:0px"),
           )
         ),
 
@@ -93,7 +97,7 @@ ui = fluidPage(
 
             checkboxGroupInput("include", "Include", selected  = c("head", "aff"),
                                c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
-            downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%"),
+            downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px"),
           )
         )
       )
@@ -119,47 +123,85 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  # Reactive values
-  currentPed = reactiveVal(nuclearPed(1))
-  prevPed = reactiveVal(nuclearPed(1))
+  currentPedData = reactiveVal(list(ped = nuclearPed(),
+                                    aff = character(0)))
+
+  previousStack = reactiveVal(list())
+
   pdat = reactiveVal(NULL)
   sel = reactiveVal(character(0))
-  affected = reactiveVal(character(0))
+
+  updatePedData = function(currData, ped = NULL, aff = NULL, emptySel = FALSE) {
+    if(is.null(ped) && is.null(aff))
+      return()
+
+    if(is.null(ped)) ped = currData$ped
+    if(is.null(aff)) aff = currData$aff
+
+    newData = list(ped = ped, aff = aff)
+    currentPedData(newData)
+    previousStack(c(previousStack(), list(currData)))
+    enable("undo")
+    if(emptySel)
+      sel(character(0))
+  }
 
   plotArgs = reactive({
     m = input$mar
     adjmar = c(max(m - 1, 0), m, m + 1, m)
-    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar, aff = affected())
+    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar)
   })
 
   output$labels = renderUI({
-    labs = labels(currentPed())
+    labs = labels(currentPedData()$ped)
     fields = paste0("lab", seq_along(labs))
     lapply(seq_along(labs), function(i)
       textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
   })
 
-  observeEvent(input$updateLabs, {
-    currPed = currentPed()
-    currAff = affected()
-    newlabs = vapply(paste0("lab", 1:pedsize(currPed)),
-                     function(s) input[[s]], FUN.VALUE = "1")
-    newped = tryCatch(relabel(currPed, new = newlabs),
-                      error = function(e) errModal(e))
-    if(is.null(newped))
-      return()
+  observeEvent(input$lab123, {
+    currData = currentPedData()
+    ped = currData$ped
 
-    currentPed(newped)
-    newAff = labels(newped)[internalID(currPed, currAff)]
-    affected(newAff)
-    sel(character(0))
+    # Relabel according to current plot
+    p = pdat()$plist
+    plotInt = unlist(lapply(seq_along(p$n), function(i) p$nid[i, 1:p$n[i]]))
+    if (anyDuplicated(plotInt))
+      plotInt = unique.default(plotInt)
+    plotlabs = labels(ped)[plotInt] # individuals in plot order
+
+    newped = relabel(ped, old = plotlabs, new = seq_along(plotlabs), reorder = TRUE)
+    newaff = match(currData$aff, plotlabs)
+    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
+  })
+
+  observeEvent(input$updateLabs, {
+    currData = currentPedData()
+    ped = currData$ped
+    oldlabs = labels(ped)
+    fields = paste0("lab", seq_along(oldlabs))
+    newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
+
+    if(identical(newlabs, oldlabs))
+      return()
+    if(dup <- anyDuplicated(newlabs)) {
+      errModal(paste("Duplicated ID label:", newlabs[dup]))
+      return()
+    }
+    newped = relabel(ped, new = newlabs)
+    newaff = newlabs[internalID(ped, currData$aff)]
+    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
   })
 
   output$plot = renderPlot({
+    currData = currentPedData()
+    ped = currData$ped
     args = plotArgs()
+    selected = sel()
+
     dat = tryCatch(
-      plot(currentPed(), col = list(red = sel()), cex = args$cex,
-           symbolsize = args$symbolsize, aff = args$aff, margins = args$mar),
+      plot(ped, aff = currData$aff, col = list(red = selected), cex = args$cex,
+           symbolsize = args$symbolsize, margins = args$mar),
       error = function(e) {
         msg = conditionMessage(e)
         if(grepl("reduce cex", msg))
@@ -178,16 +220,17 @@ server = function(input, output, session) {
   output$savePed = downloadHandler(
     filename = "quickped.ped",
     content = function(con) {
-      currPed = currentPed()
       inclHead = "head" %in% input$include
       inclFamid = "famid" %in% input$include
       inclAff = "aff" %in% input$include
 
-      df = as.data.frame(currPed)
+      currData = currentPedData()
+      ped = currData$ped
+      df = as.data.frame(ped)
       if(inclFamid)
         df = cbind(famid = 1, df)
       if(inclAff)
-        df = cbind(df, aff = ifelse(labels(currPed) %in% affected(), 2, 1))
+        df = cbind(df, aff = ifelse(labels(ped) %in% currData$aff, 2, 1))
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
                   quote = FALSE, sep = "\t")
@@ -197,9 +240,10 @@ server = function(input, output, session) {
   output$savePlot = downloadHandler(
     filename = "quickped.png",
     content = function(con) {
+      currData = currentPedData()
       args = plotArgs()
       png(con, width = input$width, height = input$height)
-      plot(currentPed(), aff = args$aff, cex = args$cex,
+      plot(currData$ped, aff = currData$aff, cex = args$cex,
            symbolsize = args$symbolsize, margins = args$mar)
       dev.off()
     },
@@ -207,109 +251,99 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$ped_click, {
-    symbolDat = pdat2df(pdat(), labs = labels(currentPed()))
+    posDf = pdat2df(pdat())
 
-    id = nearPoints(symbolDat, input$ped_click, xvar = "x", yvar = "y",
-                    threshold = 20, maxpoints = 1)$id
-    if(!length(id))
+    idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
+                    threshold = 20, maxpoints = 1)$idInt
+    if(length(idInt) == 0)
       return()
 
-    current = sel()
-    if(id %in% current)
-      sel(setdiff(current, id))
+    currData = currentPedData()
+    id = labels(currData$ped)[idInt]
+
+    currSel = sel()
+
+    if(id %in% currSel)
+      sel(setdiff(currSel, id))
     else
-      sel(c(current, id))
+      sel(c(currSel, id))
   })
 
   observeEvent(input$addson, {
     id = sel()
     if(length(id) == 0)
       return()
-    currPed = currentPed()
-    newped = addChild(currPed, sel(), sex = 1)
-    if(is.null(newped))
-        return()
-    currentPed(newped)
-    prevPed(currPed)
-    enable("undo")
+    currData = currentPedData()
+    newped = addChild(currData$ped, id, sex = 1)
+    updatePedData(currData, ped = newped)
   })
 
   observeEvent(input$adddaughter, {
     id = sel()
     if(length(id) == 0)
       return()
-    currPed = currentPed()
-    newped = addChild(currPed, sel(), sex = 2)
-    if(is.null(newped))
-      return()
-
-    currentPed(newped)
-    prevPed(currPed)
-    enable("undo")
+    currData = currentPedData()
+    newped = addChild(currData$ped, id, sex = 2)
+    updatePedData(currData, ped = newped)
   })
 
   observeEvent(input$addparents, {
     id = sel()
     if(length(id) == 0)
       return()
-    currPed = currentPed()
-    newped = tryCatch(addParents(currPed, id, verbose = FALSE),
+    currData = currentPedData()
+    newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
              error = function(e) errModal(e))
-    if(is.null(newped))
-      return()
-
-    currentPed(newped)
-    prevPed(currPed)
-    enable("undo")
-    sel(character(0))
+    updatePedData(currData, ped = newped, emptySel = TRUE)
   })
 
   observeEvent(input$swapsex, {
-    currPed = currentPed()
-    newped = swapSex(currPed, sel(), verbose = FALSE)
-    currentPed(newped)
-    prevPed(currPed)
-    enable("undo")
-    sel(character(0))
+    currData = currentPedData()
+    newped = swapSex(currData$ped, sel(), verbose = FALSE)
+    updatePedData(currData, ped = newped, emptySel = TRUE)
   })
 
   observeEvent(input$remove, {
     id = sel()
     if(length(id) == 0)
       return()
-    currPed = currentPed()
-    newped = removeIndividuals(currPed, id, verbose = FALSE)
-    if(is.null(newped))
+    currData = currentPedData()
+    newped = removeIndividuals(currData$ped, id, verbose = FALSE)
+    if(is.null(newped)) {
+      errModal(sprintf("Removing %s would disconnect the pedigree",
+                       ifelse(length(id) == 1, paste("individual", id), "these individuals")))
       return()
-    currentPed(newped)
-    prevPed(currPed)
-    affected(setdiff(affected(), id))
-    enable("undo")
-    sel(character(0))
+    }
+    newaff = setdiff(currData$aff, id)
+    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
   })
 
   observeEvent(input$affection, {
     id = sel()
     if(length(id) == 0)
       return()
-    currAff = affected()
-    affected(setdiff(union(currAff, id), intersect(currAff, id)))
-    sel(character(0))
+    currData = currentPedData()
+    aff = currData$aff
+    newAff = setdiff(union(aff, id), intersect(aff, id))
+    updatePedData(currData, aff = newAff, emptySel = TRUE)
   })
 
   observeEvent(input$undo, {
-    currentPed(prevPed())
-    prevPed(nuclearPed())
-    sel(character(0))
-    disable("undo")
+    stack = previousStack()
+    len = length(stack)
+    if(len == 0)
+      return()
+    currentPedData(stack[[len]])
+    previousStack(stack[-len])
+    if(len == 1)
+      disable("undo")
   })
 
   observeEvent(input$reset, {
-    currPed = currentPed()
-    currentPed(nuclearPed())
-    prevPed(currPed)
-    sel(character(0))
-    affected(character(0))
+    currData = currentPedData()
+    updatePedData(currData, ped = nuclearPed(),
+                  aff = character(0),
+                  emptySel = TRUE)
   })
 
 

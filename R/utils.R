@@ -33,7 +33,7 @@ addChild = function(x, id, sex) {
 
 }
 
-pdat2df = function(pdat, labs) {
+pdat2df = function(pdat) {
   n = pdat$plist$n
   nid = pdat$plist$nid
   pos = pdat$plist$pos
@@ -45,9 +45,9 @@ pdat2df = function(pdat, labs) {
   # Adjust y to give symbol centre
   y = y + pdat$boxh/2
 
-  # Labels
-  id = labs[unlist(lapply(seq_along(n), function(i) nid[i, 1:n[i]]))]
+  # Internal ID
+  idInt = unlist(lapply(seq_along(n), function(i) nid[i, 1:n[i]]))
 
-  data.frame(x = x, y = y, id = id)
+  data.frame(x = x, y = y, idInt = idInt)
 }
 
