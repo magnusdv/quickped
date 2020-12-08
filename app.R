@@ -95,7 +95,7 @@ ui = fluidPage(
           wellPanel(
             h4(strong("Ped file")),
 
-            checkboxGroupInput("include", "Include", selected  = c("head", "aff"),
+            checkboxGroupInput("include", "Include", selected  = c("head"),
                                c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
             downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px"),
           )
@@ -326,6 +326,11 @@ server = function(input, output, session) {
     aff = currData$aff
     newAff = setdiff(union(aff, id), intersect(aff, id))
     updatePedData(currData, aff = newAff, emptySel = TRUE)
+
+    # Update checkbox "Include affection status"
+    inc = input$include
+    newInc = if(length(newAff) == 0) setdiff(inc, "aff") else union(inc, "aff")
+    updateCheckboxGroupInput(session, "include", selected = newInc)
   })
 
   observeEvent(input$undo, {
