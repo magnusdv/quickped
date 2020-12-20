@@ -189,6 +189,14 @@ server = function(input, output, session) {
       errModal(paste("Duplicated ID label:", newlabs[dup]))
       return()
     }
+    if(0 %in% newlabs) {
+      errModal('"0" cannot be used as label')
+      return()
+    }
+    if("" %in% newlabs) {
+      errModal("Empty label")
+      return()
+    }
     newped = relabel(ped, new = newlabs)
     newaff = newlabs[internalID(ped, currData$aff)]
     updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
