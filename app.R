@@ -95,8 +95,7 @@ ui = fluidPage(
           ),
           wellPanel(
             h4(strong("Ped file")),
-
-            checkboxGroupInput("include", "Include", selected  = c("head"),
+            checkboxGroupInput("include", "Include", selected  = "head",
                                c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
             downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px"),
           )
