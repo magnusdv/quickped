@@ -181,6 +181,7 @@ server = function(input, output, session) {
     oldlabs = labels(ped)
     fields = paste0("lab", seq_along(oldlabs))
     newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
+    newlabs = trimws(newlabs)
 
     if(identical(newlabs, oldlabs))
       return()
