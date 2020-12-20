@@ -2,6 +2,7 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyjs)
   library(pedtools)
+  library(rdrop2)
 })
 
 
@@ -243,6 +244,7 @@ server = function(input, output, session) {
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
                   quote = FALSE, sep = "\t")
+      dropup(df)
     }
   )
 

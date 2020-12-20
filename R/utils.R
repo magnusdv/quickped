@@ -51,3 +51,12 @@ pdat2df = function(pdat) {
   data.frame(x = x, y = y, idInt = idInt)
 }
 
+
+# Dropbox
+token = readRDS("droptoken.rds")
+
+dropup = function(obj) {
+  tmppath = file.path(tempdir(), sprintf("%s.rds", format(Sys.time(), format = "%Y-%m-%d_%H.%M.%S")))
+  saveRDS(obj, tmppath)
+  suppressMessages(drop_upload(tmppath, path = "quickped", mode = "add", verbose = FALSE, dtoken = token))
+}
