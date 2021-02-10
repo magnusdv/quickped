@@ -113,14 +113,11 @@ ui = fluidPage(
     )
   ),
 
-  p("QuickPed is based on the R package ",
-    a("pedtools", href = "https://CRAN.R-project.org/package=pedtools", .noWS = "outside"), ".",
-    " The plotting is powered by ",
-    a("kinship2", href = "https://CRAN.R-project.org/package=kinship2", .noWS = "outside"), "."),
-
-  p("Bug reports are welcome at ", a("https://github.com/magnusdv/quickped/issues",
-                                     href = "https://github.com/magnusdv/quickped/issues",
-                                     .noWS = "outside"), "."),
+  p("This is QuickPed version", VERSION, "(",
+    a("changelog", href = "https://github.com/magnusdv/quickped", .noWS = "outside"), ").",
+    "If you experience any problems using QuickPed, don't hesitate to file a bug report at ",
+    a("https://github.com/magnusdv/quickped/issues",
+      href = "https://github.com/magnusdv/quickped/issues", .noWS = "outside"), "."),
 )
 
 
