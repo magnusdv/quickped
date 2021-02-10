@@ -45,7 +45,11 @@ ui = fluidPage(
     em("Toggle aff", .noWS = "outside"),
     " button to switch affection status of selected individuals."),
 
-  br(),
+  p(strong("More information: ", .noWS = "outside"),
+    "Further explanations, source code and bug reports can be found at ",
+    a("GitHub", href = "https://github.com/magnusdv/quickped", .noWS = "outside"), "."),
+
+  #br(),
 
   fluidRow(
 
