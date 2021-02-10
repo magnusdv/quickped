@@ -310,8 +310,24 @@ server = function(input, output, session) {
 
   observeEvent(input$swapsex, {
     currData = currentPedData()
-    newped = swapSex(currData$ped, sel(), verbose = FALSE)
-    updatePedData(currData, ped = newped, emptySel = TRUE)
+    id = sel()
+    newped = swapSex(currData$ped, id, verbose = FALSE)
+    updatePedData(currData, ped = newped, emptySel = length(id) > 1)
+  })
+
+  observeEvent(input$affection, {
+    id = sel()
+    if(length(id) == 0)
+      return()
+    currData = currentPedData()
+    aff = currData$aff
+    newAff = setdiff(union(aff, id), intersect(aff, id))
+    updatePedData(currData, aff = newAff, emptySel = length(id) > 1)
+
+    # Update checkbox "Include affection status"
+    inc = input$include
+    newInc = if(length(newAff) == 0) setdiff(inc, "aff") else union(inc, "aff")
+    updateCheckboxGroupInput(session, "include", selected = newInc)
   })
 
   observeEvent(input$remove, {
@@ -327,21 +343,6 @@ server = function(input, output, session) {
     }
     newaff = setdiff(currData$aff, id)
     updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
-  })
-
-  observeEvent(input$affection, {
-    id = sel()
-    if(length(id) == 0)
-      return()
-    currData = currentPedData()
-    aff = currData$aff
-    newAff = setdiff(union(aff, id), intersect(aff, id))
-    updatePedData(currData, aff = newAff, emptySel = TRUE)
-
-    # Update checkbox "Include affection status"
-    inc = input$include
-    newInc = if(length(newAff) == 0) setdiff(inc, "aff") else union(inc, "aff")
-    updateCheckboxGroupInput(session, "include", selected = newInc)
   })
 
   observeEvent(input$undo, {
