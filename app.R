@@ -350,6 +350,10 @@ server = function(input, output, session) {
       return()
     currentPedData(stack[[len]])
     previousStack(stack[-len])
+
+    # Remove invalid IDs from selection
+    sel(intersect(sel(), labels(currentPedData()$ped)))
+
     if(len == 1)
       disable("undo")
   })
