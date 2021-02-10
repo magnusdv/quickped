@@ -5,6 +5,7 @@ suppressPackageStartupMessages({
   library(rdrop2)
 })
 
+VERSION = "1.0.1"
 
 ui = fluidPage(
 

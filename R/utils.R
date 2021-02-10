@@ -1,4 +1,4 @@
-### Helper functions for the pedshape app
+### Helper functions for the QuickPed app
 
 errModal = function(mess) {
   showModal(modalDialog(mess))
