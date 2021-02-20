@@ -5,6 +5,7 @@ suppressPackageStartupMessages({
   library(rdrop2)
 })
 
+Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 VERSION = "1.0.1"
 
 ui = fluidPage(
@@ -94,6 +95,10 @@ ui = fluidPage(
             actionButton("swapsex", "Toggle sex", width = "100%"),
             actionButton("affection", "Toggle aff", width = "100%"),
             actionButton("remove", "Remove", width = "100%"),
+            fluidRow(
+              column(6, align = "left", actionButton("mz", "MZ", width = "100%")),
+              column(6, align = "right", actionButton("dz", "DZ", width = "100%"))
+            ),
             div(style="margin-bottom:20px"),
             disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning")),
             actionButton("reset", "Reset", width = "100%", class = "btn btn-danger"),
@@ -124,25 +129,27 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  currentPedData = reactiveVal(list(ped = nuclearPed(),
-                                    aff = character(0)))
+  currentPedData = reactiveVal(list(ped = nuclearPed(), aff = character(0),
+                                    twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))))
 
   previousStack = reactiveVal(list())
 
   pdat = reactiveVal(NULL)
   sel = reactiveVal(character(0))
 
-  updatePedData = function(currData, ped = NULL, aff = NULL, emptySel = FALSE) {
-    if(is.null(ped) && is.null(aff))
+  updatePedData = function(currData, ped = NULL, aff = NULL, twins = NULL, emptySel = FALSE) {
+    if(is.null(ped) && is.null(aff) && is.null(twins))
       return()
 
     if(is.null(ped)) ped = currData$ped
     if(is.null(aff)) aff = currData$aff
+    if(is.null(twins)) twins = currData$twins
 
-    newData = list(ped = ped, aff = aff)
+    newData = list(ped = ped, aff = aff, twins = twins)
     currentPedData(newData)
     previousStack(c(previousStack(), list(currData)))
     enable("undo")
+
     if(emptySel)
       sel(character(0))
   }
@@ -173,8 +180,23 @@ server = function(input, output, session) {
 
     newped = relabel(ped, old = plotlabs, new = seq_along(plotlabs), reorder = TRUE)
     newaff = match(currData$aff, plotlabs)
-    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
+
+    newtw = currData$twins
+    newtw$id1 = match(newtw$id1, plotlabs)
+    newtw$id2 = match(newtw$id2, plotlabs)
+
+    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
   })
+
+
+  #observeEvent(input$loadped, {
+  #  tryCatch(
+  #    read.table("quickped.ped"),
+  #    error = function(e) {errModal(conditionMessage(e)); return()}
+  #  )
+  #  updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
+  #})
+
 
   observeEvent(input$updateLabs, {
     currData = currentPedData()
@@ -200,7 +222,12 @@ server = function(input, output, session) {
     }
     newped = relabel(ped, new = newlabs)
     newaff = newlabs[internalID(ped, currData$aff)]
-    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
+
+    newtw = currData$twins
+    newtw$id1 = newlabs[internalID(ped, newtw$id1)]
+    newtw$id2 = newlabs[internalID(ped, newtw$id2)]
+
+    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
   })
 
   output$plot = renderPlot({
@@ -208,9 +235,10 @@ server = function(input, output, session) {
     ped = currData$ped
     args = plotArgs()
     selected = sel()
-
+print(currData$twins)
     dat = tryCatch(
-      plot(ped, aff = currData$aff, col = list(red = selected), cex = args$cex,
+      plot(ped, aff = currData$aff, twins = currData$twins,
+           col = list(red = selected), cex = args$cex,
            symbolsize = args$symbolsize, margins = args$mar),
       error = function(e) {
         msg = conditionMessage(e)
@@ -257,6 +285,7 @@ server = function(input, output, session) {
       plot(currData$ped, aff = currData$aff, cex = args$cex,
            symbolsize = args$symbolsize, margins = args$mar)
       dev.off()
+      dropup(list(currendPedData = currData, plotArgs = args))
     },
     contentType = "image/png"
   )
@@ -273,7 +302,6 @@ server = function(input, output, session) {
     id = labels(currData$ped)[idInt]
 
     currSel = sel()
-
     if(id %in% currSel)
       sel(setdiff(currSel, id))
     else
@@ -281,27 +309,21 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$addson, {
-    id = sel()
-    if(length(id) == 0)
-      return()
+    id = req(sel())
     currData = currentPedData()
     newped = addChild(currData$ped, id, sex = 1)
     updatePedData(currData, ped = newped)
   })
 
   observeEvent(input$adddaughter, {
-    id = sel()
-    if(length(id) == 0)
-      return()
+    id = req(sel())
     currData = currentPedData()
     newped = addChild(currData$ped, id, sex = 2)
     updatePedData(currData, ped = newped)
   })
 
   observeEvent(input$addparents, {
-    id = sel()
-    if(length(id) == 0)
-      return()
+    id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
              error = function(e) errModal(e))
@@ -316,9 +338,7 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$affection, {
-    id = sel()
-    if(length(id) == 0)
-      return()
+    id = req(sel())
     currData = currentPedData()
     aff = currData$aff
     newAff = setdiff(union(aff, id), intersect(aff, id))
@@ -331,9 +351,7 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$remove, {
-    id = sel()
-    if(length(id) == 0)
-      return()
+    id = req(sel())
     currData = currentPedData()
     newped = removeIndividuals(currData$ped, id, verbose = FALSE)
     if(is.null(newped)) {
@@ -342,7 +360,31 @@ server = function(input, output, session) {
       return()
     }
     newaff = setdiff(currData$aff, id)
-    updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
+    newtw = currData$twins
+    newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
+    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
+  })
+
+  observeEvent(input$mz, {
+    ids = req(sel())
+    if(length(ids) != 2) {
+      errModal("To change twin status, please select exactly 2 individuals")
+      return()
+    }
+    currData = currentPedData()
+    twins = updateTwins(currData$twins, ids, code = 1L)
+    updatePedData(currData, twins = twins, emptySel = TRUE)
+  })
+
+  observeEvent(input$dz, {
+    ids = req(sel())
+    if(length(ids) != 2) {
+      errModal("To change twin status, please select exactly 2 individuals")
+      return()
+    }
+    currData = currentPedData()
+    twins = updateTwins(currData$twins, ids, code = 2L)
+    updatePedData(currData, twins = twins, emptySel = TRUE)
   })
 
   observeEvent(input$undo, {
@@ -362,8 +404,10 @@ server = function(input, output, session) {
 
   observeEvent(input$reset, {
     currData = currentPedData()
-    updatePedData(currData, ped = nuclearPed(),
+    updatePedData(currData,
+                  ped = nuclearPed(),
                   aff = character(0),
+                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
                   emptySel = TRUE)
   })
 

@@ -4,6 +4,35 @@ errModal = function(mess) {
   showModal(modalDialog(mess))
 }
 
+updateTwins = function(twins, ids, code) {
+  ids = sort.default(ids)
+  id1 = ids[1]
+  id2 = ids[2]
+
+  # If previously empty: early return
+  if(nrow(twins) == 0)
+    return(data.frame(id1 = id1, id2 = id2, code = code))
+
+  # Check if already twins
+  rw = match(TRUE, nomatch = 0,
+             (twins$id1 == id1 & twins$id2 == id2) | (twins$id2 == id1 & twins$id1 == id2))
+
+  if(rw == 0) {
+    # If not: add
+    twins = rbind(twins, data.frame(id1 = id1, id2 = id2, code = code))
+  }
+  else if(twins$code[rw] == code) {
+    # If already MZ: remove
+    twins = twins[-rw, , drop = FALSE]
+  }
+  else {
+    # Change to MZ
+    twins$code[rw] = code
+  }
+
+  twins
+}
+
 
 addChild = function(x, id, sex) {
 
