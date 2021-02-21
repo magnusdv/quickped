@@ -42,10 +42,10 @@ ui = fluidPage(
   p(strong("Instructions: ", .noWS = "outside"),
     "Construct the pedigree by selecting pedigree members (by clicking on them in the plot) and using appropriate buttons.
     For example, new children can be created by selecting one or two individuals and pressing either ",
-    em("Add son", .noWS = "outside"), " or ", em("Add daughter", .noWS = "outside"),
+    em("Son", .noWS = "outside"), " or ", em("Daughter", .noWS = "outside"),
     ". If needed, replace the default labels by other names, and use the ",
-    em("Toggle aff", .noWS = "outside"),
-    " button to switch affection status of selected individuals."),
+    em("Sex", .noWS = "outside"),
+    " button to switch sex of selected individuals."),
 
   p(strong("More information: ", .noWS = "outside"),
     "Further explanations, source code and bug reports can be found at ",
