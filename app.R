@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
 })
 
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
-VERSION = "1.0.1"
+VERSION = "1.1.0"
 
 ui = fluidPage(
 
