@@ -4,6 +4,48 @@ errModal = function(mess) {
   showModal(modalDialog(mess))
 }
 
+pedButton = function(id, label, side = NULL, ...) {
+  but = actionButton(id, label, width = "100%",
+                     style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px", ...)
+
+  if(is.null(side))
+    return(but)
+
+  switch(side,
+   left = column(6, align = "left", style = "padding-right: 3px;", but),
+   right = column(6, align = "right", style = "padding-left: 3px;", but)
+  )
+}
+
+updateTwins = function(twins, ids, code) {
+  ids = sort.default(ids)
+  id1 = ids[1]
+  id2 = ids[2]
+
+  # If previously empty: early return
+  if(nrow(twins) == 0)
+    return(data.frame(id1 = id1, id2 = id2, code = code))
+
+  # Check if already twins
+  rw = match(TRUE, nomatch = 0,
+             (twins$id1 == id1 & twins$id2 == id2) | (twins$id2 == id1 & twins$id1 == id2))
+
+  if(rw == 0) {
+    # If not: add
+    twins = rbind(twins, data.frame(id1 = id1, id2 = id2, code = code))
+  }
+  else if(twins$code[rw] == code) {
+    # If already MZ: remove
+    twins = twins[-rw, , drop = FALSE]
+  }
+  else {
+    # Change to MZ
+    twins$code[rw] = code
+  }
+
+  twins
+}
+
 
 addChild = function(x, id, sex) {
 

@@ -1,3 +1,14 @@
+# QuickPed 1.1.0
+
+## New features
+
+* The "Build pedigree" panel has been re-designed to fit more buttons.
+
+* New buttons: "Carriers" and "Deceased" for annotating pedigree.
+
+* New buttons: "MZ" and "DZ" for creating twins.
+
+
 # QuickPed 1.0.1
 
 ## Minor changes
