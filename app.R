@@ -19,11 +19,11 @@ ui = fluidPage(
         .btn-default {margin: 2px;}
         .form-group {margin-bottom: 3px;}
         .form-control {padding-top, padding-bottom: 1px; height: 28px;}
-        .control-label {margin-bottom: 0px;}
-        .irs-min, .irs-max, .irs-single {display:none; line-height: 0px;}
+        .control-label {margin-bottom: 0px; padding-bottom:0px}
+        .irs-min, .irs-max, .irs-single {display:none; line-height: 0px}
         .irs-bar, .irs-bar-edge, .irs-line  {top: 12px}
-        .irs-slider {top: 4px; colour: orange}
-        .irs {height: 30px}
+        .irs-slider {top: 4px;}
+        .irs {height: 30px; margin-bottom:11px}
       ')
     )
   ),
@@ -56,17 +56,17 @@ ui = fluidPage(
   fluidRow(
 
     # Sidebar
-    column(width = 6, style = "max-width:450px",
+    column(width = 6, style = "width:500px",
 
       fluidRow(
 
         # First control column
         column(width = 6,
-          wellPanel(style = "height:400px",
+          wellPanel(style = "height:430px",
             h4(strong("Plot settings"), .noWS = "before"),
-            sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1000, value = 400, step = 1),
-            sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1000, value = 400, step = 1),
-            sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.5, step = 0.1),
+            sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
+            sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
+            sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.6, step = 0.1),
             sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
             sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
             br(),
@@ -87,35 +87,52 @@ ui = fluidPage(
 
         # Second control column
         column(width = 6,
-          wellPanel(style = "height:400px",
+          wellPanel(style = "height:430px",
             h4(strong("Build pedigree"), .noWS = "before"),
-            actionButton("addson", "Add son", width = "100%"),
-            actionButton("adddaughter", "Add daughter", width = "100%"),
-            actionButton("addparents", "Add parents", width = "100%"),
-            actionButton("swapsex", "Toggle sex", width = "100%"),
-            actionButton("affection", "Toggle aff", width = "100%"),
-            actionButton("remove", "Remove", width = "100%"),
+            h5(strong("Add"), style = "margin-bottom: 0px;"),
+            pedButton("addparents", "Parents"),
             fluidRow(
-              column(6, align = "left", actionButton("mz", "MZ", width = "100%")),
-              column(6, align = "right", actionButton("dz", "DZ", width = "100%"))
+              pedButton("addson", "Son", side = "left"),
+              pedButton("adddaughter", "Daughter", side = "right"),
             ),
-            div(style="margin-bottom:20px"),
-            disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning")),
-            actionButton("reset", "Reset", width = "100%", class = "btn btn-danger"),
+            h5(strong("Remove"), style = "margin-bottom: 0px;"),
+            pedButton("remove", "Remove selected"),
+            h5(strong("Switch"), style = "margin-bottom: 0px;"),
+            fluidRow(
+              pedButton("swapsex", "Sex", side = "left"),
+              pedButton("affection", "Affected", side = "right"),
+            ),
+            fluidRow(
+              pedButton("carrier",  "Carrier", side = "left"),
+              pedButton("deceased", "Deceased", side = "right"),
+            ),
+            h5(strong("Twins"), style = "margin-bottom: 0px;"),
+            fluidRow(
+              pedButton("mz", "MZ", side = "left"),
+              pedButton("dz", "DZ", side = "right")
+            ),
+
+            div(style="margin-bottom: 20px"),
+            fluidRow(
+              column(6, align = "left", style = "padding-right: 4px;",
+                     disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning"))),
+              column(6, align = "right", style = "padding-left: 4px;",
+                     actionButton("reset", "Reset", width = "100%", class = "btn btn-danger")),
+            )
           ),
           wellPanel(
             h4(strong("Ped file")),
             checkboxGroupInput("include", "Include", selected  = "head",
                                c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
-            downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px"),
+            downloadButton("savePed", "Save ped file", class="btn btn-info",
+                           style = "width: 100%; margin-left:0px; margin-right:0px"),
           )
         )
       )
     ),
 
     # Plot window
-    mainPanel(width = 6,
-              plotOutput("plot", click = "ped_click", width = "auto"),
+    mainPanel(width = 6, plotOutput("plot", click = "ped_click", width = "auto"),
     )
   ),
 
@@ -129,7 +146,7 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  currentPedData = reactiveVal(list(ped = nuclearPed(), aff = character(0),
+  currentPedData = reactiveVal(list(ped = nuclearPed(), aff = character(0), carrier = character(0), deceased = character(0),
                                     twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))))
 
   previousStack = reactiveVal(list())
@@ -137,15 +154,18 @@ server = function(input, output, session) {
   pdat = reactiveVal(NULL)
   sel = reactiveVal(character(0))
 
-  updatePedData = function(currData, ped = NULL, aff = NULL, twins = NULL, emptySel = FALSE) {
-    if(is.null(ped) && is.null(aff) && is.null(twins))
+  updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
+                           deceased = NULL, twins = NULL, emptySel = FALSE) {
+    if(is.null(ped) && is.null(aff) && is.null(carrier) && is.null(deceased) && is.null(twins))
       return()
 
     if(is.null(ped)) ped = currData$ped
     if(is.null(aff)) aff = currData$aff
+    if(is.null(carrier)) carrier = currData$carrier
+    if(is.null(deceased)) deceased = currData$deceased
     if(is.null(twins)) twins = currData$twins
 
-    newData = list(ped = ped, aff = aff, twins = twins)
+    newData = list(ped = ped, aff = aff, carrier = carrier, deceased = deceased, twins = twins)
     currentPedData(newData)
     previousStack(c(previousStack(), list(currData)))
     enable("undo")
@@ -180,12 +200,15 @@ server = function(input, output, session) {
 
     newped = relabel(ped, old = plotlabs, new = seq_along(plotlabs), reorder = TRUE)
     newaff = match(currData$aff, plotlabs)
+    newcarr = match(currData$carrier, plotlabs)
+    newdec = match(currData$deceased, plotlabs)
 
     newtw = currData$twins
     newtw$id1 = match(newtw$id1, plotlabs)
     newtw$id2 = match(newtw$id2, plotlabs)
 
-    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
+    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
+                  deceased = newdec, twins = newtw, emptySel = TRUE)
   })
 
 
@@ -222,12 +245,15 @@ server = function(input, output, session) {
     }
     newped = relabel(ped, new = newlabs)
     newaff = newlabs[internalID(ped, currData$aff)]
+    newcarr = newlabs[internalID(ped, currData$carrier)]
+    newdec = newlabs[internalID(ped, currData$deceased)]
 
     newtw = currData$twins
     newtw$id1 = newlabs[internalID(ped, newtw$id1)]
     newtw$id2 = newlabs[internalID(ped, newtw$id2)]
 
-    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
+    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
+                  deceased = newdec, twins = newtw, emptySel = TRUE)
   })
 
   output$plot = renderPlot({
@@ -235,9 +261,10 @@ server = function(input, output, session) {
     ped = currData$ped
     args = plotArgs()
     selected = sel()
-print(currData$twins)
+
     dat = tryCatch(
-      plot(ped, aff = currData$aff, twins = currData$twins,
+      plot(ped, aff = currData$aff, carrier = currData$carrier,
+           deceased = currData$deceased, twins = currData$twins,
            col = list(red = selected), cex = args$cex,
            symbolsize = args$symbolsize, margins = args$mar),
       error = function(e) {
@@ -282,8 +309,9 @@ print(currData$twins)
       currData = currentPedData()
       args = plotArgs()
       png(con, width = input$width, height = input$height)
-      plot(currData$ped, aff = currData$aff, cex = args$cex,
-           symbolsize = args$symbolsize, margins = args$mar)
+      plot(currData$ped, aff = currData$aff, carrier = currData$carrier,
+           deceased = currData$deceased, twins = currData$twins,
+           cex = args$cex, symbolsize = args$symbolsize, margins = args$mar)
       dev.off()
       dropup(list(currendPedData = currData, plotArgs = args))
     },
@@ -350,19 +378,47 @@ print(currData$twins)
     updateCheckboxGroupInput(session, "include", selected = newInc)
   })
 
+  observeEvent(input$carrier, {
+    id = req(sel())
+    currData = currentPedData()
+    carrier = currData$carrier
+    newCarr = setdiff(union(carrier, id), intersect(carrier, id))
+    updatePedData(currData, carrier = newCarr, emptySel = length(id) > 1)
+  })
+
+  observeEvent(input$deceased, {
+    id = req(sel())
+    currData = currentPedData()
+    deceased = currData$deceased
+    newDec = setdiff(union(deceased, id), intersect(deceased, id))
+    updatePedData(currData, deceased = newDec, emptySel = length(id) > 1)
+  })
+
   observeEvent(input$remove, {
     id = req(sel())
     currData = currentPedData()
-    newped = removeIndividuals(currData$ped, id, verbose = FALSE)
+    newped = tryCatch({removeIndividuals(currData$ped, id, verbose = FALSE)},
+      error = function(e) {
+        msg = conditionMessage(e)
+        if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
+          errModal(msg)
+        return()
+      })
+
     if(is.null(newped)) {
       errModal(sprintf("Removing %s would disconnect the pedigree",
                        ifelse(length(id) == 1, paste("individual", id), "these individuals")))
       return()
     }
     newaff = setdiff(currData$aff, id)
+    newcarr = setdiff(currData$carrier, id)
+    newdec = setdiff(currData$deceased, id)
+
     newtw = currData$twins
     newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
-    updatePedData(currData, ped = newped, aff = newaff, twins = newtw, emptySel = TRUE)
+
+    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
+                  deceased = newdec, twins = newtw, emptySel = TRUE)
   })
 
   observeEvent(input$mz, {
@@ -405,8 +461,7 @@ print(currData$twins)
   observeEvent(input$reset, {
     currData = currentPedData()
     updatePedData(currData,
-                  ped = nuclearPed(),
-                  aff = character(0),
+                  ped = nuclearPed(), aff = character(0), carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
                   emptySel = TRUE)
   })

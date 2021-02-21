@@ -4,6 +4,19 @@ errModal = function(mess) {
   showModal(modalDialog(mess))
 }
 
+pedButton = function(id, label, side = NULL, ...) {
+  but = actionButton(id, label, width = "100%",
+                     style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px", ...)
+
+  if(is.null(side))
+    return(but)
+
+  switch(side,
+   left = column(6, align = "left", style = "padding-right: 3px;", but),
+   right = column(6, align = "right", style = "padding-left: 3px;", but)
+  )
+}
+
 updateTwins = function(twins, ids, code) {
   ids = sort.default(ids)
   id1 = ids[1]
