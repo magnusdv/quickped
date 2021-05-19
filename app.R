@@ -16,13 +16,13 @@ ui = fluidPage(
     tags$style(
       HTML('
         .well {padding-top: 10px}
-        .btn-default {margin: 2px;}
+        .btn-default {margin-left: 0px; margin-right: 0px; margin-top: 2px; margin-bottom: 2px}
         .form-group {margin-bottom: 3px;}
         .form-control {padding-top, padding-bottom: 1px; height: 28px;}
         .control-label {margin-bottom: 0px; padding-bottom:0px}
         .irs-min, .irs-max, .irs-single {display:none; line-height: 0px}
-        .irs-bar, .irs-bar-edge, .irs-line  {top: 12px}
-        .irs-slider {top: 4px;}
+        .irs-bar, .irs-bar-edge, .irs-line  {top: 15px !important}
+        .irs-handle {top: 7px !important;}
         .irs {height: 30px; margin-bottom:11px}
       ')
     )
