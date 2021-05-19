@@ -138,7 +138,7 @@ ui = fluidPage(
 
   p("This is QuickPed version", VERSION, "(",
     a("changelog", href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md", .noWS = "outside"), ").",
-    "If you find something that isn't working properly, don't hesitate to file a bug report at ",
+    "If you find something that isn't working properly, please file a bug report at ",
     a("https://github.com/magnusdv/quickped/issues", href = "https://github.com/magnusdv/quickped/issues", .noWS = "outside"), "."),
 )
 
