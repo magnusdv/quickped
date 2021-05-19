@@ -2,6 +2,8 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyjs)
   library(pedtools)
+  library(ribd)
+  library(verbalisr)
   library(rdrop2)
 })
 
@@ -132,7 +134,19 @@ ui = fluidPage(
     ),
 
     # Plot window
-    mainPanel(width = 6, plotOutput("plot", click = "ped_click", width = "auto"),
+    mainPanel(width = 6,
+              plotOutput("plot", click = "ped_click", width = "auto", height = "auto"),
+
+              # Relationship descriptions
+              wellPanel(style = "height:210px;width:430px;margin-top:20px;",
+                fluidRow(
+                  column(width = 6, h4(strong("Relationships"), .noWS = "before")),
+                  column(width = 6, actionButton("describe", "Describe", width = "100%", class = "btn btn-success",
+                                                 style = "margin-left:0px; margin-right:0px"))
+                ),
+                verbatimTextOutput("description", placeholder = TRUE),
+                tags$head(tags$style("#description{height:150px;}"))
+              )
     )
   ),
 
@@ -153,6 +167,8 @@ server = function(input, output, session) {
 
   pdat = reactiveVal(NULL)
   sel = reactiveVal(character(0))
+
+  relText = reactiveVal(NULL)
 
   updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
                            deceased = NULL, twins = NULL, emptySel = FALSE) {
@@ -466,6 +482,26 @@ server = function(input, output, session) {
                   emptySel = TRUE)
   })
 
+
+# Relationship description ------------------------------------------------
+
+  observeEvent(input$describe, {
+    ids = req(sel())
+    if(length(ids) != 2) {
+      errModal("Please select exactly two individuals")
+      return()
+    }
+
+    ped = currentPedData()$ped
+    kin = paste("Kinship coefficient:", ribd::kinship(ped, ids))
+    kap = paste(" Kappa coefficients:", toString(ribd::kappaIBD(ped, ids)))
+
+    txt0 = verbalisr::verbalise(ped, ids, verbose = FALSE)
+    txt = toupper(c(txt0, "", kin, kap))
+    relText(txt)
+  })
+
+  output$description = renderText(req(relText()), sep = "\n")
 
 }
 
