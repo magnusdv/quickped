@@ -487,16 +487,50 @@ server = function(input, output, session) {
   observeEvent(input$describe, {
     ids = req(sel())
     if(length(ids) != 2) {
-      errModal("Please select exactly two individuals")
+      errModal("Please select exactly two individuals. Current selection: ", ids)
       return()
     }
 
     ped = currentPedData()$ped
-    kin = paste("Kinship coefficient:", ribd::kinship(ped, ids))
-    kap = paste(" Kappa coefficients:", toString(ribd::kappaIBD(ped, ids)))
 
-    txt0 = verbalisr::verbalise(ped, ids, verbose = FALSE)
-    txt = toupper(c(txt0, "", kin, kap))
+    txt = verbalisr::verbalise(ped, ids, verbose = FALSE)
+    relText(toupper(txt))
+  })
+
+  observeEvent(input$coeffs, {
+    ids = sort(req(sel()))
+    N = length(ids)
+    ped = currentPedData()$ped
+
+    # Inbreeding
+    inb = ribd::inbreeding(ped)[ids]
+    txt = c("Inbreeding coefficients:", sprintf("* %s: f = %g", ids, inb))
+
+    if(N != 2) {
+      txt = c(txt, "", "For pairwise coefficients, select 2 individuals.")
+      relText(txt)
+      return()
+    }
+
+    ### Pairwise coefficients
+    txt =  c(txt, "", sprintf("Pairwise coefficients between %s and %s:", ids[1], ids[2]))
+
+    # Kinship
+    phi = ribd::kinship(ped, ids)
+    txt = c(txt, paste0("* Kinship: phi = ", phi))
+
+    # Kappa (if both outbred) or Delta
+    if(all(inb == 0)) {
+      kap = ribd::kappaIBD(ped, ids)
+      txt = c(txt, paste0("* Kappa = (", toString(kap), ")"))
+    }
+    else {
+      kap = c(NA, NA, NA)
+      delta = ribd::condensedIdentity(ped, ids)
+      txt = c(txt, paste0("* Kappa = (", toString(kap), ")"),
+              "* Condensed identity:", sprintf("    Delta%d = %g", 1:9, delta))
+    }
+
     relText(txt)
   })
 
