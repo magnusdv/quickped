@@ -1,3 +1,16 @@
+# QuickPed 2.0.0
+
+## New features
+
+* A "Quick start" panel allows the user to choose from a list of built-in pedigrees
+
+* Alternatively, it is now possible to upload an existing `ped` file.
+
+* A new panel `Relationships` with buttons for computing relatedness coefficients and generating verbal descriptions of relationships.
+
+* The layout has been substantially modified to accommodate the new features.
+
+
 # QuickPed 1.1.0
 
 ## New features
