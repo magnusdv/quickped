@@ -517,6 +517,40 @@ server = function(input, output, session) {
                   emptySel = TRUE)
   })
 
+  observeEvent(input$startped, {
+    choice = req(input$startped)
+
+    ped = switch(choice,
+      Trio = nuclearPed(),
+      "Sibship (2)" = nuclearPed(2),
+      "Sibship (3)" = nuclearPed(3),
+      "Half sibs (1+1)" = halfSibPed(),
+      "Half sibs (2+2)" = halfSibPed(2, 2),
+      "Linear (2)" = linearPed(2),
+      "Linear (3)" = linearPed(3),
+      "Ancestral (2)" = ancestralPed(2),
+      "Ancestral (3)" = ancestralPed(3),
+      "First cousins" = cousinPed(1),
+      "Second cousins" = cousinPed(2),
+      "Half first cousins" = halfCousinPed(1),
+      "Half second cousins" = halfCousinPed(2),
+      "Double first cousins" = doubleFirstCousins(),
+      "Quad half first cousins" = quadHalfFirstCousins(),
+      "Full sib stack (2)" = fullSibMating(1),
+      "Full sib stack (3)" = fullSibMating(2),
+      "Half sib stack (2)" = halfSibStack(2),
+      "Half sib stack (3)" = halfSibStack(3),
+      errModal("Sorry, this pedigree is not implemented yet.")
+      )
+
+    currData = currentPedData()
+
+    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
+         twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), emptySel = TRUE)
+
+
+
+  })
 
 # Relationship description ------------------------------------------------
 
