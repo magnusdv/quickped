@@ -221,6 +221,8 @@ server = function(input, output, session) {
     previousStack(c(previousStack(), list(currData)))
     enable("undo")
 
+    relText(NULL)
+
     if(emptySel)
       sel(character(0))
   }
