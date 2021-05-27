@@ -20,9 +20,9 @@ ui = fluidPage(
       HTML('
         .well {padding-top: 10px}
         .btn-default {margin-left: 0px; margin-right: 0px; margin-top: 2px; margin-bottom: 2px}
-        .form-group {margin-bottom: 3px;}
-        .form-control {padding-top, padding-bottom: 1px; height: 28px;}
+        .btn-file {margin-top: 0px; margin-bottom: 0px}
         .control-label {margin-bottom: 0px; padding-bottom:0px}
+        .form-group {margin-bottom: 3px}
         .irs-min, .irs-max, .irs-single {display:none; line-height: 0px}
         .irs-bar, .irs-bar-edge, .irs-line  {top: 15px !important}
         .irs-handle {top: 7px !important;}
@@ -53,48 +53,52 @@ ui = fluidPage(
   fluidRow(
 
     # Sidebar
-    column(width = 6, style = "width:500px",
+    column(width = 4, style = "width:450px",
 
       fluidRow(
 
         # First control column
         column(width = 6,
-          wellPanel(style = "height:430px",
-            h4(strong("Plot settings"), .noWS = "before"),
-            sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
-            sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
-            sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.6, step = 0.1),
-            sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
-            sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
+          wellPanel(style = "height:430px; width:210px",
+            bigHeading("Quick start"),
+            selectInput("startped", "Built-in pedigree", selected = "Trio",
+                        choices = c("", "Trio", "Sibship (2)", "Sibship (3)", "Half sibs (1+1)", "Half sibs (2+2)",
+                                    "Linear (2)", "Linear (3)", "First cousins", "Second cousins",
+                                    "Half first cousins", "Half second cousins", "Ancestral (2)", "Ancestral (3)",
+                                    "Double first cousins", "Quad half first cousins",
+                                    "Full sib stack (2)", "Full sib stack (3)", "Half sib stack (2)", "Half sib stack (3)"),
+            ),
             br(),
-            downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px")
+            fluidRow(
+              column(5, hr(style = "border-top: 1px solid #000000;")),
+              column(2, "or", style = "padding-left:10px; padding-top:10px; padding-bottom:17px"),
+              column(5, hr(style = "border-top: 1px solid #000000;")),
+            ),
+            br(),
+            fileInput("loadped", label = "Load a ped file", buttonLabel = icon("folder-open"),
+                      accept = "text/plain", width = "100%", placeholder = NULL),
+
+            actionButton("reset", "Reset all", width = "100%", class = "btn btn-danger", style = "margin-top:78px")
           ),
 
-          wellPanel(
-            fluidRow(
-              column(width = 6, h4(strong("Labels"), .noWS = "before")),
-              column(width = 6, actionButton("lab123", "1-2-3", width = "100%",
-                                             style = "background-color: lightgray; margin-left:0px; margin-right:0px"))
-            ),
-            uiOutput("labels"),
-            actionButton("updateLabs", "Update", width = "100%",
-                         class = "btn btn-success", style = "margin-top: 10px; margin-left:0px; margin-right:0px"),
-          )
         ),
 
         # Second control column
         column(width = 6,
-          wellPanel(style = "height:430px",
-            h4(strong("Build pedigree"), .noWS = "before"),
-            h5(strong("Add"), style = "margin-bottom: 0px;"),
+          wellPanel(style = "height:430px; width:210px",
+            bigHeading("Modify"),
+            midHeading("Add"),
             pedButton("addparents", "Parents"),
             fluidRow(
               pedButton("addson", "Son", side = "left"),
               pedButton("adddaughter", "Daughter", side = "right"),
             ),
-            h5(strong("Remove"), style = "margin-bottom: 0px;"),
-            pedButton("remove", "Remove selected"),
-            h5(strong("Switch"), style = "margin-bottom: 0px;"),
+            midHeading("Remove"),
+            fluidRow(
+              pedButton("remove", "Individuals", side = "left"),
+              pedButton("clearselection", "Selection", side = "right"),
+            ),
+            midHeading("Switch"),
             fluidRow(
               pedButton("swapsex", "Sex", side = "left"),
               pedButton("affection", "Affected", side = "right"),
@@ -103,46 +107,78 @@ ui = fluidPage(
               pedButton("carrier",  "Carrier", side = "left"),
               pedButton("deceased", "Deceased", side = "right"),
             ),
-            h5(strong("Twins"), style = "margin-bottom: 0px;"),
+            midHeading("Twins"),
             fluidRow(
               pedButton("mz", "MZ", side = "left"),
               pedButton("dz", "DZ", side = "right")
             ),
 
-            div(style="margin-bottom: 20px"),
-            fluidRow(
-              column(6, align = "left", style = "padding-right: 4px;",
-                     disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning"))),
-              column(6, align = "right", style = "padding-left: 4px;",
-                     actionButton("reset", "Reset", width = "100%", class = "btn btn-danger")),
-            )
+            div(style="float:bottom; margin-bottom: 20px"),
+            disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning")),
           ),
-          wellPanel(
-            h4(strong("Ped file")),
-            checkboxGroupInput("include", "Include", selected  = "head",
-                               c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
-            downloadButton("savePed", "Save ped file", class="btn btn-info",
-                           style = "width: 100%; margin-left:0px; margin-right:0px"),
-          )
         )
+      ),
+      # Relationship descriptions
+      wellPanel(style = "height:210px; width:435px",
+        fluidRow(
+          column(width = 6, bigHeading("Relationships")),
+          column(width = 3, actionButton("coeffs", "Coeffs", class = "btn btn-success",
+                                         style = "width:80px")),
+          column(width = 3, actionButton("describe", "Describe", class = "btn btn-success",
+                                         style = "width:80px; float:right; margin-left:0px; margin-right:0px")),
+        ),
+        verbatimTextOutput("description", placeholder = TRUE),
+        tags$head(tags$style("#description{height:145px;}"))
       )
     ),
 
     # Plot window
-    mainPanel(width = 6,
-              plotOutput("plot", click = "ped_click", width = "auto", height = "auto"),
+    column(width = 4,
+           plotOutput("plot", click = "ped_click", width = "auto", height = "auto"),
+    ),
 
-              # Relationship descriptions
-              wellPanel(style = "height:210px;width:430px;margin-top:20px;",
-                fluidRow(
-                  column(width = 6, h4(strong("Relationships"), .noWS = "before")),
-                  column(width = 6, actionButton("describe", "Describe", width = "100%", class = "btn btn-success",
-                                                 style = "margin-left:0px; margin-right:0px"))
-                ),
-                verbatimTextOutput("description", placeholder = TRUE),
-                tags$head(tags$style("#description{height:150px;}"))
-              )
-    )
+    # Settings
+    column(width = 4, style = "float:right; width:420px;",
+      fluidRow(
+        column(width = 6,
+             wellPanel(style = "min-height:100%; width:200px",
+             fluidRow(
+               column(width = 6, bigHeading("Labels")),
+               column(width = 6, actionButton("lab123", "1-2-3", width = "100%",
+                                              style = "background-color: lightgray; margin-left:0px; margin-right:0px"))
+             ),
+             uiOutput("labels"),
+             actionButton("updateLabs", "Update", width = "100%",
+                          class = "btn btn-success", style = "margin-top: 10px; margin-left:0px; margin-right:0px"),
+           ),
+        ),
+
+        # Rightmost column: Settings and save
+        column(width = 6,
+           wellPanel(style = "height:430px; width:180px",
+                     bigHeading("Plot settings"),
+                     sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
+                     sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1000, value = 430, step = 1),
+                     sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.6, step = 0.1),
+                     sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
+                     sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
+                     br(),
+                     downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px")
+           ),
+
+           # Save ped file
+           wellPanel(style = "height:210px; width:180px",
+                     bigHeading("Ped file"),
+                     checkboxGroupInput("include", "Include", selected  = "head",
+                                        c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
+                     downloadButton("savePed", "Save ped file", class="btn btn-info",
+                                    style = "width: 100%; margin-left:0px; margin-right:0px"),
+           )
+        ),
+      )
+
+
+    ),
   ),
 
   p("This is QuickPed version", VERSION, "(",
