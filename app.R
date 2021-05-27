@@ -265,15 +265,6 @@ server = function(input, output, session) {
   })
 
 
-  #observeEvent(input$loadped, {
-  #  tryCatch(
-  #    read.table("quickped.ped"),
-  #    error = function(e) {errModal(conditionMessage(e)); return()}
-  #  )
-  #  updatePedData(currData, ped = newped, aff = newaff, emptySel = TRUE)
-  #})
-
-
   observeEvent(input$updateLabs, {
     currData = currentPedData()
     ped = currData$ped
@@ -555,6 +546,21 @@ server = function(input, output, session) {
 
 
   })
+
+
+  observeEvent(input$loadped, {
+    ped = tryCatch(
+      readPed(input$loadped$datapath),
+      error = function(e) {errModal(conditionMessage(e)); return()}
+    )
+    currData = currentPedData()
+
+    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
+           twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), emptySel = TRUE)
+
+    updateSelectInput(session, inputId = "startped", selected = "")
+  })
+
 
 # Relationship description ------------------------------------------------
 
