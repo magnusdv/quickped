@@ -1,7 +1,24 @@
 ### Helper functions for the QuickPed app
 
-errModal = function(mess) {
+bigHeading = function(x)
+  h4(strong(x), .noWS = "before")
+
+midHeading = function(x)
+  h5(strong(x), style = "margin-bottom: 0px;")
+
+bold = function(x) strong(x, .noWS = "outside")
+ital = function(x) em(x, .noWS = "outside")
+
+errModal = function(...) {
+  mess = paste(lapply(list(...), toString), collapse = "")
   showModal(modalDialog(mess))
+}
+
+
+textInput2 = function(inputId, value) {
+  w  = textInput(inputId, label = NULL, value = value, width = "100%")
+  w$children[[2]]$attribs[["style"]] = "padding-top, padding-bottom: 1px; height: 28px;"
+  w
 }
 
 pedButton = function(id, label, side = NULL, ...) {
@@ -69,7 +86,7 @@ addChild = function(x, id, sex) {
   }
 
   if(length(id) > 2) {
-    errModal("Too many parents selected")
+    errModal("Please select either 1 or 2 individuals. Current selection: ", id)
     return()
   }
 

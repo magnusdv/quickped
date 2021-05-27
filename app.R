@@ -8,6 +8,7 @@ suppressPackageStartupMessages({
 })
 
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
+
 VERSION = "1.2.0"
 
 ui = fluidPage(
@@ -35,25 +36,19 @@ ui = fluidPage(
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
-  p(strong("Purpose: ", .noWS = "outside"),
+  p(bold("Purpose: "),
     "This tool provides a quick way to create pedigree plots,
-    and for producing ", em("ped files", .noWS = "outside"),
-    " describing pedigrees in text format.
-    Such files are often required as input for pedigree analysis software."),
+    and for producing text files describing pedigrees in ", ital("ped format"), "."),
 
-  p(strong("Instructions: ", .noWS = "outside"),
-    "Construct the pedigree by selecting pedigree members (by clicking on them in the plot) and using appropriate buttons.
-    For example, new children can be created by selecting one or two individuals and pressing either ",
-    em("Son", .noWS = "outside"), " or ", em("Daughter", .noWS = "outside"),
-    ". If needed, replace the default labels by other names, and use the ",
-    em("Sex", .noWS = "outside"),
-    " button to switch sex of selected individuals."),
+  p(bold("Instructions: "),
+    "Choose a suitable start pedigree and modify it by selecting members (by clicking on them in the plot) and using appropriate buttons.
+    For example, to create a new child, select the parents and press ",
+    ital("Son"), " or ", ital("Daughter"), ". (If just one parent is selected, a new spouse is also created.)"),
 
-  p(strong("More information: ", .noWS = "outside"),
+  p(bold("More information: "),
     "Further explanations, source code and bug reports can be found at ",
     a("GitHub", href = "https://github.com/magnusdv/quickped", .noWS = "outside"), "."),
 
-  #br(),
 
   fluidRow(
 
@@ -152,6 +147,10 @@ ui = fluidPage(
 
   p("This is QuickPed version", VERSION, "(",
     a("changelog", href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md", .noWS = "outside"), ").",
+    "QuickPed is powered by ", a("pedtools", href = "https://cran.r-project.org/package=pedtools", .noWS = "outside"),
+    " and imports ",
+    a("kinship2", href = "https://cran.r-project.org/package=kinship2", .noWS = "outside"),
+    " for plotting.",
     "If you find something that isn't working properly, please file a bug report at ",
     a("https://github.com/magnusdv/quickped/issues", href = "https://github.com/magnusdv/quickped/issues", .noWS = "outside"), "."),
 )
