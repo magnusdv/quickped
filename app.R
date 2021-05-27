@@ -237,7 +237,7 @@ server = function(input, output, session) {
     labs = labels(currentPedData()$ped)
     fields = paste0("lab", seq_along(labs))
     lapply(seq_along(labs), function(i)
-      textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
+      textInput2(fields[i], value = labs[i])) #textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
   })
 
   observeEvent(input$lab123, {
