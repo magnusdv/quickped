@@ -276,7 +276,7 @@ server = function(input, output, session) {
     if(identical(newlabs, oldlabs))
       return()
     if(dup <- anyDuplicated(newlabs)) {
-      errModal(paste("Duplicated ID label:", newlabs[dup]))
+      errModal("Duplicated ID label: ", newlabs[dup])
       return()
     }
     if(0 %in% newlabs) {
@@ -470,7 +470,7 @@ server = function(input, output, session) {
   observeEvent(input$mz, {
     ids = req(sel())
     if(length(ids) != 2) {
-      errModal("To change twin status, please select exactly 2 individuals")
+      errModal("To change twin status, please select exactly 2 individuals. Current selection: ", ids)
       return()
     }
     currData = currentPedData()
@@ -481,7 +481,7 @@ server = function(input, output, session) {
   observeEvent(input$dz, {
     ids = req(sel())
     if(length(ids) != 2) {
-      errModal("To change twin status, please select exactly 2 individuals")
+      errModal("To change twin status, please select exactly 2 individuals. Current selection: ", ids)
       return()
     }
     currData = currentPedData()
