@@ -472,6 +472,8 @@ server = function(input, output, session) {
                   deceased = newdec, twins = newtw, emptySel = TRUE)
   })
 
+  observeEvent(input$clearselection, sel(character(0)))
+
   observeEvent(input$mz, {
     ids = req(sel())
     if(length(ids) != 2) {
