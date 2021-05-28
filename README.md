@@ -78,3 +78,7 @@ and different software may use slightly different versions. For example,
 a first column with *Family ID* is sometimes required. Also, the `aff`
 column may not be needed in non-medical applications. These and other
 details may be specified when using QuickPed.
+
+Some pedigree information may be shown on the plot, but is *not* stored
+in the ped file. In the current version of QuickPed, this includes twin
+relationships, and also `deceased` status.
