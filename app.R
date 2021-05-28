@@ -534,11 +534,16 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$reset, {
-    currData = currentPedData()
-    updatePedData(currData,
-                  ped = nuclearPed(), aff = character(0), carrier = character(0), deceased = character(0),
-                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
-                  emptySel = TRUE)
+    if(input$startped == "Trio")
+      updateSelectInput(session, "startped", selected = "")
+    updateSelectInput(session, "startped", selected = "Trio")
+
+    # Reset plot settings
+    updateSliderInput(session, "width", value = 430)
+    updateSliderInput(session, "height", value = 430)
+    updateSliderInput(session, "cex", value = 1.6)
+    updateSliderInput(session, "symbolsize", value = 1)
+    updateSliderInput(session, "mar", value = 3)
   })
 
   observeEvent(input$startped, {
