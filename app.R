@@ -18,7 +18,7 @@ ui = fluidPage(
   tags$head(
     tags$style(
       HTML('
-        .well {padding-top: 10px}
+        .well {padding-top: 10px; margin-bottom: 15px}
         .btn-default {margin-left: 0px; margin-right: 0px; margin-top: 2px; margin-bottom: 2px}
         .btn-file {margin-top: 0px; margin-bottom: 0px}
         .control-label {margin-bottom: 0px; padding-bottom:0px}
@@ -78,7 +78,8 @@ ui = fluidPage(
             fileInput("loadped", label = "Load a ped file", buttonLabel = icon("folder-open"),
                       accept = "text/plain", width = "100%", placeholder = NULL),
 
-            actionButton("reset", "Reset all", width = "100%", class = "btn btn-danger", style = "margin-top:78px")
+            actionButton("reset", "Reset all", class = "btn btn-danger",
+                         style = "position: absolute; bottom:30px; width: 170px")
           ),
 
         ),
@@ -113,8 +114,8 @@ ui = fluidPage(
               pedButton("dz", "DZ", side = "right")
             ),
 
-            div(style="float:bottom; margin-bottom: 20px"),
-            disabled(actionButton("undo", "Undo", width = "100%", class = "btn btn-warning")),
+            disabled(actionButton("undo", "Undo", class = "btn btn-warning",
+                                  style = "position: absolute; bottom:30px; width: 170px")),
           ),
         )
       ),
@@ -133,7 +134,7 @@ ui = fluidPage(
     ),
 
     # Plot window
-    column(width = 4,
+    column(width = 4, style = "margin-bottom: 15px",
            plotOutput("plot", click = "ped_click", width = "auto", height = "auto"),
     ),
 
