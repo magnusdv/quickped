@@ -207,7 +207,7 @@ server = function(input, output, session) {
   relText = reactiveVal(NULL)
 
   updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
-                           deceased = NULL, twins = NULL, emptySel = FALSE) {
+                           deceased = NULL, twins = NULL, clearSel = TRUE, clearInput = TRUE, clearRel = TRUE) {
     if(is.null(ped) && is.null(aff) && is.null(carrier) && is.null(deceased) && is.null(twins))
       return()
 
@@ -219,12 +219,19 @@ server = function(input, output, session) {
 
     newData = list(ped = ped, aff = aff, carrier = carrier, deceased = deceased, twins = twins)
     currentPedData(newData)
+
+    # Update stack
     previousStack(c(previousStack(), list(currData)))
     enable("undo")
 
-    relText(NULL)
+    # Clear stuff
+    if(clearInput)
+      updateSelectInput(session, "startped", selected = "")
 
-    if(emptySel)
+    if(clearRel)
+      relText(NULL)
+
+    if(clearSel)
       sel(character(0))
   }
 
@@ -262,7 +269,7 @@ server = function(input, output, session) {
     newtw$id2 = match(newtw$id2, plotlabs)
 
     updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw, emptySel = TRUE)
+                  deceased = newdec, twins = newtw)
   })
 
 
@@ -298,7 +305,7 @@ server = function(input, output, session) {
     newtw$id2 = newlabs[internalID(ped, newtw$id2)]
 
     updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw, emptySel = TRUE)
+                  deceased = newdec, twins = newtw)
   })
 
   output$plot = renderPlot({
@@ -385,14 +392,14 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = addChild(currData$ped, id, sex = 1)
-    updatePedData(currData, ped = newped)
+    updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
   observeEvent(input$adddaughter, {
     id = req(sel())
     currData = currentPedData()
     newped = addChild(currData$ped, id, sex = 2)
-    updatePedData(currData, ped = newped)
+    updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
   observeEvent(input$addparents, {
@@ -400,14 +407,14 @@ server = function(input, output, session) {
     currData = currentPedData()
     newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
              error = function(e) errModal(e))
-    updatePedData(currData, ped = newped, emptySel = TRUE)
+    updatePedData(currData, ped = newped)
   })
 
   observeEvent(input$swapsex, {
     currData = currentPedData()
     id = sel()
     newped = swapSex(currData$ped, id, verbose = FALSE)
-    updatePedData(currData, ped = newped, emptySel = length(id) > 1)
+    updatePedData(currData, ped = newped, clearSel = length(id) > 1)
   })
 
   observeEvent(input$affection, {
@@ -415,7 +422,7 @@ server = function(input, output, session) {
     currData = currentPedData()
     aff = currData$aff
     newAff = setdiff(union(aff, id), intersect(aff, id))
-    updatePedData(currData, aff = newAff, emptySel = length(id) > 1)
+    updatePedData(currData, aff = newAff, clearRel = FALSE)
 
     # Update checkbox "Include affection status"
     inc = input$include
@@ -428,7 +435,7 @@ server = function(input, output, session) {
     currData = currentPedData()
     carrier = currData$carrier
     newCarr = setdiff(union(carrier, id), intersect(carrier, id))
-    updatePedData(currData, carrier = newCarr, emptySel = length(id) > 1)
+    updatePedData(currData, carrier = newCarr, clearSel = length(id) > 1, clearRel = FALSE)
   })
 
   observeEvent(input$deceased, {
@@ -436,7 +443,7 @@ server = function(input, output, session) {
     currData = currentPedData()
     deceased = currData$deceased
     newDec = setdiff(union(deceased, id), intersect(deceased, id))
-    updatePedData(currData, deceased = newDec, emptySel = length(id) > 1)
+    updatePedData(currData, deceased = newDec, clearSel = length(id) > 1, clearRel = FALSE)
   })
 
   observeEvent(input$remove, {
@@ -463,7 +470,7 @@ server = function(input, output, session) {
     newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
 
     updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw, emptySel = TRUE)
+                  deceased = newdec, twins = newtw)
   })
 
   observeEvent(input$clearselection, sel(character(0)))
@@ -489,9 +496,9 @@ server = function(input, output, session) {
       errModal(err)
       return()
     }
-    currData = currentPedData()
+
     twins = updateTwins(currData$twins, ids, code = 1L)
-    updatePedData(currData, twins = twins, emptySel = TRUE)
+    updatePedData(currData, twins = twins)
   })
 
   observeEvent(input$dz, {
@@ -513,9 +520,9 @@ server = function(input, output, session) {
       errModal(err)
       return()
     }
-    currData = currentPedData()
+
     twins = updateTwins(currData$twins, ids, code = 2L)
-    updatePedData(currData, twins = twins, emptySel = TRUE)
+    updatePedData(currData, twins = twins)
   })
 
   observeEvent(input$undo, {
@@ -523,6 +530,7 @@ server = function(input, output, session) {
     len = length(stack)
     if(len == 0)
       return()
+
     currentPedData(stack[[len]])
     previousStack(stack[-len])
 
@@ -531,6 +539,10 @@ server = function(input, output, session) {
 
     if(len == 1)
       disable("undo")
+
+    # Clear stuff
+    relText(NULL)
+    updateSelectInput(session, "startped", selected = "")
   })
 
   observeEvent(input$reset, {
@@ -575,10 +587,8 @@ server = function(input, output, session) {
     currData = currentPedData()
 
     updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
-         twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), emptySel = TRUE)
-
-
-
+         twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
+         clearInput = FALSE)
   })
 
 
@@ -607,7 +617,8 @@ server = function(input, output, session) {
 
     currData = currentPedData()
 
-    updateSelectInput(session, inputId = "startped", selected = "")
+    updatePedData(currData, ped = req(ped), aff = aff, carrier = character(0), deceased = character(0),
+           twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
 
