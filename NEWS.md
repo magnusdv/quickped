@@ -1,8 +1,21 @@
+# QuickPed 2.0.1
+
+## Bug fixes
+
+* `Reset all` now also resets the plot settings.
+
+* Impossible twins are now caught and reported more sensibly.
+
+* Loading ped files now includes affection status, if there is a column named `aff`.
+
+* Fixes various minor glitches.
+
+
 # QuickPed 2.0.0
 
 ## New features
 
-* A "Quick start" panel allows the user to choose from a list of built-in pedigrees
+* A `Quick start` panel allows the user to choose from a list of built-in pedigrees.
 
 * Alternatively, it is now possible to upload an existing `ped` file.
 
@@ -15,11 +28,11 @@
 
 ## New features
 
-* The "Build pedigree" panel has been re-designed to fit more buttons.
+* The `Build pedigree` panel has been re-designed to fit more buttons.
 
-* New buttons: "Carriers" and "Deceased" for annotating pedigree.
+* New buttons: `Carriers` and `Deceased` for annotating pedigree.
 
-* New buttons: "MZ" and "DZ" for creating twins.
+* New buttons: `MZ` and `DZ` for creating twins.
 
 
 # QuickPed 1.0.1
@@ -28,7 +41,7 @@
 
 * `Toggle sex` and `Toggle aff` now keeps the selection if only one person is selected.
 
-* Added a paragraph "More information", with link to GitHub.
+* Added a paragraph `More information`, with link to GitHub.
 
 * Added version number and link to this changelog.
 
