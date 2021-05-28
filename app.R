@@ -583,14 +583,29 @@ server = function(input, output, session) {
 
 
   observeEvent(input$loadped, {
-    ped = tryCatch(
-      readPed(input$loadped$datapath),
-      error = function(e) {errModal(conditionMessage(e)); return()}
-    )
-    currData = currentPedData()
+    file = req(input$loadped$datapath)
+    cls = c("id", "fid", "mid", "sex")
 
-    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
-           twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), emptySel = TRUE)
+    ped = tryCatch(
+      expr = {
+        df = read.table(file, header = TRUE, sep = "\t", colClasses = "character",
+                        check.names = FALSE)
+        names(df) = nms = tolower(names(df))
+        if(!all(cls %in% nms))
+          stop("Column not found: ", toString(setdiff(cls, nms)))
+
+        as.ped(df[cls])
+      },
+      error = function(e) errModal(conditionMessage(e)),
+      warning = function(e) errModal(conditionMessage(e))
+    )
+
+    req(ped)
+
+    # Affected
+    aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
+
+    currData = currentPedData()
 
     updateSelectInput(session, inputId = "startped", selected = "")
   })
