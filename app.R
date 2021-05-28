@@ -470,8 +470,23 @@ server = function(input, output, session) {
 
   observeEvent(input$mz, {
     ids = req(sel())
-    if(length(ids) != 2) {
-      errModal("To change twin status, please select exactly 2 individuals. Current selection: ", ids)
+    currData = currentPedData()
+    ped = currData$ped
+
+    # Checks
+    err = NULL
+
+    if(length(ids) != 2)
+      err = "To change twin status, please select exactly 2 individuals."
+    else if(all(ids %in% founders(ped)))
+      err = "Founders cannot be twins"
+    else if(!identical(parents(ped, ids[1]), parents(ped, ids[2])))
+      err = "Twins have the same parents"
+    else if(getSex(ped, ids[1]) != getSex(ped, ids[2]))
+      err = "MZ twins must have the same sex"
+
+    if(!is.null(err)) {
+      errModal(err)
       return()
     }
     currData = currentPedData()
@@ -481,8 +496,21 @@ server = function(input, output, session) {
 
   observeEvent(input$dz, {
     ids = req(sel())
-    if(length(ids) != 2) {
-      errModal("To change twin status, please select exactly 2 individuals. Current selection: ", ids)
+    currData = currentPedData()
+    ped = currData$ped
+
+    # Checks
+    err = NULL
+
+    if(length(ids) != 2)
+      err = "To change twin status, please select exactly 2 individuals."
+    else if(all(ids %in% founders(ped)))
+      err = "Founders cannot be twins"
+    else if(!identical(parents(ped, ids[1]), parents(ped, ids[2])))
+      err = "Twins must have the same parents"
+
+    if(!is.null(err)) {
+      errModal(err)
       return()
     }
     currData = currentPedData()
