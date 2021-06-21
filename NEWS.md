@@ -1,3 +1,12 @@
+# QuickPed 2.0.2
+
+## Minor fixes
+
+* Update links.
+
+* Tweak description text.
+
+
 # QuickPed 2.0.1
 
 ## Bug fixes

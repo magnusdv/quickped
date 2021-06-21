@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 
 ui = fluidPage(
 
@@ -33,12 +33,12 @@ ui = fluidPage(
 
 
   # Application title
-  h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
+  h2(id = "title-h2", "QuickPed: An Interactive Pedigree Maker"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
   p(bold("Purpose: "),
     "This tool provides a quick way to create pedigree plots,
-    and for producing text files describing pedigrees in ", ital("ped format"), "."),
+    and for producing ", ital("ped files"), " describing pedigrees in text format."),
 
   p(bold("Instructions: "),
     "Choose a suitable start pedigree and modify it by selecting members (by clicking on them in the plot) and using appropriate buttons.
@@ -46,8 +46,8 @@ ui = fluidPage(
     ital("Son"), " or ", ital("Daughter"), ". (If just one parent is selected, a new spouse is also created.)"),
 
   p(bold("More information: "),
-    "Further explanations, source code and bug reports can be found at ",
-    a("GitHub", href = "https://github.com/magnusdv/quickped", .noWS = "outside"), "."),
+    "Further information about QuickPed can be found at the ",
+    a("homepage", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"), "."),
 
 
   fluidRow(
@@ -184,7 +184,7 @@ ui = fluidPage(
 
   p("This is QuickPed version", VERSION, "(",
     a("changelog", href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md", .noWS = "outside"), ").",
-    "QuickPed is powered by ", a("pedtools", href = "https://cran.r-project.org/package=pedtools", .noWS = "outside"),
+    "QuickPed is powered by the ", a("ped suite", href = "https://cran.r-project.org/package=pedsuite", .noWS = "outside"),
     " and imports ",
     a("kinship2", href = "https://cran.r-project.org/package=kinship2", .noWS = "outside"),
     " for plotting.",
@@ -643,7 +643,7 @@ server = function(input, output, session) {
     ped = currentPedData()$ped
 
     # Inbreeding
-    inb = ribd::inbreeding(ped)[ids]
+    inb = ribd::inbreeding(ped, ids)
     txt = c("Inbreeding coefficients:", sprintf("* %s: f = %g", ids, inb))
 
     if(N != 2) {
