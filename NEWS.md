@@ -1,3 +1,10 @@
+# QuickPed 2.1.0
+
+## New features
+
+* A new button for automatic, generation-aware labels (I-1, I-2, ...)
+
+
 # QuickPed 2.0.2
 
 ## Minor fixes

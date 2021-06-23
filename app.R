@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
-VERSION = "2.0.2"
+VERSION = "2.1.0"
 
 ui = fluidPage(
 
@@ -126,7 +126,7 @@ ui = fluidPage(
           column(width = 3, actionButton("coeffs", "Coeffs", class = "btn btn-success",
                                          style = "width:80px")),
           column(width = 3, actionButton("describe", "Describe", class = "btn btn-success",
-                                         style = "width:80px; float:right; margin-left:0px; margin-right:0px")),
+                                         style = "width:80px; float:right")),
         ),
         verbatimTextOutput("description", placeholder = TRUE),
         tags$head(tags$style("#description{height:145px;}"))
@@ -142,16 +142,19 @@ ui = fluidPage(
     column(width = 4, style = "float:right; width:420px;",
       fluidRow(
         column(width = 6,
-             wellPanel(style = "min-height:100%; width:200px",
-             fluidRow(
-               column(width = 6, bigHeading("Labels")),
-               column(width = 6, actionButton("lab123", "1-2-3", width = "100%",
-                                              style = "background-color: lightgray; margin-left:0px; margin-right:0px"))
-             ),
-             uiOutput("labels"),
-             actionButton("updateLabs", "Update", width = "100%",
-                          class = "btn btn-success", style = "margin-top: 10px; margin-left:0px; margin-right:0px"),
-           ),
+          wellPanel(
+            style = "min-height:100%; width:200px",
+            bigHeading("Labels"),
+            fluidRow(
+              column(width = 6, align = "left", style = "padding-right:5px; padding-bottom:7px;",
+                     actionButton("lab123", "1, 2, 3, ..", width = "100%",  style = "background-color: lightgray;")),
+              column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:7px;",
+                     actionButton("labGen", "I-1, I-2, ..", width = "100%",style = "background-color: lightgray;"))
+            ),
+            uiOutput("labels"),
+            actionButton("updateLabs", "Update", width = "100%",
+                        class = "btn btn-success", style = "margin-top: 10px;"),
+   ),
         ),
 
         # Rightmost column: Settings and save
@@ -164,7 +167,7 @@ ui = fluidPage(
                      sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
                      sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
                      br(),
-                     downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%; margin-left:0px; margin-right:0px")
+                     downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%;")
            ),
 
            # Save ped file
@@ -172,8 +175,7 @@ ui = fluidPage(
                      bigHeading("Ped file"),
                      checkboxGroupInput("include", "Include", selected  = "head",
                                         c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
-                     downloadButton("savePed", "Save ped file", class="btn btn-info",
-                                    style = "width: 100%; margin-left:0px; margin-right:0px"),
+                     downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%;"),
            )
         ),
       )
@@ -252,26 +254,34 @@ server = function(input, output, session) {
     currData = currentPedData()
     ped = currData$ped
 
-    # Relabel according to current plot
-    p = pdat()$plist
-    plotInt = unlist(lapply(seq_along(p$n), function(i) p$nid[i, 1:p$n[i]]))
-    if (anyDuplicated(plotInt))
-      plotInt = unique.default(plotInt)
-    plotlabs = labels(ped)[plotInt] # individuals in plot order
+    # Current labels in plot order
+    old = getPlotOrder(ped = ped, plist = pdat()$plist)
 
-    newped = relabel(ped, old = plotlabs, new = seq_along(plotlabs), reorder = TRUE)
-    newaff = match(currData$aff, plotlabs)
-    newcarr = match(currData$carrier, plotlabs)
-    newdec = match(currData$deceased, plotlabs)
+    # New labels: 1, 2, ...
+    new = seq_along(old)
 
-    newtw = currData$twins
-    newtw$id1 = match(newtw$id1, plotlabs)
-    newtw$id2 = match(newtw$id2, plotlabs)
+    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
 
-    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw)
+    do.call(updatePedData, c(list(currData = currData), newData))
   })
 
+  observeEvent(input$labGen, {
+    currData = currentPedData()
+    ped = currData$ped
+
+    # Current labels in plot order
+    oldList = getPlotOrder(ped = ped, plist = pdat()$plist, perGeneration = TRUE)
+    old = unlist(oldList)
+
+    # New labels: I-1, ...
+    gen = rep(seq_along(oldList), lengths(oldList))
+    idx = unlist(lapply(lengths(oldList), seq_len))
+    new = paste(as.roman(gen), idx, sep = "-")
+
+    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
+
+    do.call(updatePedData, c(list(currData = currData), newData))
+  })
 
   observeEvent(input$updateLabs, {
     currData = currentPedData()
@@ -295,17 +305,10 @@ server = function(input, output, session) {
       errModal("Empty label")
       return()
     }
-    newped = relabel(ped, new = newlabs)
-    newaff = newlabs[internalID(ped, currData$aff)]
-    newcarr = newlabs[internalID(ped, currData$carrier)]
-    newdec = newlabs[internalID(ped, currData$deceased)]
 
-    newtw = currData$twins
-    newtw$id1 = newlabs[internalID(ped, newtw$id1)]
-    newtw$id2 = newlabs[internalID(ped, newtw$id2)]
+    newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
 
-    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw)
+    do.call(updatePedData, c(list(currData = currData), newData))
   })
 
   output$plot = renderPlot({
