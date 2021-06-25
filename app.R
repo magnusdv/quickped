@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
 
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 
 ui = fluidPage(
 
@@ -48,7 +48,7 @@ ui = fluidPage(
 
   p(bold("More information: "),
     "Further information about QuickPed can be found at the ",
-    a("homepage", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"), "."),
+    a("ped suite homepage", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"), "."),
 
 
   fluidRow(
@@ -209,6 +209,10 @@ server = function(input, output, session) {
 
   relText = reactiveVal(NULL)
 
+
+# Update pedigree ---------------------------------------------------------
+
+
   updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
                            deceased = NULL, twins = NULL, clearSel = TRUE, clearInput = TRUE, clearRel = TRUE) {
     if(is.null(ped) && is.null(aff) && is.null(carrier) && is.null(deceased) && is.null(twins))
@@ -238,171 +242,90 @@ server = function(input, output, session) {
       sel(character(0))
   }
 
-  plotArgs = reactive({
-    m = input$mar
-    adjmar = c(max(m - 1, 0), m, m + 1, m)
-    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar)
-  })
 
-  output$labels = renderUI({
-    labs = labels(currentPedData()$ped)
-    fields = paste0("lab", seq_along(labs))
-    lapply(seq_along(labs), function(i)
-      textInput2(fields[i], value = labs[i])) #textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
-  })
-
-  observeEvent(input$lab123, {
-    currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    old = getPlotOrder(ped = ped, plist = pdat()$plist)
-
-    # New labels: 1, 2, ...
-    new = seq_along(old)
-
-    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
-
-    do.call(updatePedData, c(list(currData = currData), newData))
-  })
-
-  observeEvent(input$labGen, {
-    currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    oldList = getPlotOrder(ped = ped, plist = pdat()$plist, perGeneration = TRUE)
-    old = unlist(oldList)
-
-    # New labels: I-1, ...
-    gen = rep(seq_along(oldList), lengths(oldList))
-    idx = unlist(lapply(lengths(oldList), seq_len))
-    new = paste(as.roman(gen), idx, sep = "-")
-
-    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
-
-    do.call(updatePedData, c(list(currData = currData), newData))
-  })
-
-  observeEvent(input$updateLabs, {
-    currData = currentPedData()
-    ped = currData$ped
-    oldlabs = labels(ped)
-    fields = paste0("lab", seq_along(oldlabs))
-    newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
-    newlabs = trimws(newlabs)
-
-    if(identical(newlabs, oldlabs))
-      return()
-    if(dup <- anyDuplicated(newlabs)) {
-      errModal("Duplicated ID label: ", newlabs[dup])
-      return()
-    }
-    if(0 %in% newlabs) {
-      errModal('"0" cannot be used as label')
-      return()
-    }
-    if("" %in% newlabs) {
-      errModal("Empty label")
-      return()
-    }
-
-    newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
-
-    do.call(updatePedData, c(list(currData = currData), newData))
-  })
-
-  output$plot = renderPlot({
-    currData = currentPedData()
-    ped = currData$ped
-    args = plotArgs()
-    selected = sel()
-
-    dat = tryCatch(
-      plot(ped, aff = currData$aff, carrier = currData$carrier,
-           deceased = currData$deceased, twins = currData$twins,
-           col = list(red = selected), cex = args$cex,
-           symbolsize = args$symbolsize, margins = args$mar),
-      error = function(e) {
-        msg = conditionMessage(e)
-        if(grepl("reduce cex", msg))
-          msg = "Plot region is too small"
-        errModal(msg)
-        return()
-      })
-
-    box("outer", col = 1)
-
-    if(!is.null(dat))
-      pdat(dat)
-  }, execOnResize = TRUE, width = function() input$width, height = function() input$height)
+# Startped/load -----------------------------------------------------------
 
 
-  output$savePed = downloadHandler(
-    filename = "quickped.ped",
-    content = function(con) {
-      inclHead = "head" %in% input$include
-      inclFamid = "famid" %in% input$include
-      inclAff = "aff" %in% input$include
+  observeEvent(input$startped, {
+    choice = req(input$startped)
 
-      currData = currentPedData()
-      ped = currData$ped
-      df = as.data.frame(ped)
-      if(inclFamid)
-        df = cbind(famid = 1, df)
-      if(inclAff)
-        df = cbind(df, aff = ifelse(labels(ped) %in% currData$aff, 2, 1))
-
-      write.table(df, file = con, col.names = inclHead, row.names = FALSE,
-                  quote = FALSE, sep = "\t")
-      dropup(df)
-    }
-  )
-
-  output$savePlot = downloadHandler(
-    filename = "quickped.png",
-    content = function(con) {
-      currData = currentPedData()
-      args = plotArgs()
-      png(con, width = input$width, height = input$height)
-      plot(currData$ped, aff = currData$aff, carrier = currData$carrier,
-           deceased = currData$deceased, twins = currData$twins,
-           cex = args$cex, symbolsize = args$symbolsize, margins = args$mar)
-      dev.off()
-      dropup(list(currendPedData = currData, plotArgs = args))
-    },
-    contentType = "image/png"
-  )
-
-  observeEvent(input$ped_click, {
-    posDf = pdat2df(pdat())
-
-    idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
-                    threshold = 20, maxpoints = 1)$idInt
-    if(length(idInt) == 0)
-      return()
+    ped = switch(choice,
+                 Trio = nuclearPed(),
+                 "Sibship (2)" = nuclearPed(2),
+                 "Sibship (3)" = nuclearPed(3),
+                 "Half sibs (1+1)" = halfSibPed(),
+                 "Half sibs (2+2)" = halfSibPed(2, 2),
+                 "Linear (2)" = linearPed(2),
+                 "Linear (3)" = linearPed(3),
+                 "Ancestral (2)" = ancestralPed(2),
+                 "Ancestral (3)" = ancestralPed(3),
+                 "First cousins" = cousinPed(1),
+                 "Second cousins" = cousinPed(2),
+                 "Half first cousins" = halfCousinPed(1),
+                 "Half second cousins" = halfCousinPed(2),
+                 "Double first cousins" = doubleFirstCousins(),
+                 "Quad half first cousins" = quadHalfFirstCousins(),
+                 "Full sib stack (2)" = fullSibMating(1),
+                 "Full sib stack (3)" = fullSibMating(2),
+                 "Half sib stack (2)" = halfSibStack(2),
+                 "Half sib stack (3)" = halfSibStack(3),
+                 errModal("Sorry, this pedigree is not implemented yet.")
+    )
 
     currData = currentPedData()
-    id = labels(currData$ped)[idInt]
 
-    currSel = sel()
-    if(id %in% currSel)
-      sel(setdiff(currSel, id))
-    else
-      sel(c(currSel, id))
+    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
+                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
+                  clearInput = FALSE)
   })
+
+
+  observeEvent(input$loadped, {
+    file = req(input$loadped$datapath)
+    cls = c("id", "fid", "mid", "sex")
+
+    ped = tryCatch(
+      expr = {
+        df = read.table(file, header = TRUE, sep = "\t", colClasses = "character",
+                        check.names = FALSE)
+        names(df) = nms = tolower(names(df))
+        if(!all(cls %in% nms))
+          stop("Column not found: ", toString(setdiff(cls, nms)))
+
+        as.ped(df[cls])
+      },
+      error = function(e) errModal(conditionMessage(e)),
+      warning = function(e) errModal(conditionMessage(e))
+    )
+
+    req(ped)
+
+    # Affected
+    aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
+
+    currData = currentPedData()
+
+    updatePedData(currData, ped = req(ped), aff = aff, carrier = character(0), deceased = character(0),
+                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
+  })
+
+
+# Modify pedigree ---------------------------------------------------------
+
 
   observeEvent(input$addson, {
     id = req(sel())
     currData = currentPedData()
-    newped = addChild(currData$ped, id, sex = 1)
+    newped = tryCatch(addChild(currData$ped, id, sex = 1),
+                      error = function(e) errModal(e))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
   observeEvent(input$adddaughter, {
     id = req(sel())
     currData = currentPedData()
-    newped = addChild(currData$ped, id, sex = 2)
+    newped = tryCatch(addChild(currData$ped, id, sex = 2),
+                      error = function(e) errModal(e))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
@@ -453,7 +376,8 @@ server = function(input, output, session) {
   observeEvent(input$remove, {
     id = req(sel())
     currData = currentPedData()
-    newped = tryCatch({removeIndividuals(currData$ped, id, verbose = FALSE)},
+    newped = tryCatch(
+      removeIndividuals(currData$ped, id, verbose = FALSE),
       error = function(e) {
         msg = conditionMessage(e)
         if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
@@ -529,6 +453,11 @@ server = function(input, output, session) {
     updatePedData(currData, twins = twins)
   })
 
+
+
+# Undo/reset --------------------------------------------------------------
+
+
   observeEvent(input$undo, {
     stack = previousStack()
     len = length(stack)
@@ -562,71 +491,174 @@ server = function(input, output, session) {
     updateSliderInput(session, "mar", value = 3)
   })
 
-  observeEvent(input$startped, {
-    choice = req(input$startped)
 
-    ped = switch(choice,
-      Trio = nuclearPed(),
-      "Sibship (2)" = nuclearPed(2),
-      "Sibship (3)" = nuclearPed(3),
-      "Half sibs (1+1)" = halfSibPed(),
-      "Half sibs (2+2)" = halfSibPed(2, 2),
-      "Linear (2)" = linearPed(2),
-      "Linear (3)" = linearPed(3),
-      "Ancestral (2)" = ancestralPed(2),
-      "Ancestral (3)" = ancestralPed(3),
-      "First cousins" = cousinPed(1),
-      "Second cousins" = cousinPed(2),
-      "Half first cousins" = halfCousinPed(1),
-      "Half second cousins" = halfCousinPed(2),
-      "Double first cousins" = doubleFirstCousins(),
-      "Quad half first cousins" = quadHalfFirstCousins(),
-      "Full sib stack (2)" = fullSibMating(1),
-      "Full sib stack (3)" = fullSibMating(2),
-      "Half sib stack (2)" = halfSibStack(2),
-      "Half sib stack (3)" = halfSibStack(3),
-      errModal("Sorry, this pedigree is not implemented yet.")
-      )
 
+# Labels ------------------------------------------------------------------
+
+  output$labels = renderUI({
+    labs = labels(currentPedData()$ped)
+    fields = paste0("lab", seq_along(labs))
+    lapply(seq_along(labs), function(i)
+      textInput2(fields[i], value = labs[i])) #textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
+  })
+
+  observeEvent(input$lab123, {
     currData = currentPedData()
+    ped = currData$ped
 
-    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
-         twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
-         clearInput = FALSE)
+    # Current labels in plot order
+    old = getPlotOrder(ped = ped, plist = pdat()$plist)
+
+    # New labels: 1, 2, ...
+    new = seq_along(old)
+
+    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
+
+    do.call(updatePedData, c(list(currData = currData), newData))
+  })
+
+  observeEvent(input$labGen, {
+    currData = currentPedData()
+    ped = currData$ped
+
+    # Current labels in plot order
+    oldList = getPlotOrder(ped = ped, plist = pdat()$plist, perGeneration = TRUE)
+    old = unlist(oldList)
+
+    # New labels: I-1, ...
+    gen = rep(seq_along(oldList), lengths(oldList))
+    idx = unlist(lapply(lengths(oldList), seq_len))
+    new = paste(as.roman(gen), idx, sep = "-")
+
+    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
+
+    do.call(updatePedData, c(list(currData = currData), newData))
+  })
+
+  observeEvent(input$updateLabs, {
+    currData = currentPedData()
+    ped = currData$ped
+    oldlabs = labels(ped)
+    fields = paste0("lab", seq_along(oldlabs))
+    newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
+    newlabs = trimws(newlabs)
+
+    if(identical(newlabs, oldlabs))
+      return()
+    if(dup <- anyDuplicated(newlabs)) {
+      errModal("Duplicated ID label: ", newlabs[dup])
+      return()
+    }
+    if(0 %in% newlabs) {
+      errModal('"0" cannot be used as label')
+      return()
+    }
+    if("" %in% newlabs) {
+      errModal("Empty label")
+      return()
+    }
+
+    newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
+
+    do.call(updatePedData, c(list(currData = currData), newData))
   })
 
 
-  observeEvent(input$loadped, {
-    file = req(input$loadped$datapath)
-    cls = c("id", "fid", "mid", "sex")
+  # Plot --------------------------------------------------------------------
 
-    ped = tryCatch(
-      expr = {
-        df = read.table(file, header = TRUE, sep = "\t", colClasses = "character",
-                        check.names = FALSE)
-        names(df) = nms = tolower(names(df))
-        if(!all(cls %in% nms))
-          stop("Column not found: ", toString(setdiff(cls, nms)))
+  plotArgs = reactive({
+    m = input$mar
+    adjmar = c(max(m - 1, 0), m, m + 1, m)
+    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar)
+  })
 
-        as.ped(df[cls])
-      },
-      error = function(e) errModal(conditionMessage(e)),
-      warning = function(e) errModal(conditionMessage(e))
-    )
+  output$plot = renderPlot({
+    currData = currentPedData()
+    ped = currData$ped
+    args = plotArgs()
+    selected = sel()
 
-    req(ped)
+    dat = tryCatch(
+      plot(ped, aff = currData$aff, carrier = currData$carrier,
+           deceased = currData$deceased, twins = currData$twins,
+           col = list(red = selected), cex = args$cex,
+           symbolsize = args$symbolsize, margins = args$mar),
+      error = function(e) {
+        msg = conditionMessage(e)
+        if(grepl("reduce cex", msg))
+          msg = "Plot region is too small"
+        errModal(msg)
+        return()
+      })
 
-    # Affected
-    aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
+    box("outer", col = 1)
+
+    if(!is.null(dat))
+      pdat(dat)
+  }, execOnResize = TRUE, width = function() input$width, height = function() input$height)
+
+
+  observeEvent(input$ped_click, {
+    posDf = pdat2df(pdat())
+
+    idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
+                       threshold = 20, maxpoints = 1)$idInt
+    if(length(idInt) == 0)
+      return()
 
     currData = currentPedData()
+    id = labels(currData$ped)[idInt]
 
-    updatePedData(currData, ped = req(ped), aff = aff, carrier = character(0), deceased = character(0),
-           twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
+    currSel = sel()
+    if(id %in% currSel)
+      sel(setdiff(currSel, id))
+    else
+      sel(c(currSel, id))
   })
 
 
-# Relationship description ------------------------------------------------
+
+  # Save --------------------------------------------------------------------
+
+
+  output$savePed = downloadHandler(
+    filename = "quickped.ped",
+    content = function(con) {
+      inclHead = "head" %in% input$include
+      inclFamid = "famid" %in% input$include
+      inclAff = "aff" %in% input$include
+
+      currData = currentPedData()
+      ped = currData$ped
+      df = as.data.frame(ped)
+      if(inclFamid)
+        df = cbind(famid = 1, df)
+      if(inclAff)
+        df = cbind(df, aff = ifelse(labels(ped) %in% currData$aff, 2, 1))
+
+      write.table(df, file = con, col.names = inclHead, row.names = FALSE,
+                  quote = FALSE, sep = "\t")
+      dropup(df)
+    }
+  )
+
+  output$savePlot = downloadHandler(
+    filename = "quickped.png",
+    content = function(con) {
+      currData = currentPedData()
+      args = plotArgs()
+      png(con, width = input$width, height = input$height)
+      plot(currData$ped, aff = currData$aff, carrier = currData$carrier,
+           deceased = currData$deceased, twins = currData$twins,
+           cex = args$cex, symbolsize = args$symbolsize, margins = args$mar)
+      dev.off()
+      dropup(list(currendPedData = currData, plotArgs = args))
+    },
+    contentType = "image/png"
+  )
+
+
+# Relationships ------------------------------------------------
 
   observeEvent(input$describe, {
     ids = req(sel())
