@@ -1,3 +1,10 @@
+# QuickPed 2.2.0
+
+## New features
+
+* You can now specify unknown sex (sex = 0) by double-clicking on a pedigree member. Note: Only non-parent individuals are allowed to have unknown sex. Double-clicking on an individual with unknown sex resets to male sex.
+
+
 # QuickPed 2.1.1
 
 ## Bug fixes

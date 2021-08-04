@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 
 ui = fluidPage(
 
@@ -136,7 +136,7 @@ ui = fluidPage(
 
     # Plot window
     column(width = 4, style = "margin-bottom: 15px",
-           plotOutput("plot", click = "ped_click", width = "auto", height = "auto"),
+           plotOutput("plot", click = "ped_click",  dblclick = "ped_dblclick", width = "auto", height = "auto"),
     ),
 
     # Settings
@@ -616,6 +616,26 @@ server = function(input, output, session) {
       sel(c(currSel, id))
   })
 
+  observeEvent(input$ped_dblclick, {
+    posDf = pdat2df(pdat())
+
+    idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
+                       threshold = 20, maxpoints = 1)$idInt
+    if(length(idInt) == 0)
+      return()
+
+    currData = currentPedData()
+    ped = currData$ped
+    id = labels(ped)[idInt]
+
+    # Only continue if a leaf is selected
+    req(id %in% leaves(ped))
+
+    # 1,2 --> 0; 0 --> 1
+    newsex = if(getSex(ped, id) > 0) 0 else 1
+    newped = setSex(ped, ids = id, sex = newsex)
+    updatePedData(currData, ped = newped, clearSel = FALSE)
+  })
 
 
   # Save --------------------------------------------------------------------
