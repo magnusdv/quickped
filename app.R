@@ -416,7 +416,7 @@ server = function(input, output, session) {
     else if(all(ids %in% founders(ped)))
       err = "Founders cannot be twins"
     else if(!identical(parents(ped, ids[1]), parents(ped, ids[2])))
-      err = "Twins have the same parents"
+      err = "Twins must have the same parents"
     else if(getSex(ped, ids[1]) != getSex(ped, ids[2]))
       err = "MZ twins must have the same sex"
 
