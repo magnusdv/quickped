@@ -1,3 +1,9 @@
+# QuickPed 2.2.1
+
+## New features
+
+* The relationship descriptions are better and more comprehensive, using the new version of **verbalisr** (v0.2.0).
+
 # QuickPed 2.2.0
 
 ## New features

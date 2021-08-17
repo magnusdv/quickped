@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
 
-VERSION = "2.2.0"
+VERSION = "2.2.1"
 
 ui = fluidPage(
 
@@ -690,7 +690,7 @@ server = function(input, output, session) {
     ped = currentPedData()$ped
 
     txt = verbalisr::verbalise(ped, ids, verbose = FALSE)
-    relText(toupper(txt))
+    relText(txt)
   })
 
   observeEvent(input$coeffs, {
