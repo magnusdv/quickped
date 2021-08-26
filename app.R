@@ -287,7 +287,7 @@ server = function(input, output, session) {
     ped = tryCatch(
       expr = {
         df = read.table(file, header = TRUE, sep = "\t", colClasses = "character",
-                        check.names = FALSE)
+                        check.names = FALSE, encoding = "UTF-8")
         names(df) = nms = tolower(names(df))
         if(!all(cls %in% nms))
           stop("Column not found: ", toString(setdiff(cls, nms)))
