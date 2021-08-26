@@ -84,10 +84,13 @@ ui = fluidPage(
           wellPanel(style = "height:430px; width:210px",
             bigHeading("Modify"),
             midHeading("Add"),
-            pedButton("addparents", "Parents"),
             fluidRow(
               pedButton("addson", "Son", side = "left"),
               pedButton("adddaughter", "Daughter", side = "right"),
+            ),
+            fluidRow(
+              pedButton("addsibling", "Sibling", side = "left"),
+              pedButton("addparents", "Parents", side = "right"),
             ),
             midHeading("Remove"),
             fluidRow(
@@ -294,7 +297,7 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addChild(currData$ped, id, sex = 1),
-                      error = function(e) errModal(e))
+                      error = function(e) errModal(e, html = TRUE))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
@@ -302,7 +305,15 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addChild(currData$ped, id, sex = 2),
-                      error = function(e) errModal(e))
+                      error = function(e) errModal(e, html = TRUE))
+    updatePedData(currData, ped = newped, clearSel = FALSE)
+  })
+
+  observeEvent(input$addsibling, {
+    id = req(sel())
+    currData = currentPedData()
+    newped = tryCatch(addSib(currData$ped, id, sex = 1),
+                      error = function(e) errModal(e, html = TRUE))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 

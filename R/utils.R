@@ -74,6 +74,12 @@ updateTwins = function(twins, ids, code) {
 
 addChild = function(x, id, sex) {
 
+  id = sortIds(x, id)
+
+  if(length(id) > 2)
+    stop2("Too many individuals are selected. Current selection: ", id, "<br><br>",
+          "To add a child, please indicate one or both parents.")
+
   if(length(id) == 1) {
     if(sex == 1)
       return(addSon(x, id, verbose = FALSE))
@@ -85,19 +91,28 @@ addChild = function(x, id, sex) {
     sx = getSex(x, id)
     fa = id[sx == 1]
     mo = id[sx == 2]
-    if(length(fa) != 1 || length(mo) != 1) {
-      errModal("Incompatible sex of selected parents")
-      return()
-    }
+    if(length(fa) != 1 || length(mo) != 1)
+      stop2("Incompatible sex of selected parents")
+
     newped = addChildren(x, father = fa, mother = mo, nch = 1, sex = sex, verbose = FALSE)
     return(newped)
   }
+}
 
-  if(length(id) > 2) {
-    errModal("Please select either 1 or 2 individuals. Current selection: ", id)
-    return()
-  }
+addSib = function(x, id, sex) {
 
+  if(length(id) > 1)
+    stop2("Too many individuals are selected. Current selection: ", sortIds(x, id), "<br><br>",
+          "To add a sibling, please select exactly one individual.")
+
+  if(id %in% founders(x))
+    x = addParents(x, id, verbose = FALSE)
+
+  fa = father(x, id)
+  mo = mother(x, id)
+
+  newped = addChildren(x, father = fa, mother = mo, nch = 1, sex = sex, verbose = FALSE)
+  return(newped)
 }
 
 pdat2df = function(pdat) {
