@@ -1,0 +1,30 @@
+id	fid	mid	sex
+Philip I	0	0	1
+Joanna	0	0	2
+Charles V	Philip I	Joanna	1
+Isabella	0	0	2
+Ferdinand I	Philip I	Joanna	1
+Anna	0	0	2
+Christian II	0	0	1
+Isabella (2)	Philip I	Joanna	2
+Philip II	Charles V	Isabella	1
+Maria	Charles V	Isabella	2
+Maximillian II	Ferdinand I	Anna	1
+Charles II of A	Ferdinand I	Anna	1
+Albert V	0	0	1
+Anna (2)	Ferdinand I	Anna	2
+Francis I	0	0	1
+Christina	Christian II	Isabella (2)	2
+Anna (3)	Maximillian II	Maria	2
+Maria Anna	Albert V	Anna (2)	2
+William V	Albert V	Anna (2)	1
+Renata	Francis I	Christina	2
+Philip III	Philip II	Anna (3)	1
+Margarita	Charles II of A	Maria Anna	2
+Ferdinand II	Charles II of A	Maria Anna	1
+Maria Anna (2)	William V	Renata	2
+Philip IV	Philip III	Margarita	1
+Maria Anna (3)	Philip III	Margarita	2
+Ferdinand III	Ferdinand II	Maria Anna (2)	1
+Mariana	Ferdinand III	Maria Anna (3)	2
+Charles II	Philip IV	Mariana	1
