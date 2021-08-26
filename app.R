@@ -645,7 +645,7 @@ server = function(input, output, session) {
         df = cbind(df, aff = ifelse(labels(ped) %in% currData$aff, 2, 1))
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
-                  quote = FALSE, sep = "\t")
+                  quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
       dropup(df)
     }
   )
