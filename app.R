@@ -681,11 +681,11 @@ server = function(input, output, session) {
 # Relationships ------------------------------------------------
 
   observeEvent(input$describe, {
-    ids = req(sel())
     if(length(ids) != 2) {
       errModal("Please select exactly two individuals. Current selection: ", ids)
       return()
     }
+    ids = sortIds(ped, ids = sel())
 
     ped = currentPedData()$ped
 
@@ -694,9 +694,9 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$coeffs, {
-    ids = sort(req(sel()))
-    N = length(ids)
     ped = currentPedData()$ped
+    ids = sortIds(ped, ids = req(sel()))
+    N = length(ids)
 
     # Inbreeding
     inb = ribd::inbreeding(ped, ids)

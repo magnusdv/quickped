@@ -119,3 +119,8 @@ dropup = function(obj) {
   saveRDS(obj, tmppath)
   suppressMessages(drop_upload(tmppath, path = "quickped", mode = "add", verbose = FALSE, dtoken = token))
 }
+
+sortIds = function(x, ids) {
+  intern = internalID(x, ids)
+  ids[order(intern)]
+}
