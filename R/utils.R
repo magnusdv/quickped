@@ -1,5 +1,11 @@
 ### Helper functions for the QuickPed app
 
+stop2 = function (...) {
+  a = lapply(list(...), toString)
+  a = append(a, list(call. = FALSE))
+  do.call(stop, a)
+}
+
 bigHeading = function(x)
   h4(strong(x), .noWS = "before")
 
@@ -9,8 +15,10 @@ midHeading = function(x)
 bold = function(x) strong(x, .noWS = "outside")
 ital = function(x) em(x, .noWS = "outside")
 
-errModal = function(...) {
+errModal = function(..., html = FALSE) {
   mess = paste(lapply(list(...), toString), collapse = "")
+  if(html)
+    mess = HTML(mess)
   showModal(modalDialog(mess))
 }
 
