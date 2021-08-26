@@ -62,13 +62,7 @@ ui = fluidPage(
         column(width = 6,
           wellPanel(style = "height:430px; width:210px",
             bigHeading("Quick start"),
-            selectInput("startped", "Built-in pedigree", selected = "Trio",
-                        choices = c("", "Trio", "Sibship (2)", "Sibship (3)", "Half sibs (1+1)", "Half sibs (2+2)",
-                                    "Linear (2)", "Linear (3)", "First cousins", "Second cousins",
-                                    "Half first cousins", "Half second cousins", "Ancestral (2)", "Ancestral (3)",
-                                    "Double first cousins", "Quad half first cousins",
-                                    "Full sib stack (2)", "Full sib stack (3)", "Half sib stack (2)", "Half sib stack (3)"),
-            ),
+            selectInput("startped", "Built-in pedigree", selected = "Trio", choices = BUILTIN_CHOICES, width = "100%"),
             br(),
             fluidRow(
               column(5, hr(style = "border-top: 1px solid #000000;")),
@@ -248,35 +242,20 @@ server = function(input, output, session) {
 
   observeEvent(input$startped, {
     choice = req(input$startped)
+    if(choice == "Habsburg")
+      params = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2)
+    else
+      params = list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3)
 
-    ped = switch(choice,
-                 Trio = nuclearPed(),
-                 "Sibship (2)" = nuclearPed(2),
-                 "Sibship (3)" = nuclearPed(3),
-                 "Half sibs (1+1)" = halfSibPed(),
-                 "Half sibs (2+2)" = halfSibPed(2, 2),
-                 "Linear (2)" = linearPed(2),
-                 "Linear (3)" = linearPed(3),
-                 "Ancestral (2)" = ancestralPed(2),
-                 "Ancestral (3)" = ancestralPed(3),
-                 "First cousins" = cousinPed(1),
-                 "Second cousins" = cousinPed(2),
-                 "Half first cousins" = halfCousinPed(1),
-                 "Half second cousins" = halfCousinPed(2),
-                 "Double first cousins" = doubleFirstCousins(),
-                 "Quad half first cousins" = quadHalfFirstCousins(),
-                 "Full sib stack (2)" = fullSibMating(1),
-                 "Full sib stack (3)" = fullSibMating(2),
-                 "Half sib stack (2)" = halfSibStack(2),
-                 "Half sib stack (3)" = halfSibStack(3),
-                 errModal("Sorry, this pedigree is not implemented yet.")
-    )
+    updateSliderInput(session, "width", value = params$width)
+    updateSliderInput(session, "height", value = params$height)
+    updateSliderInput(session, "cex", value = params$cex)
+    updateSliderInput(session, "symbolsize", value = params$symbolsize)
+    updateSliderInput(session, "mar", value = params$mar)
 
-    currData = currentPedData()
-
-    updatePedData(currData, ped = req(ped), aff = character(0), carrier = character(0), deceased = character(0),
-                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
-                  clearInput = FALSE)
+    ped = req(BUILTIN_PEDS[[choice]])
+    updatePedData(currentPedData(), ped = ped, aff = character(0), carrier = character(0), deceased = character(0),
+                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), clearInput = FALSE)
   })
 
 
@@ -303,9 +282,7 @@ server = function(input, output, session) {
     # Affected
     aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
 
-    currData = currentPedData()
-
-    updatePedData(currData, ped = req(ped), aff = aff, carrier = character(0), deceased = character(0),
+    updatePedData(currentPedData(), ped = ped, aff = aff, carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
