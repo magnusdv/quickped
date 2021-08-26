@@ -681,15 +681,16 @@ server = function(input, output, session) {
 # Relationships ------------------------------------------------
 
   observeEvent(input$describe, {
-    if(length(ids) != 2) {
-      errModal("Please select exactly two individuals. Current selection: ", ids)
-      return()
-    }
+    ped = req(currentPedData()$ped)
     ids = sortIds(ped, ids = sel())
+    N = length(ids)
 
-    ped = currentPedData()$ped
+    if(N == 2)
+      txt = verbalisr::verbalise(ped, ids, verbose = FALSE)
+    else
+      txt = c("This requires exactly 2 individuals to be selected.", "",
+              sprintf("(Currently %d individual%s %s selected.)", N, ifelse(N==1, "", "s"), ifelse(N==1, "is", "are")))
 
-    txt = verbalisr::verbalise(ped, ids, verbose = FALSE)
     relText(txt)
   })
 
