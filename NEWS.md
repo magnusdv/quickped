@@ -1,8 +1,22 @@
+# QuickPed 2.3.0
+
+## New features
+
+* New button "Sibling" which adds a brother to any pedigree member. If the selected member is a founder, parents are also created.
+
+* The list of builtin pedigrees has been revised and better structured. 
+
+* The royal (and famously inbred) Habsburg family has been added as a builtin pedigree.
+
+* Ped files are now loaded with `encoding = "UTF-8"`, enabling proper parsing of special characters.
+
+
 # QuickPed 2.2.1
 
 ## New features
 
 * The relationship descriptions are better and more comprehensive, using the new version of **verbalisr** (v0.2.0).
+
 
 # QuickPed 2.2.0
 

@@ -1,3 +1,6 @@
+suppressPackageStartupMessages(
+  library(pedtools)
+)
 
 relab = function(x)
   relabel(x, "asPlot")

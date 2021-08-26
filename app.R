@@ -7,10 +7,10 @@ suppressPackageStartupMessages({
   library(rdrop2)
 })
 
-Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
+# Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
 
-VERSION = "2.2.1"
+VERSION = "2.3.0"
 
 ui = fluidPage(
 
@@ -314,7 +314,7 @@ server = function(input, output, session) {
     currData = currentPedData()
     newped = tryCatch(addSib(currData$ped, id, sex = 1),
                       error = function(e) errModal(e, html = TRUE))
-    updatePedData(currData, ped = newped, clearSel = FALSE)
+    updatePedData(currData, ped = newped, clearSel = TRUE)
   })
 
   observeEvent(input$addparents, {
@@ -337,7 +337,7 @@ server = function(input, output, session) {
     currData = currentPedData()
     aff = currData$aff
     newAff = setdiff(union(aff, id), intersect(aff, id))
-    updatePedData(currData, aff = newAff, clearRel = FALSE)
+    updatePedData(currData, aff = newAff, clearSel = length(id) > 1, clearRel = FALSE)
 
     # Update checkbox "Include affection status"
     inc = input$include
