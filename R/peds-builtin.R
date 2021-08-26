@@ -36,6 +36,7 @@ BUILTIN_PEDS = list(
   #Habsburg = readPed("habsburg.ped"),
 
 BUILTIN_CHOICES = list(
+  Choose = "",
   `Basic pedigrees` = list(
     "Trio",
     "Full siblings",
