@@ -39,3 +39,8 @@ updateLabelsData = function(currData, old, new, reorder = FALSE) {
        deceased = new[match(currData$deceased, old)],
        twins = newtw)
 }
+
+breakLabs = function(x, breakAt = "  ") {
+  labs = labels(x)
+  names(labs) = sub(breakAt, "\n", labs)
+  labs
