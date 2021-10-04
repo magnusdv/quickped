@@ -1,4 +1,33 @@
 
+# Main pedigree plot function
+plotPed = function(pedData, plotargs, selected = NULL, addBox = FALSE) {
+  dat = tryCatch(
+    plot(pedData$ped,
+         aff        = pedData$aff,
+         carrier    = pedData$carrier,
+         deceased   = pedData$deceased,
+         twins      = pedData$twins,
+         labs       = breakLabs,
+         col        = list(red = selected),
+         cex        = plotargs$cex,
+         symbolsize = plotargs$symbolsize,
+         margins    = plotargs$mar),
+    error = function(e) {
+      msg = conditionMessage(e)
+      if(grepl("reduce cex", msg))
+        msg = "Plot region is too small"
+      stop(msg)
+    }
+  )
+
+  if(addBox)
+    box("outer", col = 1)
+
+  # Return plot object for storage
+  dat
+}
+
+
 # Current plot labels in the order plotted
 getPlotOrder = function(ped, plist, perGeneration = FALSE) {
 
@@ -44,3 +73,4 @@ breakLabs = function(x, breakAt = "  ") {
   labs = labels(x)
   names(labs) = sub(breakAt, "\n", labs)
   labs
+}

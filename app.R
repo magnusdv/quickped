@@ -560,30 +560,24 @@ server = function(input, output, session) {
     list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar)
   })
 
-  output$plot = renderPlot({
-    currData = currentPedData()
-    ped = currData$ped
-    args = plotArgs()
-    selected = sel()
+  output$plot = renderPlot(
+    execOnResize = TRUE,
+    width = function() input$width,
+    height = function() input$height,
+    res = 72, # default; seems ok in practice
+    {
+      dat = tryCatch(
+        plotPed(pedData = currentPedData(),
+                plotargs = plotArgs(),
+                selected = sel(),
+                addBox = TRUE),
+        error = function(e) errModal(conditionMessage(e))
+      )
 
-    dat = tryCatch(
-      plot(ped, aff = currData$aff, carrier = currData$carrier,
-           deceased = currData$deceased, twins = currData$twins,
-           col = list(red = selected), cex = args$cex,
-           symbolsize = args$symbolsize, margins = args$mar),
-      error = function(e) {
-        msg = conditionMessage(e)
-        if(grepl("reduce cex", msg))
-          msg = "Plot region is too small"
-        errModal(msg)
-        return()
-      })
-
-    box("outer", col = 1)
-
-    if(!is.null(dat))
+      req(dat)
       pdat(dat)
-  }, execOnResize = TRUE, width = function() input$width, height = function() input$height)
+    }
+  )
 
 
   observeEvent(input$ped_click, {
@@ -646,21 +640,19 @@ server = function(input, output, session) {
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
                   quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
-      dropup(df)
+      tryCatch(dropup(df), error = function(e) print(e))
     }
   )
 
   output$savePlot = downloadHandler(
     filename = "quickped.png",
     content = function(con) {
-      currData = currentPedData()
-      args = plotArgs()
       png(con, width = input$width, height = input$height)
-      plot(currData$ped, aff = currData$aff, carrier = currData$carrier,
-           deceased = currData$deceased, twins = currData$twins,
-           cex = args$cex, symbolsize = args$symbolsize, margins = args$mar)
+      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
       dev.off()
-      dropup(list(currendPedData = currData, plotArgs = args))
+
+      dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
+      tryCatch(dropup(dropDat), error = function(e) print(e))
     },
     contentType = "image/png"
   )
