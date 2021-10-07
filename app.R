@@ -321,7 +321,7 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
-             error = function(e) errModal(e))
+                      error = function(e) errModal(e))
     updatePedData(currData, ped = newped)
   })
 
@@ -329,6 +329,17 @@ server = function(input, output, session) {
     currData = currentPedData()
     id = sel()
     newped = swapSex(currData$ped, id, verbose = FALSE)
+
+    # Catch discordant swaps for MZ twins
+    tw = currData$twins
+    mz = tw[tw$code == 1, , drop = FALSE]
+    sx1 = getSex(newped, mz$id1)
+    sx2 = getSex(newped, mz$id2)
+    if(any(sx1 != sx2)) {
+      errModal("MZ twins must have the same sex")
+      return()
+    }
+
     updatePedData(currData, ped = newped, clearSel = length(id) > 1)
   })
 
