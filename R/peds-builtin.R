@@ -35,10 +35,10 @@ BUILTIN_PEDS = list(
   "Double 2nd cousins" = swpSx(doubleCousins(degree1 = 2, degree2 = 2), 18),
   "Quad half 1st cousins" = quadHalfFirstCousins(),
 
-  Habsburg = as.ped(read.table("data/habsburg.ped", header = TRUE, sep = "\t", colClasses = "character", check.names = F, quote = NULL))
+  "Habsburg" = readPed2("data/habsburg.ped"),
+  "Tutankhamun" = readPed2("data/tutankhamun.ped")
 )
 
-  #Habsburg = readPed("habsburg.ped"),
 
 BUILTIN_CHOICES = list(
   Choose = "",
@@ -65,9 +65,8 @@ BUILTIN_CHOICES = list(
     "Quad half 1st cousins"
   ),
   Historic = list(
-    "Habsburg"
+    "Habsburg",
+    "Tutankhamun"
   )
 )
-
-#setdiff(unlist(BUILTIN_CHOICES), names(BUILTIN_PEDS))
 

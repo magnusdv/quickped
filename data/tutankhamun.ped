@@ -1,0 +1,8 @@
+id	fid	mid	sex
+Thuya	0	0	2
+Yuya	0	0	1
+Tiye (EL)	Yuya	Thuya	2
+Amenhotep III	0	0	1
+Akhenaten	Amenhotep III	Tiye (EL)	1
+YL	Amenhotep III	Tiye (EL)	2
+Tutankhamun	Akhenaten	YL	1
