@@ -8,6 +8,11 @@ relab = function(x)
 swpSx = function(x, ids)
   relab(swapSex(x, ids, verbose = FALSE))
 
+# Alternative version of pedtools::readPed()
+readPed2 = function(pedfile, sep = "\t", ...) {
+  df = read.table(pedfile, sep = sep,  header = TRUE, colClasses = "character", check.names = FALSE, quote = NULL)
+  as.ped(df)
+}
 
 BUILTIN_PEDS = list(
   "Trio" = nuclearPed(1),
