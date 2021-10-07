@@ -10,6 +10,10 @@
 
 * Catch (more gracefully than before) discordant MZ twins when changing sex.
 
+## Other changes
+
+* The plotting code has been refactored, but this should not have visible effect.
+
 
 # QuickPed 2.3.0
 
