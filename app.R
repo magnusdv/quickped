@@ -247,6 +247,8 @@ server = function(input, output, session) {
     choice = req(input$startped)
     if(choice == "Habsburg")
       params = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2)
+    else if(choice %in% c("Double 2nd cousins", "Tutankhamun"))
+      params = list(width = 430, height = 430, cex = 1.4, symbolsize = 1, mar = 3)
     else
       params = list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3)
 
