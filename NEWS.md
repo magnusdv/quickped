@@ -1,3 +1,16 @@
+# QuickPed 2.4.0
+
+## New features
+
+* New builtin historic pedigree: The family tree of Tutankhamun.
+
+* Experimental feature: To insert a line break in a labels, use a double space.
+
+## Bug fixes
+
+* Catch (more gracefully than before) discordant MZ twins when changing sex.
+
+
 # QuickPed 2.3.0
 
 ## New features
