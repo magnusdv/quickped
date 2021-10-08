@@ -1,3 +1,11 @@
+# QuickPed 2.4.1
+
+## New features
+
+* Added two historic pedigrees: Queen Victoria (haemophilia) and the Jicaque pedigree.
+
+* More information about the built-in pedigrees are added in the user manual at https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html
+
 # QuickPed 2.4.0
 
 ## New features
