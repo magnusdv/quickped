@@ -2,17 +2,32 @@ suppressPackageStartupMessages(
   library(pedtools)
 )
 
+# Alternative version of pedtools::readPed()
+readPed2 = function(pedfile) {
+  cls = c("id", "fid", "mid", "sex")
+
+  df = read.table(pedfile, sep = "\t", header = TRUE, colClasses = "character",
+                  check.names = FALSE, quote = "\"", encoding = "UTF-8")
+  names(df) = nms = tolower(names(df))
+  if(!all(cls %in% nms))
+    stop("Column not found: ", toString(setdiff(cls, nms)))
+
+  # Convert to ped object
+  ped = as.ped(df[cls])
+
+  # Affected column, if present
+  aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
+
+  list(ped = ped, aff = aff)
+}
+
+
 relab = function(x)
   relabel(x, "asPlot")
 
 swpSx = function(x, ids)
   relab(swapSex(x, ids, verbose = FALSE))
 
-# Alternative version of pedtools::readPed()
-readPed2 = function(pedfile, sep = "\t", ...) {
-  df = read.table(pedfile, sep = sep,  header = TRUE, colClasses = "character", check.names = FALSE, quote = NULL)
-  as.ped(df)
-}
 
 BUILTIN_PEDS = list(
   "Trio" = nuclearPed(1),
@@ -37,8 +52,13 @@ BUILTIN_PEDS = list(
 
   "Habsburg" = readPed2("data/habsburg.ped"),
   "Jicaque" = readPed2("data/jicaque.ped"),
+  "Queen Victoria (haemophilia)" = readPed2("data/haemophilia.ped"),
   "Tutankhamun" = readPed2("data/tutankhamun.ped")
 )
+
+# Add carriers of Queen Vic pedigree (all females with non-numerical label)
+qv = BUILTIN_PEDS[["Queen Victoria (haemophilia)"]]$ped
+BUILTIN_PEDS[["Queen Victoria (haemophilia)"]]$carrier = intersect(females(qv), setdiff(labels(qv), 1:50))
 
 # Plotting parameters for builtin pedigrees
 paramsBuiltin = function(choice) {
@@ -83,6 +103,7 @@ BUILTIN_CHOICES = list(
   Historic = list(
     "Habsburg",
     "Jicaque",
+    "Queen Victoria (haemophilia)",
     "Tutankhamun"
   )
 )
