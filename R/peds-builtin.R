@@ -40,6 +40,21 @@ BUILTIN_PEDS = list(
   "Tutankhamun" = readPed2("data/tutankhamun.ped")
 )
 
+# Plotting parameters for builtin pedigrees
+paramsBuiltin = function(choice) {
+  switch(choice,
+         Habsburg             = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2),
+         Jicaque              = list(width = 655, height = 655, cex = 1.5, symbolsize = 1, mar = 2),
+         `Queen Victoria (haemophilia)`
+                              = list(width = 850, height = 430, cex = 0.9, symbolsize = 1.2, mar = 1.5),
+         `Quad half 1st cousins`
+                              = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4.5),
+         `Double 2nd cousins` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
+         Tutankhamun          = list(width = 430, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4),
+         list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3) # default
+  )
+}
+
 
 BUILTIN_CHOICES = list(
   Choose = "",

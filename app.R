@@ -245,12 +245,7 @@ server = function(input, output, session) {
 
   observeEvent(input$startped, {
     choice = req(input$startped)
-    if(choice %in% c("Habsburg", "Jicaque"))
-      params = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2)
-    else if(choice %in% c("Double 2nd cousins", "Tutankhamun"))
-      params = list(width = 430, height = 430, cex = 1.4, symbolsize = 1, mar = 3)
-    else
-      params = list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3)
+    params = paramsBuiltin(choice)
 
     updateSliderInput(session, "width", value = params$width)
     updateSliderInput(session, "height", value = params$height)
@@ -258,36 +253,26 @@ server = function(input, output, session) {
     updateSliderInput(session, "symbolsize", value = params$symbolsize)
     updateSliderInput(session, "mar", value = params$mar)
 
-    ped = req(BUILTIN_PEDS[[choice]])
-    updatePedData(currentPedData(), ped = ped, aff = character(0), carrier = character(0), deceased = character(0),
-                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)), clearInput = FALSE)
+    pedDat = req(BUILTIN_PEDS[[choice]])
+    if(is.ped(pedDat))
+      pedDat = list(ped = pedDat)
+
+    defaultArgs = list(currData = currentPedData(), aff = character(0), carrier = character(0),
+                twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
+                deceased = character(0), clearInput = FALSE)
+    args = modifyList(defaultArgs, pedDat)
+    do.call(updatePedData, args)
   })
 
 
   observeEvent(input$loadped, {
     file = req(input$loadped$datapath)
-    cls = c("id", "fid", "mid", "sex")
-
-    ped = tryCatch(
-      expr = {
-        df = read.table(file, header = TRUE, sep = "\t", colClasses = "character",
-                        check.names = FALSE, encoding = "UTF-8")
-        names(df) = nms = tolower(names(df))
-        if(!all(cls %in% nms))
-          stop("Column not found: ", toString(setdiff(cls, nms)))
-
-        as.ped(df[cls])
-      },
+    y = tryCatch(readPed2(file),
       error = function(e) errModal(conditionMessage(e)),
       warning = function(e) errModal(conditionMessage(e))
     )
 
-    req(ped)
-
-    # Affected
-    aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
-
-    updatePedData(currentPedData(), ped = ped, aff = aff, carrier = character(0), deceased = character(0),
+    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff, carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
