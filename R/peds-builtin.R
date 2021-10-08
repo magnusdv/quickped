@@ -36,6 +36,7 @@ BUILTIN_PEDS = list(
   "Quad half 1st cousins" = quadHalfFirstCousins(),
 
   "Habsburg" = readPed2("data/habsburg.ped"),
+  "Jicaque" = readPed2("data/jicaque.ped"),
   "Tutankhamun" = readPed2("data/tutankhamun.ped")
 )
 
@@ -66,6 +67,7 @@ BUILTIN_CHOICES = list(
   ),
   Historic = list(
     "Habsburg",
+    "Jicaque",
     "Tutankhamun"
   )
 )

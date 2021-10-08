@@ -245,7 +245,7 @@ server = function(input, output, session) {
 
   observeEvent(input$startped, {
     choice = req(input$startped)
-    if(choice == "Habsburg")
+    if(choice %in% c("Habsburg", "Jicaque"))
       params = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2)
     else if(choice %in% c("Double 2nd cousins", "Tutankhamun"))
       params = list(width = 430, height = 430, cex = 1.4, symbolsize = 1, mar = 3)
