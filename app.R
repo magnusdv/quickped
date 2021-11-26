@@ -663,11 +663,14 @@ server = function(input, output, session) {
     ids = sortIds(ped, ids = sel())
     N = length(ids)
 
-    if(N == 2)
-      txt = verbalisr::verbalise(ped, ids, verbose = FALSE)
-    else
+    if(N == 2) {
+      paths = verbalisr::verbalise(ped, ids, verbose = FALSE)
+      txt = format(paths)
+    }
+    else {
       txt = c("This requires exactly 2 individuals to be selected.", "",
               sprintf("(Currently %d individual%s %s selected.)", N, ifelse(N==1, "", "s"), ifelse(N==1, "is", "are")))
+    }
 
     relText(txt)
   })
