@@ -4,6 +4,10 @@
 
 * Fixed a bug in **verbalisr**, which in certain (rare) cases caused some paths to be skipped.
 
+## Other changes
+
+* Tweak title and introduction
+* Correct typos
 
 # QuickPed 2.4.1
 
