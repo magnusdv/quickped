@@ -3,42 +3,100 @@
 
 # QuickPed
 
-<!-- badges: start -->
-<!-- badges: end -->
+<div class="greeting message" style="color: red;">
 
-To use QuickPed, visit <https://magnusdv.shinyapps.io/quickped>.
+***Try QuickPed here***: <https://magnusdv.shinyapps.io/quickped>.
+
+</div>
 
 ## What is QuickPed?
 
-QuickPed is a web application for creating and plotting pedigrees on the
-fly. Once the pedigree is created it may be saved as an image, or as a
-text file in *ped format* (see below). You may also obtain various
-information about the pedigree, including coefficients of inbreeding,
-kinship and identity-by-descent.
+QuickPed is an interactive web application for drawing and analysing
+pedigrees. A created pedigree may be saved as an image or as a text file
+in *ped format* (see [below](#ped-files)). You may also obtain various
+information about the pedigree, including relatedness coefficients and
+verbal descriptions of relationships.
 
-QuickPed is powered by the
-[pedtools](https://github.com/magnusdv/pedtools) package and imports
-[kinship2](https://CRAN.R-project.org/package=kinship2) for plotting.
+QuickPed is powered by the [ped
+suite](https://magnusdv.github.io/pedsuite/) and
+[kinship2](https://CRAN.R-project.org/package=kinship2) for pedigree
+plotting. The web app was built with Shiny.
 
-## Pairwise relationships
+## Getting started
 
-The *Relationships* feature of QuickPed provides information about
-pairwise relationships within the current pedigree. After selecting any
-two pedigree members, the user may click either `Coeffs` or `Describe`:
+Creating pedigrees with QuickPed is very intuitive: Select a suitable
+start pedigree and modify it as needed. You may also load an existing
+ped file (see below). Modifications are done by clicking on one or
+several individuals and then applying appropriate buttons, for instance
+to add children, siblings or parents. At any time you may change
+attributes like sex, affection status, twin status and ID labels.
 
--   `Coeffs`: This prints a variety of pedigree coefficients describing
-    the relationship:
+## Tips and tricks
+
+-   **Selecting individuals**. Select/deselect pedigree members by
+    clicking on them. Selected individuals are shown in red colour. Pro
+    tip: To deselect everyone, click the “Selection” button under the
+    “Remove” heading.
+-   **Labels**: Automatic labelling of the pedigree members are
+    available in two different formats. The button marked `1,2,..`
+    applies numeric labels to all individuals, in the order of their
+    appearance in the pedigree plot. Alternatively, the `I-1, I-2,..`
+    button numbers the members generation-wise, using roman numerals to
+    indicate the generation number.
+-   **Unknown sex**. If you double click on a pedigree member, its
+    symbol will change into a diamond representing unknown sex. Double
+    click again to revert. Note: Only pedigree *leaves* (members without
+    children) may have unknown sex.
+-   **Plot settings**. If the pedigree gets too large, increase the plot
+    region using the control panel on the far right. Here you may also
+    adjust the margins, the size of pedigree symbols and text labels.
+
+## Built-in pedigrees
+
+In the left-most panel of QuickPed the user may choose among a selection
+of standard pedigrees, including trios, full/half siblings, avuncular
+and cousin pedigrees of different kinds. Also included are several
+interesting (albeit less common) pedigree structures like double cousins
+and quad half first cousins. Finally, the following *historic pedigrees*
+are available:
+
+-   `Habsburg`: A subset of the infamously inbred family tree of the
+    Habsburg royalties. The inbreeding coefficient of King Charles II of
+    Spain (1661-1700) was approximately 0.25, i.e., equivalent to that
+    of a child produced by full siblings. Pedigree adapted from
+    [Wikipedia](https://en.wikipedia.org/wiki/Habsburg_family_tree). See
+    also [The Role of Inbreeding in the Extinction of a European Royal
+    Dynasty](https://doi.org/10.1371/journal.pone.0005174).
+-   `Jicaque`: A pedigree of Jicaque Indians originally studied by
+    Chapman & Jacquard (1971) and subsequently used in many papers on
+    relatedness and pedigree coefficients.
+-   `Queen Victoria (haemophilia)`: The royal family tree descending
+    from Queen Victoria, showing the X-linked inheritance of
+    *haemophilia*. Adapted from Figure S1 of [Genotype Analysis
+    Identifies the Cause of the “Royal
+    Disease”](https://doi.org/10.1126/science.1180660).
+-   `Tutankhamun`: The family tree of the Egyptian pharao Tutankhamun,
+    as inferred from genetic evidence presented by Hawass et al. (2010),
+    [Ancestry and Pathology in King Tutankhamun’s
+    Family](https://doi.org/10.1001/jama.2010.121).
+
+## Relationship information
+
+The buttons `Coeffs` and `Describe` can be used to analyse the
+relatedness between selected individuals in the current pedigree.
+
+-   `Coeffs`: This prints a variety of pedigree coefficients.
 
     -   The inbreeding coefficient of each individual (this works for
         any number of selected members).
     -   The kinship coefficient *φ*.
     -   The IBD coefficients
-        *κ* = (*κ*<sub>0</sub>, *κ*<sub>1</sub>, *κ*<sub>2</sub>),
-        defined as the probabilities of sharing 0, 1, and 2 alleles
-        identical by descent (IBD). These are well-defined only if both
-        individuals are non-inbred.
+        *κ* = (*κ*<sub>0</sub>,*κ*<sub>1</sub>,*κ*<sub>2</sub>), defined
+        as the probabilities of sharing 0, 1, and 2 alleles identical by
+        descent (IBD). These are well-defined only if both individuals
+        are non-inbred.
     -   The 9 condensed identity coefficients of Jacquard,
-        *Δ* = (*Δ*<sub>1</sub>, ..., *Δ*<sub>9</sub>).
+        *Δ* = (*Δ*<sub>1</sub>,...,*Δ*<sub>9</sub>).
 
     More information about these coefficients can be found in the
     documentation of the [ribd](https://github.com/magnusdv/ribd)
@@ -46,9 +104,8 @@ two pedigree members, the user may click either `Coeffs` or `Describe`:
 
 -   `Describe`: This prints a verbal description of the relationship,
     generated by [verbalisr](https://github.com/magnusdv/verbalisr).
-    (NB: This is still work in progress.)
 
-## What is *ped format*?
+## Ped files
 
 A useful feature of QuickPed is to produce text files describing
 pedigrees in so-called *ped format*. Such files are often required by
