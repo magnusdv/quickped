@@ -2,11 +2,7 @@
 
 ## Bug fix
 
-* Fixed a bug in **verbalisr**, which in certain complex cases caused some paths to be skipped.
-
-## Other changes
-
-* Tweaked the title and intruduction text.
+* Fixed a bug in **verbalisr**, which in certain (rare) cases caused some paths to be skipped.
 
 
 # QuickPed 2.4.1

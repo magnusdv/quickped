@@ -34,7 +34,7 @@ ui = fluidPage(
 
 
   # Application title
-  h2(id = "title-h2", "QuickPed: An interactive app for creating and analysing pedigrees"),
+  h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
   p(bold("Purpose: "),
