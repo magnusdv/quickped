@@ -34,12 +34,12 @@ ui = fluidPage(
 
 
   # Application title
-  h2(id = "title-h2", "QuickPed: An Interactive Pedigree Maker"),
+  h2(id = "title-h2", "QuickPed: An interactive app for creating and analysing pedigrees"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
   p(bold("Purpose: "),
-    "This tool provides a quick way to create pedigree plots,
-    and for producing ", ital("ped files"), " describing pedigrees in text format."),
+    "This tool provides a quick way to create pedigree plots and files,
+    and for analysing the relatedness between pedigree members."),
 
   p(bold("Instructions: "),
     "Choose a suitable start pedigree and modify it by selecting members (by clicking on them in the plot) and using appropriate buttons.
