@@ -1,3 +1,15 @@
+# QuickPed 2.5.0
+
+## New features
+
+* The function loading ped-files is more liberal and better at guessing the input format. In particular, it should now handle files with/without headers, with/without family ID in first column, and with/without affection status column.
+
+* Two new buttons, "PNG" and "PDF", for saving the pedigree plot. These replace the previous "Save plot" button (which only gave png).
+
+## Other changes
+
+* The label fields are slightly smaller (reducing their height from 28px to 24px), to ease the handling of bigger pedigrees.
+
 # QuickPed 2.4.2
 
 ## Bug fix
