@@ -4,19 +4,61 @@ suppressPackageStartupMessages(
 
 # Alternative version of pedtools::readPed()
 readPed2 = function(pedfile) {
-  cls = c("id", "fid", "mid", "sex")
 
-  df = read.table(pedfile, sep = "\t", header = TRUE, colClasses = "character",
+  # Read first line
+  line1 = readLines(pedfile, n = 1L, encoding = "UTF-8")
+
+  # Determine separator
+  if(grepl("\t", line1))
+    sep = "\t"
+  else
+    sep = "" # whitespace
+
+  # Is the first line a header line?
+  header = grepl("id", line1, ignore.case = TRUE) && grepl("sex", line1, ignore.case = TRUE)
+
+  # Read table
+  df = read.table(pedfile, sep = sep, header = header, colClasses = "character",
                   check.names = FALSE, quote = "\"", encoding = "UTF-8")
-  names(df) = nms = tolower(names(df))
-  if(!all(cls %in% nms))
-    stop("Column not found: ", toString(setdiff(cls, nms)))
+
+  # At least 3 rows?
+  if(nrow(df) < 3)
+    stop("Only ", nrow(df), " rows found in the pedigree file; expected at least 3.")
+
+  # Remove first column if family ID
+  fstname = tolower(names(df)[1])
+  hasFamid = fstname %in% c("fid", "famid") || identical(df[1,1], df[2,1])
+  if(hasFamid) {
+    if(length(unique.default(df[[1]])) > 1)
+      stop("The loaded pedigree has multiple components. Only connected pedigrees are allowed.")
+    df[[1]] = NULL
+  }
+
+  # Now check columns
+  NC = ncol(df)
+  if(NC < 3)
+    stop("Only ", ncol(df), " columns found in the pedigree file; expected at least 4 (id, fid, mid, sex).",
+         "\n\nColumn separator guessed: ", if(sep == "\t") "tab" else "<whitespace>")
+
+  # If 5th column present, interpret as affection status
+  if(NC >= 5) {
+    hasAff = TRUE
+    affcodes = df[[5]]
+    df = df[, 1:4]
+  }
+  else
+    hasAff = FALSE
+
+  names(df) = c("id", "fid", "mid", if(NC > 3) "sex")
 
   # Convert to ped object
-  ped = as.ped(df[cls])
+  ped = as.ped(df)
 
-  # Affected column, if present
-  aff = if("aff" %in% nms) ped$ID[df$aff == 2] else character(0)
+  if(!is.ped(ped))
+    stop("The loaded pedigree has multiple components. Only connected pedigrees are allowed.")
+
+  # Affected individuals
+  aff = if(hasAff) ped$ID[affcodes == 2] else character(0)
 
   list(ped = ped, aff = aff)
 }
