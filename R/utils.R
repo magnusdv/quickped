@@ -148,3 +148,9 @@ sortIds = function(x, ids) {
   ids[order(intern)]
 }
 
+# In savePlot:
+#dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
+#tryCatch(dropup(dropDat), error = function(e) print(e))
+
+# In savePed:
+# tryCatch(dropup(df), error = function(e) print(e))

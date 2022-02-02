@@ -4,7 +4,6 @@ suppressPackageStartupMessages({
   library(pedtools)
   library(ribd)
   library(verbalisr)
-  library(rdrop2)
 })
 
 # Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
@@ -645,7 +644,6 @@ server = function(input, output, session) {
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
                   quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
-      tryCatch(dropup(df), error = function(e) print(e))
     }
   )
 
@@ -655,9 +653,6 @@ server = function(input, output, session) {
       png(con, width = input$width, height = input$height)
       plotPed(currentPedData(), plotArgs(), addBox = FALSE)
       dev.off()
-
-      #dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
-      #tryCatch(dropup(dropDat), error = function(e) print(e))
     },
     contentType = "image/png"
   )
