@@ -25,7 +25,7 @@ errModal = function(..., html = FALSE) {
 
 textInput2 = function(inputId, value) {
   w  = textInput(inputId, label = NULL, value = value, width = "100%")
-  w$children[[2]]$attribs[["style"]] = "padding-top, padding-bottom: 1px; height: 28px;"
+  w$children[[2]]$attribs[["style"]] = "padding-top: 1px; padding-bottom: 1px; height: 24px;"
   w
 }
 
