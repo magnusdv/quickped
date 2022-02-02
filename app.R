@@ -165,7 +165,14 @@ ui = fluidPage(
                      sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
                      sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
                      br(),
-                     downloadButton("savePlot", "Save plot", class = "btn btn-info", style = "width: 100%;")
+                     fluidRow(
+                       column(width = 6, align = "left", style = "padding-right:5px;",
+                              downloadButton("savePlotPng", "PNG", class = "btn btn-info", style = "padding-left:8px;width: 100%;"),
+                       ),
+                       column(width = 6, align = "right", style = "padding-left:5px;",
+                              downloadButton("savePlotPdf", "PDF", class = "btn btn-info", style = "padding-left:8px;width: 100%;"),
+                       )
+                     )
            ),
 
            # Save ped file
@@ -642,19 +649,28 @@ server = function(input, output, session) {
     }
   )
 
-  output$savePlot = downloadHandler(
+  output$savePlotPng = downloadHandler(
     filename = "quickped.png",
     content = function(con) {
       png(con, width = input$width, height = input$height)
       plotPed(currentPedData(), plotArgs(), addBox = FALSE)
       dev.off()
 
-      dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
-      tryCatch(dropup(dropDat), error = function(e) print(e))
+      #dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
+      #tryCatch(dropup(dropDat), error = function(e) print(e))
     },
     contentType = "image/png"
   )
 
+  output$savePlotPdf = downloadHandler(
+    filename = "quickped.pdf",
+    content = function(file) {
+      pdf(file, width = input$width/72, height = input$height/72)
+      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
+      dev.off()
+    },
+    contentType = "application/pdf"
+  )
 
 # Relationships ------------------------------------------------
 
@@ -664,7 +680,7 @@ server = function(input, output, session) {
     N = length(ids)
 
     if(N == 2) {
-      paths = verbalisr::verbalise(ped, ids, verbose = FALSE)
+      paths = verbalisr::verbalise(ped, ids)
       txt = format(paths)
     }
     else {
