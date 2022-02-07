@@ -119,14 +119,17 @@ ui = fluidPage(
       # Relationship descriptions
       wellPanel(style = "height:210px; width:435px",
         fluidRow(
-          column(width = 6, bigHeading("Relationships")),
+          column(width = 4, bigHeading("Relationship")),
+          column(width = 3, actionButton("describe", "Describe", class = "btn btn-success",
+                                         style = "width:80px;")),
           column(width = 3, actionButton("coeffs", "Coeffs", class = "btn btn-success",
                                          style = "width:80px")),
-          column(width = 3, actionButton("describe", "Describe", class = "btn btn-success",
-                                         style = "width:80px; float:right")),
+          column(width = 2, actionButton("coeffTable", icon("download"), class = "btn btn-success",
+                                         style = "float:right")),
+
         ),
         verbatimTextOutput("description", placeholder = TRUE),
-        tags$head(tags$style("#description{height:145px;}"))
+        tags$head(tags$style("#description{height:145px;padding-bottom:2px;}"))
       )
     ),
 
@@ -669,37 +672,101 @@ server = function(input, output, session) {
 
 # Relationships ------------------------------------------------
 
+  dlg = modalDialog(
+    h3(id = "title-h3", "Download table of pairwise coefficients"),
+    tags$style(HTML("#title-h3 {background-color: gray; color: white; padding: 15px}")),
+    textInput("coeffIds", label = "Individuals:", value = "", width = "100%"),
+    br(),
+    checkboxGroupInput("coeffSelect", "Coefficients:",
+                       c("Inbreeding" = "f", "Kinship" = "phi",
+                         "Degree" = "deg", "IBD (kappa)" = "kappa",
+                         "Identity (Delta)" = "Delta"),
+                       selected  = c("f", "phi", "deg", "kappa")),
+    easyClose = TRUE,
+    footer = tagList(
+      modalButton("Cancel"),
+      downloadButton("saveCoeffTable", "Download", class = "btn btn-success")
+    )
+  )
+
+  observeEvent(input$coeffTable, {
+    ped = currentPedData()$ped
+    ids = sel()
+    if(!length(ids))
+      ids = labels(ped)
+    updateTextInput(session, "coeffIds", value = toString(sortIds(ped, ids)))
+    tryCatch(showModal(dlg), error = function(e) errModal(conditionMessage(e)))
+  })
+
+
+
+  # Action when clicking "Download" in the modal dialog
+  output$saveCoeffTable = downloadHandler(
+    filename = "quickped-relatedness.txt",
+    content = function(file) {
+      tryCatch({
+        ids = trimws(strsplit(req(input$coeffIds), ",")[[1]])
+        ped = currentPedData()$ped
+        coeffs = input$coeffSelect
+        if(identical(coeffs, "f"))
+          tab = data.frame(id = ids, f = inbreeding(ped, ids))
+        else
+          tab = coeffTable(ped, ids, coeffs = coeffs)
+        write.table(tab, file = file, col.names = TRUE, row.names = FALSE,
+                    quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
+        removeModal()
+      },
+        error = function(e) errModal(conditionMessage(e))
+      )
+    }
+  )
+
+
   observeEvent(input$describe, {
     ped = req(currentPedData()$ped)
-    ids = sortIds(ped, ids = sel())
+    ids = sel()
     N = length(ids)
+    if(N == 0) {
+      relText("No individuals selected.")
+      return()
+    }
+    ids = sortIds(ped, ids = sel())
 
     if(N == 2) {
       paths = verbalisr::verbalise(ped, ids)
       txt = format(paths)
     }
     else {
-      txt = c("This requires exactly 2 individuals to be selected.", "",
-              sprintf("(Currently %d individual%s %s selected.)", N, ifelse(N==1, "", "s"), ifelse(N==1, "is", "are")))
+      txt = "Please select exactly 2 individuals."
     }
-
     relText(txt)
   })
 
+
   observeEvent(input$coeffs, {
-    ped = currentPedData()$ped
-    ids = sortIds(ped, ids = req(sel()))
+    ped = req(currentPedData()$ped)
+    ids = sel()
     N = length(ids)
-
-    # Inbreeding
-    inb = ribd::inbreeding(ped, ids)
-    txt = c("Inbreeding coefficients:", sprintf("* %s: f = %g", ids, inb))
-
-    if(N != 2) {
-      txt = c(txt, "", "For pairwise coefficients, select 2 individuals.")
+    if(N == 0) {
+      relText(c("Please select exactly 2 individuals.",
+                "(Or click the Download button for more options.)"))
+      return()
+    }
+    if(N == 1) {
+      txt = c(sprintf("Inbreeding coefficient for individual %s:", ids),
+              sprintf("* f = %g", ribd::inbreeding(ped, ids)))
       relText(txt)
       return()
     }
+    if(N > 2) {
+      relText(c("Please select exactly 2 individuals.",
+                "(Or click the Download button for more options.)"))
+      return()
+    }
+
+    ### N = 2
+
+    ids = sortIds(ped, ids)
 
     txt =  sprintf("Relatedness coefficients for %s and %s:", ids[1], ids[2])
 
