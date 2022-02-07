@@ -19,9 +19,18 @@ errModal = function(..., html = FALSE) {
   mess = paste(lapply(list(...), toString), collapse = "")
   if(html)
     mess = HTML(mess)
-  showModal(modalDialog(mess))
+  showModal(modalDialog(mess, easyClose = TRUE))
 }
 
+# range2seq = function(s) {
+#   rlist = lapply(strsplit(s, ",")[[1]], function(r) {
+#     fromto = as.integer(strsplit(r, "-")[[1]])
+#     if(anyNA(fromto))
+#       stop2("Illegal range: ", r)
+#     seq(min(fromto), max(fromto))
+#   })
+#   sort.default(unique.default(unlist(rlist)))
+# }
 
 textInput2 = function(inputId, value) {
   w  = textInput(inputId, label = NULL, value = value, width = "100%")
@@ -132,6 +141,7 @@ pdat2df = function(pdat) {
 
   data.frame(x = x, y = y, idInt = idInt)
 }
+
 
 
 # Dropbox
