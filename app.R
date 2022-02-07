@@ -701,30 +701,48 @@ server = function(input, output, session) {
       return()
     }
 
-    ### Pairwise coefficients
-    txt =  c(txt, "", sprintf("Pairwise coefficients between %s and %s:", ids[1], ids[2]))
+    txt =  sprintf("Relatedness coefficients for %s and %s:", ids[1], ids[2])
+
+    # Inbreeding
+    inb = ribd::inbreeding(ped, ids)
+    txt = c(txt,
+            sprintf("* Inbreeding: f1 = %.4g", inb[1]),
+            sprintf("              f2 = %.4g", inb[2]))
 
     # Kinship
     phi = ribd::kinship(ped, ids)
-    txt = c(txt, paste0("* Kinship: phi = ", phi))
+    txt = c(txt,
+            sprintf("* Kinship:   phi = %.4g", phi))
+
+    # Degree
+    deg = ribd::kin2deg(phi, unrelated = NA)
+    txt = c(txt,
+            sprintf("* Degree:    deg = %.4g", deg))
 
     # Kappa (if both outbred) or Delta
     if(all(inb == 0)) {
       kap = ribd::kappaIBD(ped, ids)
-      txt = c(txt, paste0("* Kappa = (", toString(kap), ")"))
+      kap = sprintf("%.4g", round(kap, 4))
+      txt = c(txt,
+            sprintf("* IBD:     kappa = (%s)", toString(kap)))
     }
     else {
-      kap = c(NA, NA, NA)
       delta = ribd::condensedIdentity(ped, ids)
-      txt = c(txt, paste0("* Kappa = (", toString(kap), ")"),
-              "* Condensed identity:", sprintf("    Delta%d = %g", 1:9, delta))
+      delta = sprintf("%.4g", round(delta, 4))
+      len = nchar(toString(delta))
+      if(len <= 50)
+        s = sprintf("* Condensed identity =\n  (%s)", toString(delta))
+      else
+        s = sprintf("* Condensed identity = (%s\n  %s)",
+                    toString(delta[1:3]), toString(delta[4:9]))
+
+        txt = c(txt, s)
     }
 
     relText(txt)
   })
 
   output$description = renderText(req(relText()), sep = "\n")
-
 }
 
 
