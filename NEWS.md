@@ -1,8 +1,19 @@
+# QuickPed 2.6.0
+
+## New features
+
+* The calculated pairwise coefficients now include the *relationship degree*, as used by some software.
+
+* New button and popup menu for downloading a table of relatedness coefficients. This simplifies obtaining coefficients for multiple pedigree members. By default (if no members are selected), all pairs are included.
+
+* Restructured the text showing coefficients for a single pair of individuals.
+
+
 # QuickPed 2.5.0
 
 ## New features
 
-* The function loading ped-files is more liberal and better at guessing the input format. In particular, it should now handle files with/without headers, with/without family ID in first column, and with/without affection status column.
+* The function loading .ped files is more liberal and better at guessing the input format. In particular, it now handles files with/without headers, with/without family ID in first column, and with/without affection status column.
 
 * Two new buttons, "PNG" and "PDF", for saving the pedigree plot. These replace the previous "Save plot" button (which only gave png).
 
