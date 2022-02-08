@@ -1,3 +1,12 @@
+# QuickPed 2.7.0
+
+## New features
+
+* In the Relationship frame, the button texts have been replaced by icons. Help tips are visible when mouse hovering over each button.
+
+* New button (showing a chart icon) in the Relationship window, producing a relatedness triangle plot showing the kappa coefficients of a selected pair of individuals.
+
+
 # QuickPed 2.6.0
 
 ## New features
