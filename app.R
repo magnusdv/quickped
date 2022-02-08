@@ -687,7 +687,7 @@ server = function(input, output, session) {
     easyClose = TRUE,
     footer = tagList(
       modalButton("Cancel"),
-      downloadButton("saveCoeffTable", "Download", class = "btn btn-success")
+      downloadButton("saveCoeffTable", "Download", class = "btn btn-info")
     )
   )
 
@@ -723,53 +723,94 @@ server = function(input, output, session) {
     }
   )
 
+  ### Triangle plot
+
+  kappa = reactiveVal(NULL)
+
+  observeEvent(input$triangle, {
+    ped = currentPedData()$ped
+    ids = sel()
+    if(length(ids) != 2) {
+      relText("Please select exactly 2 individuals.")
+      return()
+    }
+
+    ids = sortIds(ped, ids)
+    inb = ribd::inbreeding(ped, ids)
+    if(any(inb > 0)) {
+      relText(c("Kappa coefficients are undefined.","(Some of the individuals are inbred.)"))
+      return()
+    }
+
+    k = kappaIBD(ped, ids, simplify = TRUE)
+    kappa(k)
+
+    showModal(modalDialog(
+      h3("Relatedness triangle"),
+      p(sprintf("Kappa coefficients for %s and %s", ids[1], ids[2])),
+      plotOutput("plotTriangle", width = "480px", height = "480px"),
+      footer = tagList(
+        modalButton("Cancel"),
+        downloadButton("saveTriangle", "Download", class = "btn btn-info")
+      ),
+      easyClose = TRUE
+    ))
+  })
+
+  output$plotTriangle = renderPlot(
+    plotKappa(kappa()),
+    width = 480,
+    height = 480,
+    res = 72 # to low, but increasing it disturbs everything else
+  )
+
+  output$saveTriangle = downloadHandler(
+    filename = "triangle.png",
+    content = function(file) {
+      png(file, width = 480*2, height = 480*2, res = 72*2)
+      plotKappa(kappa())
+      dev.off()
+    },
+    contentType = "image/png"
+  )
 
   observeEvent(input$describe, {
     ped = req(currentPedData()$ped)
     ids = sel()
-    N = length(ids)
-    if(N == 0) {
-      relText("No individuals selected.")
+
+    if(length(ids) != 2) {
+      relText("Please select exactly 2 individuals.")
       return()
     }
-    ids = sortIds(ped, ids = sel())
 
-    if(N == 2) {
-      paths = verbalisr::verbalise(ped, ids)
-      txt = format(paths)
-    }
-    else {
-      txt = "Please select exactly 2 individuals."
-    }
+    ids = sortIds(ped, ids = sel())
+    paths = verbalisr::verbalise(ped, ids)
+    txt = format(paths)
     relText(txt)
   })
+
 
 
   observeEvent(input$coeffs, {
     ped = req(currentPedData()$ped)
     ids = sel()
     N = length(ids)
-    if(N == 0) {
-      relText(c("Please select exactly 2 individuals.",
-                "(Or click the Download button for more options.)"))
+    if(!N %in% 1:2) {
+      relText(c("Please select 1 or 2 individuals.",
+                "(Or click the Table button for more options.)"))
       return()
     }
+
     if(N == 1) {
       txt = c(sprintf("Inbreeding coefficient for individual %s:", ids),
               sprintf("* f = %g", ribd::inbreeding(ped, ids)))
       relText(txt)
       return()
     }
-    if(N > 2) {
-      relText(c("Please select exactly 2 individuals.",
-                "(Or click the Download button for more options.)"))
-      return()
-    }
 
     ### N = 2
 
     ids = sortIds(ped, ids)
-
     txt =  sprintf("Relatedness coefficients for %s and %s:", ids[1], ids[2])
 
     # Inbreeding
@@ -805,7 +846,7 @@ server = function(input, output, session) {
         s = sprintf("* Condensed identity = (%s\n  %s)",
                     toString(delta[1:3]), toString(delta[4:9]))
 
-        txt = c(txt, s)
+      txt = c(txt, s)
     }
 
     relText(txt)

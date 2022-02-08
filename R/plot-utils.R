@@ -74,3 +74,9 @@ breakLabs = function(x, breakAt = "  ") {
   names(labs) = sub(breakAt, "\n", labs)
   labs
 }
+
+
+plotKappa = function(k) {
+  showInTriangle(k, cex = 2.5, lwd = 3.5, col = "blue", cexPoint = 1.6, cexText = 1.6)
+  text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
+}
