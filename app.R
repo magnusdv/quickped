@@ -1,5 +1,6 @@
 suppressPackageStartupMessages({
   library(shiny)
+  library(shinyBS)
   library(shinyjs)
   library(pedtools)
   library(ribd)
@@ -120,14 +121,15 @@ ui = fluidPage(
       wellPanel(style = "height:210px; width:435px",
         fluidRow(
           column(width = 4, bigHeading("Relationship")),
-          column(width = 3, actionButton("describe", "Describe", class = "btn btn-success",
-                                         style = "width:80px;")),
-          column(width = 3, actionButton("coeffs", "Coeffs", class = "btn btn-success",
-                                         style = "width:80px")),
-          column(width = 2, actionButton("coeffTable", icon("download"), class = "btn btn-success",
-                                         style = "float:right")),
-
+          column(width = 2, actionButton("describe", icon("comment"), class = "btn btn-success")), #  style = "width:80px;")),
+          column(width = 2, actionButton("coeffs", icon("calculator"), class = "btn btn-success")), # style = "width:80px")),
+          column(width = 2, actionButton("triangle", icon("chart-area"), class = "btn btn-success")), # style = "float:right")),
+          column(width = 2, actionButton("coeffTable", icon("list"), class = "btn btn-success")),# style = "float:right")),
         ),
+        bsTooltip("describe", "Describe relationship", placement = "top"),
+        bsTooltip("coeffs", "Calculate coefficients", placement = "top"),
+        bsTooltip("triangle", "Plot kappa coefficients", placement = "top"),
+        bsTooltip("coeffTable", "Table of coefficients", placement = "top"),
         verbatimTextOutput("description", placeholder = TRUE),
         tags$head(tags$style("#description{height:145px;padding-bottom:2px;}"))
       )
