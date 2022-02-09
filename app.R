@@ -120,7 +120,7 @@ ui = fluidPage(
       # Relationship descriptions
       wellPanel(style = "height:210px; width:435px",
         fluidRow(
-          column(width = 4, bigHeading("Relationship")),
+          column(width = 4, bigHeading("Relationships")),
           column(width = 2, actionButton("describe", icon("comment"), class = "btn btn-success")), #  style = "width:80px;")),
           column(width = 2, actionButton("coeffs", icon("calculator"), class = "btn btn-success")), # style = "width:80px")),
           column(width = 2, actionButton("triangle", icon("chart-area"), class = "btn btn-success")), # style = "float:right")),
@@ -729,13 +729,13 @@ server = function(input, output, session) {
 
   observeEvent(input$triangle, {
     ped = currentPedData()$ped
-    ids = sel()
+    ids = sortIds(ped, ids = sel())
+
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
       return()
     }
 
-    ids = sortIds(ped, ids)
     inb = ribd::inbreeding(ped, ids)
     if(any(inb > 0)) {
       relText(c("Kappa coefficients are undefined.","(Some of the individuals are inbred.)"))
@@ -776,14 +776,13 @@ server = function(input, output, session) {
 
   observeEvent(input$describe, {
     ped = req(currentPedData()$ped)
-    ids = sel()
+    ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
       return()
     }
 
-    ids = sortIds(ped, ids = sel())
     paths = verbalisr::verbalise(ped, ids)
     txt = format(paths)
     relText(txt)
@@ -793,7 +792,8 @@ server = function(input, output, session) {
 
   observeEvent(input$coeffs, {
     ped = req(currentPedData()$ped)
-    ids = sel()
+    ids = sortIds(ped, ids = sel())
+
     N = length(ids)
     if(!N %in% 1:2) {
       relText(c("Please select 1 or 2 individuals.",
@@ -809,8 +809,6 @@ server = function(input, output, session) {
     }
 
     ### N = 2
-
-    ids = sortIds(ped, ids)
     txt =  sprintf("Relatedness coefficients for %s and %s:", ids[1], ids[2])
 
     # Inbreeding
