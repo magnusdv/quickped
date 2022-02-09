@@ -76,7 +76,19 @@ breakLabs = function(x, breakAt = "  ") {
 }
 
 
-plotKappa = function(k) {
-  showInTriangle(k, cex = 2.5, lwd = 3.5, col = "blue", cexPoint = 1.6, cexText = 1.6)
+plotKappa = function(k, ids, col = "blue") {
+  showInTriangle(k, cex = 2.5, lwd = 3.5, col = "blue", cexPoint = 1.6,
+                 cexText = 1.6, labels = FALSE)
+  lab = paste(ids, collapse = " - ")
+  adj = c(.5, -1.25)
+  n = nchar(lab)
+  if(k[1] == 0 && n > 12) adj[1] = -0.1
+  else if(k[1] > 0.95 && n > 10) adj[1] = .9
+  else if(k[1] > 0.8) {
+    if(n > 20) adj[1] = .8
+    else if(n > 16) adj[1] = 0.7
+  }
+
+  text(k[1], k[3], lab, cex = 1.5, col = col, adj = adj)
   text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
 }

@@ -747,18 +747,18 @@ server = function(input, output, session) {
 
     showModal(modalDialog(
       h3("Relatedness triangle"),
-      p(sprintf("Kappa coefficients for %s and %s", ids[1], ids[2])),
       plotOutput("plotTriangle", width = "480px", height = "480px"),
       footer = tagList(
         modalButton("Cancel"),
         downloadButton("saveTriangle", "Download", class = "btn btn-info")
       ),
+      size = "m",
       easyClose = TRUE
     ))
   })
 
   output$plotTriangle = renderPlot(
-    plotKappa(kappa()),
+    plotKappa(kappa(), ids = sel()),
     width = 480,
     height = 480,
     res = 72 # to low, but increasing it disturbs everything else
@@ -768,7 +768,7 @@ server = function(input, output, session) {
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 480*2, height = 480*2, res = 72*2)
-      plotKappa(kappa())
+      plotKappa(kappa(), ids = sel())
       dev.off()
     },
     contentType = "image/png"
