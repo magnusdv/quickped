@@ -1,10 +1,21 @@
+# QuickPed 2.7.1
+
+## New features
+
+* Add a label (with the individuals' names) in the relatedness triangle plot.
+
+## Other changes
+
+* Tweak appearance of the relatedness triangle plot.
+
+
 # QuickPed 2.7.0
 
 ## New features
 
-* In the Relationship frame, the button texts have been replaced by icons. Help tips are visible when mouse hovering over each button.
+* Triangle plot for visualising kappa coefficients: When two noninbred individuals are selected, pressing the chart button (in the Relationships frame) produces a relatedness triangle marking the location of their kappas. (Based on `ribd::showInTriangle()`.)
 
-* New button (showing a chart icon) in the Relationship window, producing a relatedness triangle plot showing the kappa coefficients of a selected pair of individuals.
+* Icons have replaced button texts in the Relationship frame. Help tips are visible when mouse hovering over each button.
 
 
 # QuickPed 2.6.0
