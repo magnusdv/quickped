@@ -82,12 +82,8 @@ plotKappa = function(k, ids, col = "blue") {
   lab = paste(ids, collapse = " - ")
   adj = c(.5, -1.25)
   n = nchar(lab)
-  if(k[1] == 0 && n > 12) adj[1] = -0.1
-  else if(k[1] > 0.95 && n > 10) adj[1] = .9
-  else if(k[1] > 0.8) {
-    if(n > 20) adj[1] = .8
-    else if(n > 16) adj[1] = 0.7
-  }
+  if(k[1] == 0 && n >= 20) adj[1] = 0.25
+  else if(n > 46 - 30*k[1]) adj[1] = 0.5 + (1 - (46 - 30*k[1])/n)
 
   text(k[1], k[3], lab, cex = 1.5, col = col, adj = adj)
   text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
