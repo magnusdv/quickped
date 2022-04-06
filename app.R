@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 # Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
 
 
-VERSION = "2.7.1"
+VERSION = "2.7.2"
 
 ui = fluidPage(
 
@@ -153,6 +153,8 @@ ui = fluidPage(
               column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:7px;",
                      actionButton("labGen", "I-1, I-2, ..", width = "100%",style = "background-color: lightgray;"))
             ),
+            radioButtons("showlabs", label = NULL, choices = c("Show all" = "show", "Hide all" = "hide"),
+                         inline = TRUE, selected = "show", width = "100%"),
             uiOutput("labels"),
             actionButton("updateLabs", "Update", width = "100%",
                         class = "btn btn-success", style = "margin-top: 10px;"),
@@ -480,6 +482,9 @@ server = function(input, output, session) {
       updateSelectInput(session, "startped", selected = "")
     updateSelectInput(session, "startped", selected = "Trio")
 
+    # Show labels
+    updateRadioButtons(session, "hidelabs", selected = "show")
+
     # Reset plot settings
     updateSliderInput(session, "width", value = 430)
     updateSliderInput(session, "height", value = 430)
@@ -507,9 +512,7 @@ server = function(input, output, session) {
     old = getPlotOrder(ped = ped, plist = pdat()$plist)
 
     # New labels: 1, 2, ...
-    new = seq_along(old)
-
-    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
+    newData = updateLabelsData(currData, old = old, new = seq_along(old), reorder = TRUE)
 
     do.call(updatePedData, c(list(currData = currData), newData))
   })
@@ -566,7 +569,7 @@ server = function(input, output, session) {
   plotArgs = reactive({
     m = input$mar
     adjmar = c(max(m - 1, 0), m, m + 1, m)
-    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar)
+    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar, showlabs = input$showlabs)
   })
 
   output$plot = renderPlot(
