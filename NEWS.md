@@ -1,3 +1,10 @@
+# QuickPed 2.7.2
+
+## New features
+
+* It is now possible to hide all pedigree labels, by clicking "Hide all" in the Labels frame.
+
+
 # QuickPed 2.7.1
 
 ## New features
