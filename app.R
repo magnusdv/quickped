@@ -483,7 +483,7 @@ server = function(input, output, session) {
     updateSelectInput(session, "startped", selected = "Trio")
 
     # Show labels
-    updateRadioButtons(session, "hidelabs", selected = "show")
+    updateRadioButtons(session, "showlabs", selected = "show")
 
     # Reset plot settings
     updateSliderInput(session, "width", value = 430)
