@@ -7,8 +7,6 @@ suppressPackageStartupMessages({
   library(verbalisr)
 })
 
-# Sys.setlocale(category = "LC_ALL", "C") # avoid weird deploy error
-
 
 VERSION = "2.7.2"
 
