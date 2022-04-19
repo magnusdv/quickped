@@ -1,3 +1,10 @@
+# QuickPed 2.8.0
+
+## New features
+
+* The relatedness coefficient table is extended to include detailed identity coefficients, as well as X-chromosomal counterparts of all available coefficients.
+
+
 # QuickPed 2.7.2
 
 ## New features
