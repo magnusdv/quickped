@@ -680,11 +680,29 @@ server = function(input, output, session) {
     tags$style(HTML("#title-h3 {background-color: gray; color: white; padding: 15px}")),
     textInput("coeffIds", label = "Individuals:", value = "", width = "100%"),
     br(),
-    checkboxGroupInput("coeffSelect", "Coefficients:",
-                       c("Inbreeding" = "f", "Kinship" = "phi",
-                         "Degree" = "deg", "IBD (kappa)" = "kappa",
-                         "Identity (Delta)" = "Delta"),
-                       selected  = c("f", "phi", "deg", "kappa")),
+    fluidRow(
+      column(width = 6,
+             checkboxGroupInput("coeffSelect", "Coefficients:",
+                       c("Inbreeding" = "f",
+                         "Kinship" = "phi",
+                         "Degree" = "deg",
+                         "IBD (kappa)" = "kappa",
+                         "Identity (condensed)" = "identity",
+                         "Identity (detailed)" = "detailed"
+                       ),
+                       selected  = c("f", "phi", "deg", "kappa"))
+             ),
+      column(width = 6,
+             checkboxGroupInput("coeffChrom", "Chromosome:",
+                                c("Autosomal" = "aut",
+                                  "X-chromosomal" = "X"
+                                ),
+                                selected  = c("aut")),
+             checkboxGroupInput("coeffInclude", "Include:",
+                                c("Self relationships" = "self"),
+                                selected  = NULL)
+             )
+      ),
     easyClose = TRUE,
     footer = tagList(
       modalButton("Cancel"),
@@ -710,13 +728,27 @@ server = function(input, output, session) {
       tryCatch({
         ids = trimws(strsplit(req(input$coeffIds), ",")[[1]])
         ped = currentPedData()$ped
-        coeffs = input$coeffSelect
-        if(identical(coeffs, "f"))
-          tab = data.frame(id = ids, f = inbreeding(ped, ids))
-        else
-          tab = coeffTable(ped, ids, coeffs = coeffs)
+
+        # Coefficients selected
+        coeff = input$coeffSelect
+
+        # Autosomal and/or X?
+        chr = input$coeffChrom
+        if(!length(chr))
+          stop("Please select chromosome type")
+        Xchrom = if(length(chr) == 2) NA else chr == "X"
+
+        # Self relationships?
+        self = "self" %in% input$coeffInclude
+
+        # Compute table
+        tab = coeffTable(ped, ids, coeff = coeff, Xchrom = Xchrom, self = self)
+
+        # Write to file
         write.table(tab, file = file, col.names = TRUE, row.names = FALSE,
                     quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
+
+        # Close window
         removeModal()
       },
         error = function(e) errModal(conditionMessage(e))
