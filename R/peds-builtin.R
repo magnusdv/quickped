@@ -85,11 +85,12 @@ BUILTIN_PEDS = list(
   "Half 1st cousins"   = swpSx(halfCousinPed(1), c(4,9)),
   "Half 2nd cousins"  = swpSx(halfCousinPed(2), 13),
 
-  "3/4-siblings" = addChildren(addChildren(nuclearPed(2), 3, mother = 5, 1, verbose = FALSE), 4, mother = 5, nch = 1, sex = 2),
+  "3/4-siblings" = nuclearPed(2) |> addSon(parents = c(3,5), verbose = F) |> addDaughter(parents = c(4,5)),
   "5/8-siblings" = swpSx(halfSibStack(2), 8),
   "Full sib mating" = fullSibMating(1),
   "Double 1st cousins" = swpSx(doubleFirstCousins(), 10),
-  "Double 2nd cousins" = swpSx(doubleCousins(degree1 = 2, degree2 = 2), 18),
+  "Double 2nd cousins A" = swpSx(doubleCousins(degree1 = 2, degree2 = 2), 18),
+  "Double 2nd cousins B" = mergePed(cousinPed(2), nuclearPed(2, sex=2), by = c("4" = 3, "6" = 4), relabel = TRUE),
   "Quad half 1st cousins" = quadHalfFirstCousins(),
 
   "Habsburg" = readPed2("data/habsburg.ped"),
@@ -111,7 +112,8 @@ paramsBuiltin = function(choice) {
                               = list(width = 850, height = 430, cex = 0.9, symbolsize = 1.2, mar = 1.5),
          `Quad half 1st cousins`
                               = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4.5),
-         `Double 2nd cousins` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
+         `Double 2nd cousins A` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
+         `Double 2nd cousins B` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
          Tutankhamun          = list(width = 430, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4),
          list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3) # default
   )
@@ -139,7 +141,8 @@ BUILTIN_CHOICES = list(
     "5/8-siblings",
     "Full sib mating",
     "Double 1st cousins",
-    "Double 2nd cousins",
+    "Double 2nd cousins A",
+    "Double 2nd cousins B",
     "Quad half 1st cousins"
   ),
   Historic = list(
