@@ -26,6 +26,8 @@ ui = fluidPage(
         .irs-bar, .irs-bar-edge, .irs-line  {top: 15px !important}
         .irs-handle {top: 7px !important;}
         .irs {height: 30px; margin-bottom:11px}
+        #startped + div>.selectize-dropdown {width: 190px !important;}
+        .optgroup-header {color: black !important; font-weight: bold !important;}
       ')
     )
   ),
