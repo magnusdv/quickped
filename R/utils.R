@@ -143,24 +143,8 @@ pdat2df = function(pdat) {
 }
 
 
-
-# Dropbox
-token = readRDS("droptoken.rds")
-
-dropup = function(obj) {
-  tmppath = file.path(tempdir(), sprintf("%s.rds", format(Sys.time(), format = "%Y-%m-%d_%H.%M.%S")))
-  saveRDS(obj, tmppath)
-  suppressMessages(drop_upload(tmppath, path = "quickped", mode = "add", verbose = FALSE, dtoken = token))
-}
-
 sortIds = function(x, ids) {
   intern = internalID(x, ids)
   ids[order(intern)]
 }
 
-# In savePlot:
-#dropDat = list(currentPedData = currentPedData(), plotArgs = plotArgs())
-#tryCatch(dropup(dropDat), error = function(e) print(e))
-
-# In savePed:
-# tryCatch(dropup(df), error = function(e) print(e))
