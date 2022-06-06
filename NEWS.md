@@ -1,3 +1,16 @@
+# QuickPed 2.9.0
+
+## New features
+
+* Added relationship "Double 2nd cousins A" and "Double 2nd cousins B".
+
+## Other
+
+* In tables of relatedness coefficients, columns with X-chromosomal coefficients are now suffixed with ".X" (rather than prefixed with "X-"). 
+
+* Tweaked appearance of drop-down menu.
+
+
 # QuickPed 2.8.0
 
 ## New features

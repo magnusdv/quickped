@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 })
 
 
-VERSION = "2.8.0"
+VERSION = "2.9.0"
 
 ui = fluidPage(
 
@@ -864,7 +864,7 @@ server = function(input, output, session) {
 
     # Kappa (if both outbred) or Delta
     if(all(inb == 0)) {
-      kap = ribd::kappaIBD(ped, ids)
+      kap = ribd::kappaIBD(ped, ids, simplify = TRUE) # simplify to vector of len 3
       kap = sprintf("%.4g", round(kap, 4))
       txt = c(txt,
             sprintf("* IBD:     kappa = (%s)", toString(kap)))
