@@ -104,6 +104,8 @@ qv = BUILTIN_PEDS[["Queen Victoria (haemophilia)"]]$ped
 BUILTIN_PEDS[["Queen Victoria (haemophilia)"]]$carrier = intersect(females(qv), setdiff(labels(qv), 1:50))
 
 # Plotting parameters for builtin pedigrees
+defaults = list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3)
+
 paramsBuiltin = function(choice) {
   switch(choice,
          Habsburg             = list(width = 655, height = 655, cex = 1.1, symbolsize = 1, mar = 2),
@@ -111,11 +113,11 @@ paramsBuiltin = function(choice) {
          `Queen Victoria (haemophilia)`
                               = list(width = 850, height = 430, cex = 0.9, symbolsize = 1.2, mar = 1.5),
          `Quad half 1st cousins`
-                              = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4.5),
-         `Double 2nd cousins A` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
-         `Double 2nd cousins B` = list(width = 655, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
+                              = list(width = 550, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4.5),
+         `Double 2nd cousins A` = list(width = 550, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
+         `Double 2nd cousins B` = list(width = 550, height = 430, cex = 1.4, symbolsize = 1.1, mar = 3),
          Tutankhamun          = list(width = 430, height = 430, cex = 1.4, symbolsize = 1.1, mar = 4),
-         list(width = 430, height = 430, cex = 1.6, symbolsize = 1, mar = 3) # default
+         defaults
   )
 }
 
