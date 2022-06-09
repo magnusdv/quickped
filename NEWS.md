@@ -4,6 +4,8 @@
 
 * Tweaked the descriptions of multiple asymmetric relationships, e.g., double avuncular.
 
+* Add link to BMC Bioinformatics paper.
+
 
 # QuickPed 2.9.0
 

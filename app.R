@@ -47,8 +47,12 @@ ui = fluidPage(
     ital("Son"), " or ", ital("Daughter"), ". (If just one parent is selected, a new spouse is also created.)"),
 
   p(bold("More information: "),
-    "Further information about QuickPed can be found at the ",
-    a("ped suite homepage", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"), "."),
+    "Check out the ",
+    a("user manual", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"),
+    " for various tips and tricks, including an introduction to relatedness coefficients. There is also a ",
+    a("paper", href = "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y", .noWS = "outside"),
+    " about QuickPed published in BMC Bioinformatics."
+  ),
 
 
   fluidRow(
