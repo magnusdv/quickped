@@ -1,3 +1,10 @@
+# QuickPed 2.9.1
+
+## New features
+
+* Tweaked the descriptions of multiple asymmetric relationships, e.g., double avuncular.
+
+
 # QuickPed 2.9.0
 
 ## New features
