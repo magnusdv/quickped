@@ -2,13 +2,14 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyBS)
   library(shinyjs)
+  library(kinship2)
   library(pedtools)
   library(ribd)
   library(verbalisr)
 })
 
 
-VERSION = "2.9.1"
+VERSION = "2.10.0"
 
 ui = fluidPage(
 
@@ -173,7 +174,7 @@ ui = fluidPage(
                      sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1200, value = 430, step = 10),
                      sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.6, step = 0.1),
                      sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
-                     sliderInput("mar", "Margins", ticks = FALSE, min = 0, max = 10, value = 3, step = 0.1),
+                     sliderInput("mar", "Margins", ticks = FALSE, min = 0.1, max = 10, value = 3, step = 0.1),
                      br(),
                      fluidRow(
                        column(width = 6, align = "left", style = "padding-right:5px;",
@@ -571,9 +572,8 @@ server = function(input, output, session) {
   # Plot --------------------------------------------------------------------
 
   plotArgs = reactive({
-    m = input$mar
-    adjmar = c(max(m - 1, 0), m, m + 1, m)
-    list(cex = input$cex, symbolsize = input$symbolsize, mar = adjmar, showlabs = input$showlabs)
+    list(cex = input$cex, symbolsize = input$symbolsize,
+         mar = rep(input$mar, 4), showlabs = input$showlabs)
   })
 
   output$plot = renderPlot(
