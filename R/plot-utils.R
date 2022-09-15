@@ -71,7 +71,7 @@ updateLabelsData = function(currData, old, new, reorder = FALSE) {
 
 breakLabs = function(x, breakAt = "  ") {
   labs = labels(x)
-  names(labs) = sub(breakAt, "\n", labs)
+  names(labs) = gsub(breakAt, "\n", labs)
   labs
 }
 
