@@ -1,3 +1,14 @@
+# QuickPed 2.10.0
+
+## New features
+
+* The appearance of pedigree symbols are slightly modified, enforcing equal height and width. (E.g., males should be perfect squares.)
+
+* Margins have been adjusted.
+
+* Labels with more than one line break are now possible. Each occurrence of '  ' (double space) is replaced with a line break. (Previously only two lines was possible).
+
+
 # QuickPed 2.9.1
 
 ## New features
