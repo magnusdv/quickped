@@ -172,7 +172,7 @@ ui = fluidPage(
                      bigHeading("Plot settings"),
                      sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1200, value = 430, step = 10),
                      sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1200, value = 430, step = 10),
-                     sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.6, step = 0.1),
+                     sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.4, step = 0.1),
                      sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
                      sliderInput("mar", "Margins", ticks = FALSE, min = 0.1, max = 10, value = 3, step = 0.1),
                      br(),
