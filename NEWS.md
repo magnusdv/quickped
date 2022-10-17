@@ -1,3 +1,16 @@
+# QuickPed 2.11.0
+
+## New features
+
+* Further adjustments of the plotting algorithm, ensuring better layout of some pedigrees, like 3/4 siblings.
+
+* Reduced the default expansion factor ("cex") from 1.6 to 1.4
+
+## Bug fixes
+
+* Some (rare) pedigrees were poorly handled in the prevous version, due to a bug in kinship2. This has now been fixed.
+
+
 # QuickPed 2.10.0
 
 ## New features
