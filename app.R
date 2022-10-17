@@ -493,7 +493,7 @@ server = function(input, output, session) {
     # Reset plot settings
     updateSliderInput(session, "width", value = 430)
     updateSliderInput(session, "height", value = 430)
-    updateSliderInput(session, "cex", value = 1.6)
+    updateSliderInput(session, "cex", value = 1.4)
     updateSliderInput(session, "symbolsize", value = 1)
     updateSliderInput(session, "mar", value = 3)
   })
