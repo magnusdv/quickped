@@ -8,7 +8,7 @@
 
 ## Bug fixes
 
-* Some (rare) pedigrees were poorly handled in the prevous version, due to a bug in kinship2. This has now been fixed.
+* Some (rare) pedigrees were poorly handled in the previous version, due to a bug in kinship2. This has now been fixed.
 
 
 # QuickPed 2.10.0
