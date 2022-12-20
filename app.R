@@ -824,6 +824,7 @@ server = function(input, output, session) {
 
     paths = verbalisr::verbalise(ped, ids)
     txt = format(paths)
+    txt = gsub("([[:graph:]])  ([[:graph:]])", "\\1 \\2", txt) # remove double spaces
     relText(txt)
   })
 
