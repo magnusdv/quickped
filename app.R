@@ -219,7 +219,7 @@ server = function(input, output, session) {
 
   previousStack = reactiveVal(list())
 
-  pdat = reactiveVal(NULL)
+  plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
   sel = reactiveVal(character(0))
 
   relText = reactiveVal(NULL)
@@ -505,107 +505,104 @@ server = function(input, output, session) {
   output$labels = renderUI({
     labs = labels(currentPedData()$ped)
     fields = paste0("lab", seq_along(labs))
-    lapply(seq_along(labs), function(i)
-      textInput2(fields[i], value = labs[i])) #textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
+    lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i]))
   })
 
-  observeEvent(input$lab123, {
+  observeEvent(input$lab123, { # New labels: 1, 2, ...
     currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    old = getPlotOrder(ped = ped, plist = pdat()$plist)
-
-    # New labels: 1, 2, ...
-    newData = updateLabelsData(currData, old = old, new = seq_along(old), reorder = TRUE)
-
+    newData = updateLabelsData(currData, new = "asPlot", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
-  observeEvent(input$labGen, {
+  observeEvent(input$labGen, { # New labels: I-1, I-2, ...
     currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    oldList = getPlotOrder(ped = ped, plist = pdat()$plist, perGeneration = TRUE)
-    old = unlist(oldList)
-
-    # New labels: I-1, ...
-    gen = rep(seq_along(oldList), lengths(oldList))
-    idx = unlist(lapply(lengths(oldList), seq_len))
-    new = paste(as.roman(gen), idx, sep = "-")
-
-    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
-
+    newData = updateLabelsData(currData, new = "generations", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
   observeEvent(input$updateLabs, {
     currData = currentPedData()
-    ped = currData$ped
-    oldlabs = labels(ped)
+    oldlabs = currData$ped$ID
     fields = paste0("lab", seq_along(oldlabs))
-    newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
-    newlabs = trimws(newlabs)
+    newlabs = vapply(fields, function(s) input[[s]], FUN.VALUE = "1") |>
+      as.character() |> trimws()
 
     if(identical(newlabs, oldlabs))
       return()
-    if(dup <- anyDuplicated(newlabs)) {
-      errModal("Duplicated ID label: ", newlabs[dup])
-      return()
-    }
-    if(0 %in% newlabs) {
-      errModal('"0" cannot be used as label')
-      return()
-    }
-    if("" %in% newlabs) {
-      errModal("Empty label")
+
+    err = NULL
+    if(dup <- anyDuplicated(newlabs))
+      err = paste("Duplicated ID label: ", toString(newlabs[dup]))
+    else if(0 %in% newlabs)
+      err = '"0" cannot be used as label'
+    else if("" %in% newlabs)
+      err = "Empty label"
+
+    if(!is.null(err)) {
+      errModal(err)
       return()
     }
 
     newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
-
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
 
   # Plot --------------------------------------------------------------------
 
-  plotArgs = reactive({
-    list(cex = input$cex, symbolsize = input$symbolsize,
-         mar = rep(input$mar, 4), showlabs = input$showlabs)
+  plotLabs = reactive({ print("labs")
+    ped = req(currentPedData()$ped)
+    switch(input$showlabs, show = breakLabs(ped), hide = NULL)
   })
 
-  output$plot = renderPlot(
-    execOnResize = TRUE,
-    width = function() input$width,
-    height = function() input$height,
-    res = 72, # default; seems ok in practice
-    {
-      dat = tryCatch(
-        plotPed(pedData = currentPedData(),
-                plotargs = plotArgs(),
-                selected = sel(),
-                addBox = TRUE),
-        error = function(e) errModal(conditionMessage(e))
-      )
+  plotAlignment = reactive({ print("align")
+    curr = currentPedData()
+    .pedAlignment(curr$ped, twins = curr$twins)
+  })
 
-      req(dat)
-      pdat(dat)
-    }
+  plotAnnotation = reactive({ print("annot")
+    curr = req(currentPedData())
+    labs = plotLabs()
+    .pedAnnotation(curr$ped, labs = labs, aff = curr$aff, carrier = curr$carrier,
+                   deceased = curr$deceased, col = list(red = sel()))
+  })
+
+  plotScaling = reactive({ print("scaling")
+    input$width; input$height # react to these also
+    align = req(plotAlignment())
+    annot = list(textUnder = plotLabs())
+    .pedScaling(align, annot, cex = input$cex, symbolsize = input$symbolsize, margins = rep(input$mar, 4))
+  })
+
+  output$plot = renderPlot({ #print("PLOT")
+      dat = tryCatch(
+        drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling()),
+        error = errModal)
+      box("outer", col = 1)
+      req(dat) # if unsuccessful, return gracefully
+    },
+    execOnResize = TRUE, res = 72, # default; seems ok in practice
+    width = function() input$width, height = function() input$height
   )
 
+  positionDf = reactive({
+    align = req(plotAlignment())
+    scale = plotScaling()
+    mat = cbind(x = align$xall,
+                y = align$yall + scale$boxh/2,
+                idInt = align$plotord)
+    as.data.frame(mat)
+  })
 
   observeEvent(input$ped_click, {
-    posDf = pdat2df(pdat())
-
+    posDf = positionDf()
     idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
                        threshold = 20, maxpoints = 1)$idInt
     if(length(idInt) == 0)
       return()
 
     currData = currentPedData()
-    id = labels(currData$ped)[idInt]
+    id = currData$ped$ID[idInt]
 
     currSel = sel()
     if(id %in% currSel)
@@ -615,8 +612,7 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$ped_dblclick, {
-    posDf = pdat2df(pdat())
-
+    posDf = positionDf()
     idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
                        threshold = 20, maxpoints = 1)$idInt
     if(length(idInt) == 0)
@@ -663,7 +659,7 @@ server = function(input, output, session) {
     filename = "quickped.png",
     content = function(con) {
       png(con, width = input$width, height = input$height)
-      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
+      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
       dev.off()
     },
     contentType = "image/png"
@@ -673,7 +669,7 @@ server = function(input, output, session) {
     filename = "quickped.pdf",
     content = function(file) {
       pdf(file, width = input$width/72, height = input$height/72)
-      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
+      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
       dev.off()
     },
     contentType = "application/pdf"

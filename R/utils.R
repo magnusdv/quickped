@@ -124,23 +124,6 @@ addSib = function(x, id, sex) {
   return(newped)
 }
 
-pdat2df = function(pdat) {
-  n = pdat$plist$n
-  nid = pdat$plist$nid
-  pos = pdat$plist$pos
-
-  # Coordinates of top point of each symbol
-  x = unlist(lapply(seq_along(n), function(i) pos[i, 1:n[i]]))
-  y = rep(seq_along(n), n)
-
-  # Adjust y to give symbol centre
-  y = y + pdat$boxh/2
-
-  # Internal ID
-  idInt = unlist(lapply(seq_along(n), function(i) nid[i, 1:n[i]]))
-
-  data.frame(x = x, y = y, idInt = idInt)
-}
 
 
 sortIds = function(x, ids) {
