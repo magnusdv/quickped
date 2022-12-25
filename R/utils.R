@@ -16,7 +16,14 @@ bold = function(x) strong(x, .noWS = "outside")
 ital = function(x) em(x, .noWS = "outside")
 
 errModal = function(..., html = FALSE) {
-  mess = paste(lapply(list(...), toString), collapse = "")
+  args = list(...)
+  if(length(args) == 1 && inherits(args, "condition")) {
+    mess = conditionMessage(args[[1]])
+    if(grepl("reduce cex", mess))
+      mess = "Plot region is too small"
+  }
+  else
+    mess = paste(lapply(args, toString), collapse = "")
   if(html)
     mess = HTML(mess)
   showModal(modalDialog(mess, easyClose = TRUE))

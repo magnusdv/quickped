@@ -285,10 +285,7 @@ server = function(input, output, session) {
 
   observeEvent(input$loadped, {
     file = req(input$loadped$datapath)
-    y = tryCatch(readPed2(file),
-      error = function(e) errModal(conditionMessage(e)),
-      warning = function(e) errModal(conditionMessage(e))
-    )
+    y = tryCatch(readPed2(file), error = errModal, warning = errModal)
 
     updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff, carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
@@ -296,7 +293,6 @@ server = function(input, output, session) {
 
 
 # Modify pedigree ---------------------------------------------------------
-
 
   observeEvent(input$addson, {
     id = req(sel())
