@@ -546,24 +546,24 @@ server = function(input, output, session) {
 
   # Plot --------------------------------------------------------------------
 
-  plotLabs = reactive({ print("labs")
+  plotLabs = reactive({ #print("labs")
     ped = req(currentPedData()$ped)
     switch(input$showlabs, show = breakLabs(ped), hide = NULL)
   })
 
-  plotAlignment = reactive({ print("align")
+  plotAlignment = reactive({ #print("align")
     curr = currentPedData()
     .pedAlignment(curr$ped, twins = curr$twins)
   })
 
-  plotAnnotation = reactive({ print("annot")
+  plotAnnotation = reactive({ #print("annot")
     curr = req(currentPedData())
     labs = plotLabs()
     .pedAnnotation(curr$ped, labs = labs, aff = curr$aff, carrier = curr$carrier,
                    deceased = curr$deceased, col = list(red = sel()))
   })
 
-  plotScaling = reactive({ print("scaling")
+  plotScaling = reactive({ #print("scaling")
     input$width; input$height # react to these also
     align = req(plotAlignment())
     annot = list(textUnder = plotLabs())
