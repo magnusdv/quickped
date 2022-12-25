@@ -97,11 +97,6 @@ ui = fluidPage(
               pedButton("addsibling", "Sibling", side = "left"),
               pedButton("addparents", "Parents", side = "right"),
             ),
-            midHeading("Remove"),
-            fluidRow(
-              pedButton("remove", "Individuals", side = "left"),
-              pedButton("clearselection", "Selection", side = "right"),
-            ),
             midHeading("Switch"),
             fluidRow(
               pedButton("swapsex", "Sex", side = "left"),
@@ -116,7 +111,17 @@ ui = fluidPage(
               pedButton("mz", "MZ", side = "left"),
               pedButton("dz", "DZ", side = "right")
             ),
-
+            midHeading("Remove"),
+            fluidRow(
+              column(6, align = "left", style = "padding-right: 3px;",
+                     fluidRow(
+                       column(6, style = "padding-right: 3px;",
+                              actionButton("removeDown", icon("arrow-down"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+                       column(6, style = "padding-left: 3px;",
+                              actionButton("removeUp", icon("arrow-up"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+                     )),
+              pedButton("clearselection", "Deselect all", side = "right"),
+            ),
             disabled(actionButton("undo", "Undo", class = "btn btn-warning",
                                   style = "position: absolute; bottom:30px; width: 170px")),
           ),
@@ -373,11 +378,39 @@ server = function(input, output, session) {
     updatePedData(currData, deceased = newDec, clearSel = length(id) > 1, clearRel = FALSE)
   })
 
-  observeEvent(input$remove, {
+  observeEvent(input$removeDown, {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(
       removeIndividuals(currData$ped, id, verbose = FALSE),
+      error = function(e) {
+        msg = conditionMessage(e)
+        if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
+          errModal(msg)
+        return()
+      })
+
+    if(is.null(newped)) {
+      errModal(sprintf("Removing %s would disconnect the pedigree",
+                       ifelse(length(id) == 1, paste("individual", id), "these individuals")))
+      return()
+    }
+    newaff = setdiff(currData$aff, id)
+    newcarr = setdiff(currData$carrier, id)
+    newdec = setdiff(currData$deceased, id)
+
+    newtw = currData$twins
+    newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
+
+    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
+                  deceased = newdec, twins = newtw)
+  })
+
+  observeEvent(input$removeUp, {
+    id = req(sel())
+    currData = currentPedData()
+    newped = tryCatch(
+      removeIndividuals(currData$ped, id, remove = "ancestors", verbose = FALSE),
       error = function(e) {
         msg = conditionMessage(e)
         if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
