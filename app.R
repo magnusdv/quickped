@@ -120,7 +120,7 @@ ui = fluidPage(
                        column(6, style = "padding-left: 3px;",
                               actionButton("removeUp", icon("arrow-up"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
                      )),
-              pedButton("clearselection", "Deselect all", side = "right"),
+              pedButton("clearselection", "Deselect", side = "right"),
             ),
             disabled(actionButton("undo", "Undo", class = "btn btn-warning",
                                   style = "position: absolute; bottom:30px; width: 170px")),
