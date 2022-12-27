@@ -72,6 +72,7 @@ swpSx = function(x, ids)
 
 
 BUILTIN_PEDS = list(
+  "Singleton" = singleton(1),
   "Trio" = nuclearPed(1),
   "Full siblings" = nuclearPed(2, sex = 1:2),
   "Half siblings (mat)" = halfSibPed(1, 1, sex2 = 2, type = "maternal"),
@@ -127,6 +128,7 @@ paramsBuiltin = function(choice) {
 BUILTIN_CHOICES = list(
   Choose = "",
   `Basic pedigrees` = list(
+    "Singleton",
     "Trio",
     "Full siblings",
     "Half siblings (mat)",
