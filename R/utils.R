@@ -6,6 +6,9 @@ stop2 = function (...) {
   do.call(stop, a)
 }
 
+.myintersect = function(x, y)
+  y[match(x, y, 0L)]
+
 bigHeading = function(x)
   h4(strong(x), .noWS = "before")
 
@@ -132,6 +135,32 @@ addSib = function(x, id, sex) {
 }
 
 
+removeSel = function(currData, ids, updown) {
+  newped = tryCatch(
+    removeIndividuals(currData$ped, ids, remove = updown, verbose = FALSE),
+    error = function(e) conditionMessage(e)
+  )
+
+  isEmpty = is.null(newped)
+  discon = is.character(newped) && grepl("disconnected", newped, ignore.case = TRUE)
+
+  errmsg = if(is.character(newped)) newped else NULL
+  if(isEmpty || discon)
+    errmsg = sprintf("Removing %s would leave a disconnected or empty pedigree",
+                     ifelse(length(ids) == 1, paste("individual", ids), "these individuals"))
+  if(!is.null(errmsg))
+    stop2(errmsg)
+
+  newID = newped$ID
+  newaff  = .myintersect(currData$aff, newID)
+  newcarr = .myintersect(currData$carrier, newID)
+  newdec  = .myintersect(currData$deceased, newID)
+
+  newtw = currData$twins
+  newtw = newtw[newtw$id1 %in% newID & newtw$id2 %in% newID, , drop = FALSE]
+
+  list(ped = newped, aff = newaff, carr = newcarr, dec = newdec, tw = newtw)
+}
 
 sortIds = function(x, ids) {
   intern = internalID(x, ids)

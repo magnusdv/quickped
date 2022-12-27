@@ -294,7 +294,8 @@ server = function(input, output, session) {
     file = req(input$loadped$datapath)
     y = tryCatch(readPed2(file), error = errModal, warning = errModal)
 
-    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff, carrier = character(0), deceased = character(0),
+    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff,
+                  carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
@@ -381,59 +382,21 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$removeDown, {
-    id = req(sel())
+    ids = req(sel())
     currData = currentPedData()
-    newped = tryCatch(
-      removeIndividuals(currData$ped, id, verbose = FALSE),
-      error = function(e) {
-        msg = conditionMessage(e)
-        if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
-          errModal(msg)
-        return()
-      })
-
-    if(is.null(newped)) {
-      errModal(sprintf("Removing %s would disconnect the pedigree",
-                       ifelse(length(id) == 1, paste("individual", id), "these individuals")))
-      return()
-    }
-    newaff = setdiff(currData$aff, id)
-    newcarr = setdiff(currData$carrier, id)
-    newdec = setdiff(currData$deceased, id)
-
-    newtw = currData$twins
-    newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
-
-    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw)
+    newdat = tryCatch(removeSel(currData, ids, "descendants"),
+                      error = errModal)
+    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+                  deceased = newdat$dec, twins = newdat$tw)
   })
 
   observeEvent(input$removeUp, {
-    id = req(sel())
+    ids = req(sel())
     currData = currentPedData()
-    newped = tryCatch(
-      removeIndividuals(currData$ped, id, remove = "ancestors", verbose = FALSE),
-      error = function(e) {
-        msg = conditionMessage(e)
-        if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
-          errModal(msg)
-        return()
-      })
-
-    if(is.null(newped)) {
-      errModal(sprintf("Removing %s would disconnect the pedigree",
-                       ifelse(length(id) == 1, paste("individual", id), "these individuals")))
-      return()
-    }
-    newaff = setdiff(currData$aff, id)
-    newcarr = setdiff(currData$carrier, id)
-    newdec = setdiff(currData$deceased, id)
-
-    newtw = currData$twins
-    newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
-
-    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw)
+    newdat = tryCatch(removeSel(currData, ids, "ancestors"),
+                      error = errModal)
+    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+                  deceased = newdat$dec, twins = newdat$tw)
   })
 
   observeEvent(input$clearselection, sel(character(0)))
