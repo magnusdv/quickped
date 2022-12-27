@@ -2,7 +2,6 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyBS)
   library(shinyjs)
-  library(kinship2)
   library(pedtools)
   library(ribd)
   library(verbalisr)
