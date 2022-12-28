@@ -90,6 +90,10 @@ updateTwins = function(twins, ids, code) {
   twins
 }
 
+hasMZtwins = function(currData) {
+  code = currData$twins$code
+  length(code) > 0 && 1 %in% code
+}
 
 addChild = function(x, id, sex) {
 

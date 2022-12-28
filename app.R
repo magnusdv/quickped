@@ -330,7 +330,7 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
-                      error = function(e) errModal(e))
+                      error = errModal)
     updatePedData(currData, ped = newped)
   })
 
@@ -707,12 +707,19 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$coeffTable, {
-    ped = currentPedData()$ped
+    currData = currentPedData()
+    ped = currData$ped
     ids = sel()
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
+      return()
+    }
+
     if(!length(ids))
       ids = labels(ped)
     updateTextInput(session, "coeffIds", value = toString(sortIds(ped, ids)))
-    tryCatch(showModal(dlg), error = function(e) errModal(conditionMessage(e)))
+    tryCatch(showModal(dlg), error = errModal)
   })
 
 
@@ -747,8 +754,7 @@ server = function(input, output, session) {
         # Close window
         removeModal()
       },
-        error = function(e) errModal(conditionMessage(e))
-      )
+      error = errModal)
     }
   )
 
@@ -757,11 +763,17 @@ server = function(input, output, session) {
   kappa = reactiveVal(NULL)
 
   observeEvent(input$triangle, {
-    ped = currentPedData()$ped
+    currData = currentPedData()
+    ped = currData$ped
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
@@ -804,11 +816,17 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$describe, {
-    ped = req(currentPedData()$ped)
+    currData = currentPedData()
+    ped = req(currData$ped)
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
@@ -821,13 +839,19 @@ server = function(input, output, session) {
 
 
   observeEvent(input$coeffs, {
-    ped = req(currentPedData()$ped)
+    currData = currentPedData()
+    ped = req(currData$ped)
     ids = sortIds(ped, ids = sel())
 
     N = length(ids)
     if(!N %in% 1:2) {
       relText(c("Please select 1 or 2 individuals.",
                 "(Or click the Table button for more options.)"))
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
