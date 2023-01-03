@@ -6,6 +6,9 @@ stop2 = function (...) {
   do.call(stop, a)
 }
 
+.myintersect = function(x, y)
+  y[match(x, y, 0L)]
+
 bigHeading = function(x)
   h4(strong(x), .noWS = "before")
 
@@ -16,7 +19,14 @@ bold = function(x) strong(x, .noWS = "outside")
 ital = function(x) em(x, .noWS = "outside")
 
 errModal = function(..., html = FALSE) {
-  mess = paste(lapply(list(...), toString), collapse = "")
+  args = list(...)
+  if(length(args) == 1 && inherits(args, "condition")) {
+    mess = conditionMessage(args[[1]])
+    if(grepl("reduce cex", mess))
+      mess = "Plot region is too small"
+  }
+  else
+    mess = paste(lapply(args, toString), collapse = "")
   if(html)
     mess = HTML(mess)
   showModal(modalDialog(mess, easyClose = TRUE))
@@ -80,6 +90,10 @@ updateTwins = function(twins, ids, code) {
   twins
 }
 
+hasMZtwins = function(currData) {
+  code = currData$twins$code
+  length(code) > 0 && 1 %in% code
+}
 
 addChild = function(x, id, sex) {
 
@@ -124,24 +138,33 @@ addSib = function(x, id, sex) {
   return(newped)
 }
 
-pdat2df = function(pdat) {
-  n = pdat$plist$n
-  nid = pdat$plist$nid
-  pos = pdat$plist$pos
 
-  # Coordinates of top point of each symbol
-  x = unlist(lapply(seq_along(n), function(i) pos[i, 1:n[i]]))
-  y = rep(seq_along(n), n)
+removeSel = function(currData, ids, updown) {
+  newped = tryCatch(
+    removeIndividuals(currData$ped, ids, remove = updown, verbose = FALSE),
+    error = function(e) conditionMessage(e)
+  )
 
-  # Adjust y to give symbol centre
-  y = y + pdat$boxh/2
+  isEmpty = is.null(newped)
+  discon = is.character(newped) && grepl("disconnected", newped, ignore.case = TRUE)
 
-  # Internal ID
-  idInt = unlist(lapply(seq_along(n), function(i) nid[i, 1:n[i]]))
+  errmsg = if(is.character(newped)) newped else NULL
+  if(isEmpty || discon)
+    errmsg = sprintf("Removing %s would leave a disconnected or empty pedigree",
+                     ifelse(length(ids) == 1, paste("individual", ids), "these individuals"))
+  if(!is.null(errmsg))
+    stop2(errmsg)
 
-  data.frame(x = x, y = y, idInt = idInt)
+  newID = newped$ID
+  newaff  = .myintersect(currData$aff, newID)
+  newcarr = .myintersect(currData$carrier, newID)
+  newdec  = .myintersect(currData$deceased, newID)
+
+  newtw = currData$twins
+  newtw = newtw[newtw$id1 %in% newID & newtw$id2 %in% newID, , drop = FALSE]
+
+  list(ped = newped, aff = newaff, carr = newcarr, dec = newdec, tw = newtw)
 }
-
 
 sortIds = function(x, ids) {
   intern = internalID(x, ids)

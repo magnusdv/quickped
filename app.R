@@ -2,7 +2,6 @@ suppressPackageStartupMessages({
   library(shiny)
   library(shinyBS)
   library(shinyjs)
-  library(kinship2)
   library(pedtools)
   library(ribd)
   library(verbalisr)
@@ -97,11 +96,6 @@ ui = fluidPage(
               pedButton("addsibling", "Sibling", side = "left"),
               pedButton("addparents", "Parents", side = "right"),
             ),
-            midHeading("Remove"),
-            fluidRow(
-              pedButton("remove", "Individuals", side = "left"),
-              pedButton("clearselection", "Selection", side = "right"),
-            ),
             midHeading("Switch"),
             fluidRow(
               pedButton("swapsex", "Sex", side = "left"),
@@ -116,7 +110,20 @@ ui = fluidPage(
               pedButton("mz", "MZ", side = "left"),
               pedButton("dz", "DZ", side = "right")
             ),
-
+            midHeading("Remove"),
+            fluidRow(
+              column(6, align = "left", style = "padding-right: 3px;",
+                fluidRow(
+                  column(6, style = "padding-right: 3px;",
+                         actionButton("removeDown", icon("arrow-down"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+                  column(6, style = "padding-left: 3px;",
+                         actionButton("removeUp", icon("arrow-up"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+               )),
+              pedButton("clearselection", "Deselect", side = "right"),
+              bsTooltip("removeDown", HTML("Remove&nbsp;selected + descendants"), placement = "top"),
+              bsTooltip("removeUp", HTML("Remove&nbsp;selected + ancestors"), placement = "top"),
+              bsTooltip("clearselection", "Deselect all", placement = "top"),
+            ),
             disabled(actionButton("undo", "Undo", class = "btn btn-warning",
                                   style = "position: absolute; bottom:30px; width: 170px")),
           ),
@@ -219,7 +226,7 @@ server = function(input, output, session) {
 
   previousStack = reactiveVal(list())
 
-  pdat = reactiveVal(NULL)
+  plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
   sel = reactiveVal(character(0))
 
   relText = reactiveVal(NULL)
@@ -285,18 +292,15 @@ server = function(input, output, session) {
 
   observeEvent(input$loadped, {
     file = req(input$loadped$datapath)
-    y = tryCatch(readPed2(file),
-      error = function(e) errModal(conditionMessage(e)),
-      warning = function(e) errModal(conditionMessage(e))
-    )
+    y = tryCatch(readPed2(file), error = errModal, warning = errModal)
 
-    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff, carrier = character(0), deceased = character(0),
+    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff,
+                  carrier = character(0), deceased = character(0),
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
 
 # Modify pedigree ---------------------------------------------------------
-
 
   observeEvent(input$addson, {
     id = req(sel())
@@ -326,7 +330,7 @@ server = function(input, output, session) {
     id = req(sel())
     currData = currentPedData()
     newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
-                      error = function(e) errModal(e))
+                      error = errModal)
     updatePedData(currData, ped = newped)
   })
 
@@ -377,32 +381,22 @@ server = function(input, output, session) {
     updatePedData(currData, deceased = newDec, clearSel = length(id) > 1, clearRel = FALSE)
   })
 
-  observeEvent(input$remove, {
-    id = req(sel())
+  observeEvent(input$removeDown, {
+    ids = req(sel())
     currData = currentPedData()
-    newped = tryCatch(
-      removeIndividuals(currData$ped, id, verbose = FALSE),
-      error = function(e) {
-        msg = conditionMessage(e)
-        if(!grepl("Disconnected", msg, ignore.case = TRUE)) # if disconnected, errModal later
-          errModal(msg)
-        return()
-      })
+    newdat = tryCatch(removeSel(currData, ids, "descendants"),
+                      error = errModal)
+    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+                  deceased = newdat$dec, twins = newdat$tw)
+  })
 
-    if(is.null(newped)) {
-      errModal(sprintf("Removing %s would disconnect the pedigree",
-                       ifelse(length(id) == 1, paste("individual", id), "these individuals")))
-      return()
-    }
-    newaff = setdiff(currData$aff, id)
-    newcarr = setdiff(currData$carrier, id)
-    newdec = setdiff(currData$deceased, id)
-
-    newtw = currData$twins
-    newtw = newtw[newtw$id1 != id & newtw$id2 != id, , drop = FALSE]
-
-    updatePedData(currData, ped = newped, aff = newaff, carrier = newcarr,
-                  deceased = newdec, twins = newtw)
+  observeEvent(input$removeUp, {
+    ids = req(sel())
+    currData = currentPedData()
+    newdat = tryCatch(removeSel(currData, ids, "ancestors"),
+                      error = errModal)
+    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+                  deceased = newdat$dec, twins = newdat$tw)
   })
 
   observeEvent(input$clearselection, sel(character(0)))
@@ -505,107 +499,104 @@ server = function(input, output, session) {
   output$labels = renderUI({
     labs = labels(currentPedData()$ped)
     fields = paste0("lab", seq_along(labs))
-    lapply(seq_along(labs), function(i)
-      textInput2(fields[i], value = labs[i])) #textInput(fields[i], label = NULL, value = labs[i], width = "100%"))
+    lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i]))
   })
 
-  observeEvent(input$lab123, {
+  observeEvent(input$lab123, { # New labels: 1, 2, ...
     currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    old = getPlotOrder(ped = ped, plist = pdat()$plist)
-
-    # New labels: 1, 2, ...
-    newData = updateLabelsData(currData, old = old, new = seq_along(old), reorder = TRUE)
-
+    newData = updateLabelsData(currData, new = "asPlot", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
-  observeEvent(input$labGen, {
+  observeEvent(input$labGen, { # New labels: I-1, I-2, ...
     currData = currentPedData()
-    ped = currData$ped
-
-    # Current labels in plot order
-    oldList = getPlotOrder(ped = ped, plist = pdat()$plist, perGeneration = TRUE)
-    old = unlist(oldList)
-
-    # New labels: I-1, ...
-    gen = rep(seq_along(oldList), lengths(oldList))
-    idx = unlist(lapply(lengths(oldList), seq_len))
-    new = paste(as.roman(gen), idx, sep = "-")
-
-    newData = updateLabelsData(currData, old = old, new = new, reorder = TRUE)
-
+    newData = updateLabelsData(currData, new = "generations", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
   observeEvent(input$updateLabs, {
     currData = currentPedData()
-    ped = currData$ped
-    oldlabs = labels(ped)
+    oldlabs = currData$ped$ID
     fields = paste0("lab", seq_along(oldlabs))
-    newlabs = as.character(vapply(fields, function(s) input[[s]], FUN.VALUE = "1"))
-    newlabs = trimws(newlabs)
+    newlabs = vapply(fields, function(s) input[[s]], FUN.VALUE = "1") |>
+      as.character() |> trimws()
 
     if(identical(newlabs, oldlabs))
       return()
-    if(dup <- anyDuplicated(newlabs)) {
-      errModal("Duplicated ID label: ", newlabs[dup])
-      return()
-    }
-    if(0 %in% newlabs) {
-      errModal('"0" cannot be used as label')
-      return()
-    }
-    if("" %in% newlabs) {
-      errModal("Empty label")
+
+    err = NULL
+    if(dup <- anyDuplicated(newlabs))
+      err = paste("Duplicated ID label: ", toString(newlabs[dup]))
+    else if(0 %in% newlabs)
+      err = '"0" cannot be used as label'
+    else if("" %in% newlabs)
+      err = "Empty label"
+
+    if(!is.null(err)) {
+      errModal(err)
       return()
     }
 
     newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
-
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
 
   # Plot --------------------------------------------------------------------
 
-  plotArgs = reactive({
-    list(cex = input$cex, symbolsize = input$symbolsize,
-         mar = rep(input$mar, 4), showlabs = input$showlabs)
+  plotLabs = reactive({ #print("labs")
+    ped = req(currentPedData()$ped)
+    switch(input$showlabs, show = breakLabs(ped), hide = NULL)
   })
 
-  output$plot = renderPlot(
-    execOnResize = TRUE,
-    width = function() input$width,
-    height = function() input$height,
-    res = 72, # default; seems ok in practice
-    {
-      dat = tryCatch(
-        plotPed(pedData = currentPedData(),
-                plotargs = plotArgs(),
-                selected = sel(),
-                addBox = TRUE),
-        error = function(e) errModal(conditionMessage(e))
-      )
+  plotAlignment = reactive({ #print("align")
+    curr = currentPedData()
+    .pedAlignment(curr$ped, twins = curr$twins)
+  })
 
-      req(dat)
-      pdat(dat)
-    }
+  plotAnnotation = reactive({ #print("annot")
+    curr = req(currentPedData())
+    labs = plotLabs()
+    .pedAnnotation(curr$ped, labs = labs, aff = curr$aff, carrier = curr$carrier,
+                   deceased = curr$deceased, col = list(red = sel()))
+  })
+
+  plotScaling = reactive({ #print("scaling")
+    input$width; input$height # react to these also
+    align = req(plotAlignment())
+    annot = list(textUnder = plotLabs())
+    .pedScaling(align, annot, cex = input$cex, symbolsize = input$symbolsize, margins = rep(input$mar, 4))
+  })
+
+  output$plot = renderPlot({ #print("PLOT")
+      dat = tryCatch(
+        drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling()),
+        error = errModal)
+      box("outer", col = 1)
+      req(dat) # if unsuccessful, return gracefully
+    },
+    execOnResize = TRUE, res = 72, # default; seems ok in practice
+    width = function() input$width, height = function() input$height
   )
 
+  positionDf = reactive({
+    align = req(plotAlignment())
+    scale = plotScaling()
+    mat = cbind(x = align$xall,
+                y = align$yall + scale$boxh/2,
+                idInt = align$plotord)
+    as.data.frame(mat)
+  })
 
   observeEvent(input$ped_click, {
-    posDf = pdat2df(pdat())
-
+    posDf = positionDf()
     idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
                        threshold = 20, maxpoints = 1)$idInt
     if(length(idInt) == 0)
       return()
 
     currData = currentPedData()
-    id = labels(currData$ped)[idInt]
+    id = currData$ped$ID[idInt]
 
     currSel = sel()
     if(id %in% currSel)
@@ -615,8 +606,7 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$ped_dblclick, {
-    posDf = pdat2df(pdat())
-
+    posDf = positionDf()
     idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
                        threshold = 20, maxpoints = 1)$idInt
     if(length(idInt) == 0)
@@ -663,7 +653,7 @@ server = function(input, output, session) {
     filename = "quickped.png",
     content = function(con) {
       png(con, width = input$width, height = input$height)
-      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
+      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
       dev.off()
     },
     contentType = "image/png"
@@ -673,7 +663,7 @@ server = function(input, output, session) {
     filename = "quickped.pdf",
     content = function(file) {
       pdf(file, width = input$width/72, height = input$height/72)
-      plotPed(currentPedData(), plotArgs(), addBox = FALSE)
+      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
       dev.off()
     },
     contentType = "application/pdf"
@@ -717,12 +707,19 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$coeffTable, {
-    ped = currentPedData()$ped
+    currData = currentPedData()
+    ped = currData$ped
     ids = sel()
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
+      return()
+    }
+
     if(!length(ids))
       ids = labels(ped)
     updateTextInput(session, "coeffIds", value = toString(sortIds(ped, ids)))
-    tryCatch(showModal(dlg), error = function(e) errModal(conditionMessage(e)))
+    tryCatch(showModal(dlg), error = errModal)
   })
 
 
@@ -757,8 +754,7 @@ server = function(input, output, session) {
         # Close window
         removeModal()
       },
-        error = function(e) errModal(conditionMessage(e))
-      )
+      error = errModal)
     }
   )
 
@@ -767,11 +763,17 @@ server = function(input, output, session) {
   kappa = reactiveVal(NULL)
 
   observeEvent(input$triangle, {
-    ped = currentPedData()$ped
+    currData = currentPedData()
+    ped = currData$ped
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
@@ -814,11 +816,17 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$describe, {
-    ped = req(currentPedData()$ped)
+    currData = currentPedData()
+    ped = req(currData$ped)
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
@@ -831,13 +839,19 @@ server = function(input, output, session) {
 
 
   observeEvent(input$coeffs, {
-    ped = req(currentPedData()$ped)
+    currData = currentPedData()
+    ped = req(currData$ped)
     ids = sortIds(ped, ids = sel())
 
     N = length(ids)
     if(!N %in% 1:2) {
       relText(c("Please select 1 or 2 individuals.",
                 "(Or click the Table button for more options.)"))
+      return()
+    }
+
+    if(hasMZtwins(currData)) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
