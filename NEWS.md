@@ -1,3 +1,16 @@
+# QuickPed 3.0.0
+
+## New features
+
+* Added button "Random pedigree", which uses `pedtools::randomPed()` to produce a random pedigree with 5--15 individuals.
+
+* The button for removing pedigree members has been moved further down and split into two buttons (arrows "up" and "down"). This allows the user to choose if the removal should act upwards (removing ancestors) or downwards (removing descendants) of the selected individuals.
+
+* The button for deselecting all has been renamed to "Deselect", instead of "Selection".
+
+* The entire app is faster and more responsive, due to better organisation of the plotting algorithm, thus avoiding unnecessary computation.
+
+
 # QuickPed 2.11.0
 
 ## New features
