@@ -28,6 +28,7 @@ ui = fluidPage(
         .irs {height: 30px; margin-bottom:11px}
         #startped + div>.selectize-dropdown {width: 190px !important;}
         .optgroup-header {color: black !important; font-weight: bold !important;}
+        .shiny-file-input-progress {margin-bottom: 10px;}
       ')
     )
   ),
@@ -69,14 +70,24 @@ ui = fluidPage(
             selectInput("startped", "Built-in pedigree", selected = "Trio", choices = BUILTIN_CHOICES, width = "100%"),
             br(),
             fluidRow(
-              column(5, hr(style = "border-top: 1px solid #000000;")),
-              column(2, "or", style = "padding-left:10px; padding-top:10px; padding-bottom:17px"),
-              column(5, hr(style = "border-top: 1px solid #000000;")),
+              column(5, hr(style = "border-top: 1px solid #000000; margin-top: 7px; margin-bottom: 12px")),
+              column(2, "or", style = "padding-left:10px;"),
+              column(5, hr(style = "border-top: 1px solid #000000; margin-top: 7px; margin-bottom: 12px")),
             ),
             br(),
             fileInput("loadped", label = "Load a ped file", buttonLabel = icon("folder-open"),
                       accept = "text/plain", width = "100%", placeholder = NULL),
-
+            #
+            #br(),
+            fluidRow(
+              column(5, hr(style = "border-top: 1px solid #000000; margin-top: 15px; margin-bottom: 20px")),
+              column(2, "or", style = "padding-left:10px; margin-top: 5px"),
+              column(5, hr(style = "border-top: 1px solid #000000; margin-top: 15px; margin-bottom: 20px")),
+            ),
+            br(),
+            pedButton("randomped", "Random pedigree"),
+            br(),
+            #
             actionButton("reset", "Reset all", class = "btn btn-danger",
                          style = "position: absolute; bottom:30px; width: 170px")
           ),
@@ -115,9 +126,11 @@ ui = fluidPage(
               column(6, align = "left", style = "padding-right: 3px;",
                 fluidRow(
                   column(6, style = "padding-right: 3px;",
-                         actionButton("removeDown", icon("arrow-down"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+                         actionButton("removeDown", icon("arrow-down"), width = "100%",
+                                      style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
                   column(6, style = "padding-left: 3px;",
-                         actionButton("removeUp", icon("arrow-up"), width = "100%",style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
+                         actionButton("removeUp", icon("arrow-up"), width = "100%",
+                                      style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
                )),
               pedButton("clearselection", "Deselect", side = "right"),
               bsTooltip("removeDown", HTML("Remove&nbsp;selected + descendants"), placement = "top"),
@@ -299,6 +312,19 @@ server = function(input, output, session) {
                   twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
   })
 
+  observeEvent(input$randomped, {
+    n = sample(5:15, size = 1)             # total pedigree size
+    f = sample(2:floor((n+1)/2), size = 1) # number of founders
+    ped = NULL
+    while(is.null(ped)) {
+      ped = tryCatch(
+        randomPed(n = n, f = f, selfing = FALSE) |> relabel(),
+        error = function(e) NULL, warning = function(e) NULL)
+    }
+    updatePedData(currentPedData(), ped = ped, aff = character(0),
+                  carrier = character(0), deceased = character(0),
+                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
+  })
 
 # Modify pedigree ---------------------------------------------------------
 
@@ -569,8 +595,12 @@ server = function(input, output, session) {
   })
 
   output$plot = renderPlot({ #print("PLOT")
-      dat = tryCatch(
-        drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling()),
+      dat = tryCatch({
+        align = plotAlignment()
+        if(anyNA(align$x))
+          stop2("Sorry, for some reason this pedigree did align properly.")
+        drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
+        },
         error = errModal)
       box("outer", col = 1)
       req(dat) # if unsuccessful, return gracefully
