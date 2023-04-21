@@ -77,8 +77,6 @@ ui = fluidPage(
             br(),
             fileInput("loadped", label = "Load a ped file", buttonLabel = icon("folder-open"),
                       accept = "text/plain", width = "100%", placeholder = NULL),
-            #
-            #br(),
             fluidRow(
               column(5, hr(style = "border-top: 1px solid #000000; margin-top: 15px; margin-bottom: 20px")),
               column(2, "or", style = "padding-left:10px; margin-top: 5px"),
@@ -87,7 +85,6 @@ ui = fluidPage(
             br(),
             pedButton("randomped", "Random pedigree"),
             br(),
-            #
             actionButton("reset", "Reset all", class = "btn btn-danger",
                          style = "position: absolute; bottom:30px; width: 170px")
           ),
@@ -584,7 +581,8 @@ server = function(input, output, session) {
     curr = req(currentPedData())
     labs = plotLabs()
     .pedAnnotation(curr$ped, labs = labs, aff = curr$aff, carrier = curr$carrier,
-                   deceased = curr$deceased, col = list(red = sel()))
+                   deceased = curr$deceased, col = list(red = sel()),
+                   lwd = list(`3` = sel()))
   })
 
   plotScaling = reactive({ #print("scaling")
