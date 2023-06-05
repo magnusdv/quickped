@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
 })
 
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 
 ui = fluidPage(
 
@@ -171,9 +171,9 @@ ui = fluidPage(
             bigHeading("Labels"),
             fluidRow(
               column(width = 6, align = "left", style = "padding-right:5px; padding-bottom:7px;",
-                     actionButton("lab123", "1, 2, 3, ..", width = "100%",  style = "background-color: lightgray;")),
+                     actionButton("labs123", "1, 2, 3, ..", width = "100%",  style = "background-color: lightgray;")),
               column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:7px;",
-                     actionButton("labGen", "I-1, I-2, ..", width = "100%",style = "background-color: lightgray;"))
+                     actionButton("labsGen", "I-1, I-2, ..", width = "100%",style = "background-color: lightgray;"))
             ),
             radioButtons("showlabs", label = NULL, choices = c("Show all" = "show", "Hide all" = "hide"),
                          inline = TRUE, selected = "show", width = "100%"),
@@ -525,13 +525,13 @@ server = function(input, output, session) {
     lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i]))
   })
 
-  observeEvent(input$lab123, { # New labels: 1, 2, ...
+  observeEvent(input$labs123, { # New labels: 1, 2, ...
     currData = currentPedData()
     newData = updateLabelsData(currData, new = "asPlot", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
   })
 
-  observeEvent(input$labGen, { # New labels: I-1, I-2, ...
+  observeEvent(input$labsGen, { # New labels: I-1, I-2, ...
     currData = currentPedData()
     newData = updateLabelsData(currData, new = "generations", .alignment = plotAlignment())
     do.call(updatePedData, c(list(currData = currData), newData))
