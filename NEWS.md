@@ -1,3 +1,8 @@
+# QuickPed 3.0.3
+
+* Update intro text and citation info.
+
+
 # QuickPed 3.0.2
 
 ## Bug fixes
