@@ -38,22 +38,22 @@ ui = fluidPage(
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
   tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
 
-  p(bold("Purpose: "),
-    "This tool provides a quick way to create pedigree plots and files,
-    and for analysing the relatedness between pedigree members."),
+  p(bold("Purpose: "), style = "margin: 0 0 5px",
+    "QuickPed lets you rapidly create attractive pedigree plots, save them as images or text files, and analyse the relationships within them."),
 
-  p(bold("Instructions: "),
-    "Choose a suitable start pedigree and modify it by selecting members (by clicking on them in the plot) and using appropriate buttons.
-    For example, to create a new child, select the parents and press ",
-    ital("Son"), " or ", ital("Daughter"), ". (If just one parent is selected, a new spouse is also created.)"),
-
-  p(bold("More information: "),
+  p(bold("Instructions: "), style = "margin: 0 0 5px",
+    "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.
+    For example, to create a new child, select the parents and press ", ital("Son"), " or ", ital("Daughter"), ".",
     "Check out the ",
-    a("user manual", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"),
-    " for various tips and tricks, including an introduction to relatedness coefficients. There is also a ",
-    a("paper", href = "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y", .noWS = "outside"),
-    " about QuickPed published in BMC Bioinformatics."
-  ),
+    a("online user manual", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"),
+    " for various tips and tricks, including an introduction to relatedness coefficients."),
+
+  p(bold("Citation: "), style = "margin: 0 0 10px",
+    "If you use QuickPed in a publication, please cite this paper: ",
+    "Vigeland MD (2021). QuickPed: an online tool for drawing pedigrees and analysing relatedness. ",
+    ital("BMC Bioinformatics"), ", ", bold("23"), ". DOI:",
+    a("10.1186/s12859-022-04759-y", href = "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y", .noWS = "outside"),
+    "."),
 
 
   fluidRow(
@@ -212,17 +212,15 @@ ui = fluidPage(
            )
         ),
       )
-
-
     ),
   ),
 
   p("This is QuickPed version", VERSION, "(",
     a("changelog", href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md", .noWS = "outside"), ").",
-    "QuickPed is powered by the ", a("ped suite", href = "https://cran.r-project.org/package=pedsuite", .noWS = "outside"),
-    " and imports ",
+    "QuickPed is powered by the ", a("pedsuite", href = "https://magnusdv.github.io/pedsuite/", .noWS = "outside"),
+    " and uses ",
     a("kinship2", href = "https://cran.r-project.org/package=kinship2", .noWS = "outside"),
-    " for plotting.",
+    " for alignment calculations.",
     "If you find something that isn't working properly, please file a bug report at ",
     a("https://github.com/magnusdv/quickped/issues", href = "https://github.com/magnusdv/quickped/issues", .noWS = "outside"), "."),
 )
