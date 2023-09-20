@@ -8,7 +8,8 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   fig.align = "center",
-  comment = "#>"
+  comment = "#>",
+  dpi = 300
 )
 ```
 
@@ -29,7 +30,7 @@ Creating pedigrees with QuickPed is very intuitive: Select a suitable start pedi
 
 ## Tips and tricks
 
-* __Selecting individuals__. Select/deselect pedigree members by clicking on them. Selected individuals are shown in red colour. Pro tip: To deselect everyone, click the "Selection" button under the "Remove" heading.
+* __Selecting individuals__. Select/deselect pedigree members by clicking on them. Selected individuals are shown in red colour. Pro tip: To deselect everyone, click the "Deselect" button under the "Remove" heading.
 * __Labels__: Automatic labelling of the pedigree members are available in two different formats. The button marked `1,2,..` applies numeric labels to all individuals, in the order of their appearance in the pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the members generation-wise, using roman numerals to indicate the generation number. 
 * __Unknown sex__. If you double click on a pedigree member, its symbol will change into a diamond representing unknown sex. Double click again to revert. Note: Only pedigree *leaves* (members without children) may have unknown sex.
 * __Plot settings__. If the pedigree gets too large, increase the plot region using the control panel on the far right. Here you may also adjust the margins, the size of pedigree symbols and text labels.
@@ -60,10 +61,10 @@ A useful feature of QuickPed is to produce text files describing pedigrees in so
 
 For a simple illustration, consider this pedigree:
 
-```{r trio-ped, echo = F, fig.height = 1.8, fig.width = 2.2, out.width = "25%", fig.align = "center"}
+```{r trio-ped, echo = F, fig.height = 2, fig.width = 2.2, out.width = "25%", fig.align = "center"}
 df = data.frame(id = 1:3, fid = c(0,0,1), mid = c(0,0,2), sex = c(1,2,2), aff = c(1,1,2))
 x = pedtools::as.ped(df[1:4])
-plot(x, aff = which(df$aff == 2), margins = c(1,1,1,1))
+plot(x, aff = which(df$aff == 2))
 ```
 
 A text file describing this pedigree may contain the following.
@@ -76,7 +77,7 @@ The columns are:
 
 * `id`: Individual ID
 * `fid`: Father's ID (or 0 if not included in the pedigree)
-* `mid`: Mother's ID (or 0 if not inlcuded in the pedigree)
+* `mid`: Mother's ID (or 0 if not included in the pedigree)
 * `sex`: Sex (1 = male; 2 = female; 0 = unknown)
 * `aff`: Affection status (1 = unaffected; 2 = affected; 0 = unknown)
 

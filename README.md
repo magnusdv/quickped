@@ -33,23 +33,23 @@ attributes like sex, affection status, twin status and ID labels.
 
 ## Tips and tricks
 
--   **Selecting individuals**. Select/deselect pedigree members by
-    clicking on them. Selected individuals are shown in red colour. Pro
-    tip: To deselect everyone, click the “Selection” button under the
-    “Remove” heading.
--   **Labels**: Automatic labelling of the pedigree members are
-    available in two different formats. The button marked `1,2,..`
-    applies numeric labels to all individuals, in the order of their
-    appearance in the pedigree plot. Alternatively, the `I-1, I-2,..`
-    button numbers the members generation-wise, using roman numerals to
-    indicate the generation number.
--   **Unknown sex**. If you double click on a pedigree member, its
-    symbol will change into a diamond representing unknown sex. Double
-    click again to revert. Note: Only pedigree *leaves* (members without
-    children) may have unknown sex.
--   **Plot settings**. If the pedigree gets too large, increase the plot
-    region using the control panel on the far right. Here you may also
-    adjust the margins, the size of pedigree symbols and text labels.
+- **Selecting individuals**. Select/deselect pedigree members by
+  clicking on them. Selected individuals are shown in red colour. Pro
+  tip: To deselect everyone, click the “Deselect” button under the
+  “Remove” heading.
+- **Labels**: Automatic labelling of the pedigree members are available
+  in two different formats. The button marked `1,2,..` applies numeric
+  labels to all individuals, in the order of their appearance in the
+  pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the
+  members generation-wise, using roman numerals to indicate the
+  generation number.
+- **Unknown sex**. If you double click on a pedigree member, its symbol
+  will change into a diamond representing unknown sex. Double click
+  again to revert. Note: Only pedigree *leaves* (members without
+  children) may have unknown sex.
+- **Plot settings**. If the pedigree gets too large, increase the plot
+  region using the control panel on the far right. Here you may also
+  adjust the margins, the size of pedigree symbols and text labels.
 
 ## Built-in pedigrees
 
@@ -60,50 +60,48 @@ interesting (albeit less common) pedigree structures like double cousins
 and quad half first cousins. Finally, the following *historic pedigrees*
 are available:
 
--   `Habsburg`: A subset of the infamously inbred family tree of the
-    Habsburg royalties. The inbreeding coefficient of King Charles II of
-    Spain (1661-1700) was approximately 0.25, i.e., equivalent to that
-    of a child produced by full siblings. Pedigree adapted from
-    [Wikipedia](https://en.wikipedia.org/wiki/Habsburg_family_tree). See
-    also [The Role of Inbreeding in the Extinction of a European Royal
-    Dynasty](https://doi.org/10.1371/journal.pone.0005174).
--   `Jicaque`: A pedigree of Jicaque Indians originally studied by
-    Chapman & Jacquard (1971) and subsequently used in many papers on
-    relatedness and pedigree coefficients.
--   `Queen Victoria (haemophilia)`: The royal family tree descending
-    from Queen Victoria, showing the X-linked inheritance of
-    *haemophilia*. Adapted from Figure S1 of [Genotype Analysis
-    Identifies the Cause of the “Royal
-    Disease”](https://doi.org/10.1126/science.1180660).
--   `Tutankhamun`: The family tree of the Egyptian pharao Tutankhamun,
-    as inferred from genetic evidence presented by Hawass et al. (2010),
-    [Ancestry and Pathology in King Tutankhamun’s
-    Family](https://doi.org/10.1001/jama.2010.121).
+- `Habsburg`: A subset of the infamously inbred family tree of the
+  Habsburg royalties. The inbreeding coefficient of King Charles II of
+  Spain (1661-1700) was approximately 0.25, i.e., equivalent to that of
+  a child produced by full siblings. Pedigree adapted from
+  [Wikipedia](https://en.wikipedia.org/wiki/Habsburg_family_tree). See
+  also [The Role of Inbreeding in the Extinction of a European Royal
+  Dynasty](https://doi.org/10.1371/journal.pone.0005174).
+- `Jicaque`: A pedigree of Jicaque Indians originally studied by Chapman
+  & Jacquard (1971) and subsequently used in many papers on relatedness
+  and pedigree coefficients.
+- `Queen Victoria (haemophilia)`: The royal family tree descending from
+  Queen Victoria, showing the X-linked inheritance of *haemophilia*.
+  Adapted from Figure S1 of [Genotype Analysis Identifies the Cause of
+  the “Royal Disease”](https://doi.org/10.1126/science.1180660).
+- `Tutankhamun`: The family tree of the Egyptian pharao Tutankhamun, as
+  inferred from genetic evidence presented by Hawass et al. (2010),
+  [Ancestry and Pathology in King Tutankhamun’s
+  Family](https://doi.org/10.1001/jama.2010.121).
 
 ## Relationship information
 
 The buttons `Coeffs` and `Describe` can be used to analyse the
 relatedness between selected individuals in the current pedigree.
 
--   `Coeffs`: This prints a variety of pedigree coefficients.
+- `Coeffs`: This prints a variety of pedigree coefficients.
 
-    -   The inbreeding coefficient of each individual (this works for
-        any number of selected members).
-    -   The kinship coefficient *φ*.
-    -   The IBD coefficients
-        *κ* = (*κ*<sub>0</sub>,*κ*<sub>1</sub>,*κ*<sub>2</sub>), defined
-        as the probabilities of sharing 0, 1, and 2 alleles identical by
-        descent (IBD). These are well-defined only if both individuals
-        are non-inbred.
-    -   The 9 condensed identity coefficients of Jacquard,
-        *Δ* = (*Δ*<sub>1</sub>,...,*Δ*<sub>9</sub>).
+  - The inbreeding coefficient of each individual (this works for any
+    number of selected members).
+  - The kinship coefficient $\varphi$.
+  - The IBD coefficients $\kappa = (\kappa_0, \kappa_1, \kappa_2)$,
+    defined as the probabilities of sharing 0, 1, and 2 alleles
+    identical by descent (IBD). These are well-defined only if both
+    individuals are non-inbred.
+  - The 9 condensed identity coefficients of Jacquard,
+    $\Delta = (\Delta_1, ..., \Delta_9)$.
 
-    More information about these coefficients can be found in the
-    documentation of the [ribd](https://github.com/magnusdv/ribd)
-    package, which is used in the calculations.
+  More information about these coefficients can be found in the
+  documentation of the [ribd](https://github.com/magnusdv/ribd) package,
+  which is used in the calculations.
 
--   `Describe`: This prints a verbal description of the relationship,
-    generated by [verbalisr](https://github.com/magnusdv/verbalisr).
+- `Describe`: This prints a verbal description of the relationship,
+  generated by [verbalisr](https://github.com/magnusdv/verbalisr).
 
 ## Ped files
 
@@ -124,11 +122,11 @@ A text file describing this pedigree may contain the following.
 
 The columns are:
 
--   `id`: Individual ID
--   `fid`: Father’s ID (or 0 if not included in the pedigree)
--   `mid`: Mother’s ID (or 0 if not inlcuded in the pedigree)
--   `sex`: Sex (1 = male; 2 = female; 0 = unknown)
--   `aff`: Affection status (1 = unaffected; 2 = affected; 0 = unknown)
+- `id`: Individual ID
+- `fid`: Father’s ID (or 0 if not included in the pedigree)
+- `mid`: Mother’s ID (or 0 if not included in the pedigree)
+- `sex`: Sex (1 = male; 2 = female; 0 = unknown)
+- `aff`: Affection status (1 = unaffected; 2 = affected; 0 = unknown)
 
 It should be noted that the ped format is not completely standardised,
 and different software may use slightly different versions. For example,

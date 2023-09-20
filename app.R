@@ -32,6 +32,7 @@ ui = fluidPage(
       ')
     )
   ),
+  tags$head(includeHTML("GA.html")),
 
 
   # Application title
@@ -143,10 +144,10 @@ ui = fluidPage(
       wellPanel(style = "height:210px; width:435px",
         fluidRow(
           column(width = 4, bigHeading("Relationships")),
-          column(width = 2, actionButton("describe", icon("comment"), class = "btn btn-success")), #  style = "width:80px;")),
-          column(width = 2, actionButton("coeffs", icon("calculator"), class = "btn btn-success")), # style = "width:80px")),
-          column(width = 2, actionButton("triangle", icon("chart-area"), class = "btn btn-success")), # style = "float:right")),
-          column(width = 2, actionButton("coeffTable", icon("list"), class = "btn btn-success")),# style = "float:right")),
+          column(width = 2, actionButton("describe", icon("comment"), class = "btn btn-success", onclick = "buttonClick('describe')")),
+          column(width = 2, actionButton("coeffs", icon("calculator"), class = "btn btn-success"), onclick = "buttonClick('coeffs')"),
+          column(width = 2, actionButton("triangle", icon("chart-area"), class = "btn btn-success"), onclick = "buttonClick('triangle')"),
+          column(width = 2, actionButton("coeffTable", icon("list"), class = "btn btn-success"), onclick = "buttonClick('coeffTable')"),
         ),
         bsTooltip("describe", "Describe relationship", placement = "top"),
         bsTooltip("coeffs", "Calculate coefficients", placement = "top"),
@@ -313,7 +314,7 @@ server = function(input, output, session) {
     ped = NULL
     while(is.null(ped)) {
       ped = tryCatch(
-        randomPed(n = n, f = f, selfing = FALSE) |> relabel(),
+        randomPed(n = n, founders = f, selfing = FALSE) |> relabel(),
         error = function(e) NULL, warning = function(e) NULL)
     }
     updatePedData(currentPedData(), ped = ped, aff = character(0),
