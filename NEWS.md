@@ -2,17 +2,15 @@
 
 * Update intro text and citation info.
 
+* Make links open in a new tab.
+
 
 # QuickPed 3.0.2
-
-## Bug fixes
 
 * Fixed bug occurring when updating labels in pedigrees with 123 (or more) individuals.
 
 
 # QuickPed 3.0.1
-
-## New features
 
 * Thicker red outline of selected individuals.
 
