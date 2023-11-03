@@ -6,6 +6,12 @@ stop2 = function (...) {
   do.call(stop, a)
 }
 
+mylink = function(text, href, .noWS = "outside") {
+  if(missing(href))
+    href = text
+  shiny::a(text, href = href, .noWS = .noWS, target = "_blank")
+}
+
 .myintersect = function(x, y)
   y[match(x, y, 0L)]
 

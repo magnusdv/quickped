@@ -46,14 +46,14 @@ ui = fluidPage(
     "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.
     For example, to create a new child, select the parents and press ", ital("Son"), " or ", ital("Daughter"), ".",
     "Check out the ",
-    a("online user manual", href = "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html", .noWS = "outside"),
+    mylink("online user manual", "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html"),
     " for various tips and tricks, including an introduction to relatedness coefficients."),
 
   p(bold("Citation: "), style = "margin: 0 0 10px",
     "If you use QuickPed in a publication, please cite this paper: ",
-    "Vigeland MD (2021). QuickPed: an online tool for drawing pedigrees and analysing relatedness. ",
+    "Vigeland MD (2022). QuickPed: an online tool for drawing pedigrees and analysing relatedness. ",
     ital("BMC Bioinformatics"), ", ", bold("23"), ". DOI:",
-    a("10.1186/s12859-022-04759-y", href = "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y", .noWS = "outside"),
+    mylink("10.1186/s12859-022-04759-y", "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y"),
     "."),
 
 
@@ -217,13 +217,14 @@ ui = fluidPage(
   ),
 
   p("This is QuickPed version", VERSION, "(",
-    a("changelog", href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md", .noWS = "outside"), ").",
-    "QuickPed is powered by the ", a("pedsuite", href = "https://magnusdv.github.io/pedsuite/", .noWS = "outside"),
+    mylink("changelog", "https://github.com/magnusdv/quickped/blob/master/NEWS.md"), ").",
+    "QuickPed is powered by the ",
+    mylink("pedsuite", "https://magnusdv.github.io/pedsuite/"),
     " and uses ",
-    a("kinship2", href = "https://cran.r-project.org/package=kinship2", .noWS = "outside"),
+    mylink("kinship2", "https://cran.r-project.org/package=kinship2"),
     " for alignment calculations.",
     "If you find something that isn't working properly, please file a bug report at ",
-    a("https://github.com/magnusdv/quickped/issues", href = "https://github.com/magnusdv/quickped/issues", .noWS = "outside"), "."),
+    mylink("https://github.com/magnusdv/quickped/issues"), "."),
 )
 
 
