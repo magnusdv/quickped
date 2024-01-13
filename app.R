@@ -77,7 +77,8 @@ ui = fluidPage(
             ),
             br(),
             fileInput("loadped", label = "Load a ped file", buttonLabel = icon("folder-open"),
-                      accept = "text/plain", width = "100%", placeholder = NULL),
+                      accept = c(".ped", ".txt", ".csv", ".tsv"),
+                      width = "100%", placeholder = NULL),
             fluidRow(
               column(5, hr(style = "border-top: 1px solid #000000; margin-top: 15px; margin-bottom: 20px")),
               column(2, "or", style = "padding-left:10px; margin-top: 5px"),
