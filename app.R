@@ -690,7 +690,7 @@ server = function(input, output, session) {
   output$savePlotPdf = downloadHandler(
     filename = "quickped.pdf",
     content = function(file) {
-      pdf(file, width = input$width/72, height = input$height/72)
+      cairo_pdf(file, width = input$width/72, height = input$height/72)
       drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
       dev.off()
     },
