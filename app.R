@@ -12,28 +12,9 @@ VERSION = "3.0.3"
 
 ui = fluidPage(
 
-  useShinyjs(),  # Set up shinyjs
-
-  tags$head(
-    tags$style(
-      HTML('
-        .well {padding-top: 10px; margin-bottom: 15px}
-        .btn-default {margin-left: 0px; margin-right: 0px; margin-top: 2px; margin-bottom: 2px}
-        .btn-file {margin-top: 0px; margin-bottom: 0px}
-        .control-label {margin-bottom: 0px; padding-bottom:0px}
-        .form-group {margin-bottom: 3px}
-        .irs-min, .irs-max, .irs-single {display:none; line-height: 0px}
-        .irs-bar, .irs-bar-edge, .irs-line  {top: 15px !important}
-        .irs-handle {top: 7px !important;}
-        .irs {height: 30px; margin-bottom:11px}
-        #startped + div>.selectize-dropdown {width: 190px !important;}
-        .optgroup-header {color: black !important; font-weight: bold !important;}
-        .shiny-file-input-progress {margin-bottom: 10px;}
-      ')
-    )
-  ),
+  includeCSS("www/custom.css"),
   tags$head(includeHTML("GA.html")),
-
+  useShinyjs(),
 
   # Application title
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
