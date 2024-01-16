@@ -170,13 +170,23 @@ ui = fluidPage(
         column(width = 6,
            wellPanel(style = "height:430px; width:180px",
                      bigHeading("Plot settings"),
-                     sliderInput("width", "Width", ticks = FALSE, min = 100, max = 1200, value = 430, step = 10),
-                     sliderInput("height", "Height", ticks = FALSE, min = 100, max = 1200, value = 430, step = 10),
-                     sliderInput("cex", "Expansion", ticks = FALSE, min = 0.5, max = 3, value = 1.4, step = 0.1),
-                     sliderInput("symbolsize", "Symbol size", ticks = FALSE, min = 0.5, max = 3, value = 1, step = 0.1),
-                     sliderInput("mar", "Margins", ticks = FALSE, min = 0.1, max = 10, value = 3, step = 0.1),
+                     fluidRow(class = "num-input-row",
+                        column(6, numericInput("width", "Width", value = 430, min = 100, max = 1200, step = 10)),
+                        column(6, numericInput("height", "Height", value = 430, min = 100, max = 1200, step = 10))
+                      ),
+                      fluidRow(class = "num-input-row",
+                        column(6, numericInput("cex", "Cex", value = 1.4, min = 0.5, max = 3, step = 0.1)),
+                        column(6, numericInput("symbolsize", "Symbols", value = 1, min = 0.5, max = 3, step = 0.1))
+                      ),
+                      fluidRow(class = "num-input-row",
+                        column(12, numericInput("mar", "Margins", value = 3, min = 0.1, max = 10, step = 0.1))
+                      ),
+
                      br(),
-                     fluidRow(
+                     checkboxGroupInput("settings", "Other options (beta)", selected  = NULL,
+                                        c("Straight legs" = "straightlegs", "Arrows" = "arrows")),
+                     br(),
+                     fluidRow(style = "position: absolute; top:375px",
                        column(width = 6, align = "left", style = "padding-right:5px;",
                               downloadButton("savePlotPng", "PNG", class = "btn btn-info", style = "padding-left:8px;width: 100%;"),
                        ),
@@ -264,11 +274,11 @@ server = function(input, output, session) {
     choice = req(input$startped)
     params = paramsBuiltin(choice)
 
-    updateSliderInput(session, "width", value = params$width)
-    updateSliderInput(session, "height", value = params$height)
-    updateSliderInput(session, "cex", value = params$cex)
-    updateSliderInput(session, "symbolsize", value = params$symbolsize)
-    updateSliderInput(session, "mar", value = params$mar)
+    updateNumericInput(session, "width", value = params$width)
+    updateNumericInput(session, "height", value = params$height)
+    updateNumericInput(session, "cex", value = params$cex)
+    updateNumericInput(session, "symbolsize", value = params$symbolsize)
+    updateNumericInput(session, "mar", value = params$mar)
 
     pedDat = req(BUILTIN_PEDS[[choice]])
     if(is.ped(pedDat))
