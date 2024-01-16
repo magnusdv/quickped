@@ -501,12 +501,9 @@ server = function(input, output, session) {
     # Show labels
     updateRadioButtons(session, "showlabs", selected = "show")
 
-    # Reset plot settings
-    updateSliderInput(session, "width", value = 430)
-    updateSliderInput(session, "height", value = 430)
-    updateSliderInput(session, "cex", value = 1.4)
-    updateSliderInput(session, "symbolsize", value = 1)
-    updateSliderInput(session, "mar", value = 3)
+    # Reset settings (main plot settings reset in 'startped')
+    updateCheckboxGroupInput(session, "settings", selected = character(0))
+    updateCheckboxGroupInput(session, "include", selected = "head")
   })
 
 
@@ -589,7 +586,7 @@ server = function(input, output, session) {
     .pedScaling(align, annot, cex = input$cex, symbolsize = input$symbolsize, margins = rep(input$mar, 4))
   })
 
-  output$plot = renderPlot({ #print("PLOT")
+  output$plot = renderPlot({ #print("plot")
       dat = tryCatch({
         align = plotAlignment()
         if(anyNA(align$x))
@@ -828,20 +825,9 @@ server = function(input, output, session) {
     ))
   })
 
-  output$plotTriangle = renderPlot({
-      ped = currentPedData()$ped
-      ids = sel()
-      if(length(ids))
-        ids = ids[ribd::inbreeding(ped, ids) == 0]
-
-      print(showInTriangle(kappa(), cex = 1.5, cexPoint = 1.6, cexText = 1.6,
-                     col = "blue", plotType = "ggplot2"))
-      par(fig = c(.5,1,.5,1), new = TRUE)
-      plot(ped, hatched = ids)
-    },
-
-    width = 560,
-    height = 480,
+  output$plotTriangle = renderPlot(
+    plotKappa(currentPedData()$ped, kappa(), sel()),
+    width = 560, height = 480,
     res = 72 # to low, but increasing it disturbs everything else
   )
 
@@ -849,7 +835,7 @@ server = function(input, output, session) {
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 560*2, height = 480*2, res = 72*2)
-      plotKappa(kappa(), ids = sel())
+      plotKappa(currentPedData()$ped, kappa(), ids = sel())
       dev.off()
     },
     contentType = "image/png"

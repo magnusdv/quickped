@@ -32,17 +32,25 @@ breakLabs = function(x, breakAt = "  ") {
   labs
 }
 
-# Old version; not used
-plotKappa = function(k, ids, col = "blue") {
-  showInTriangle(k, cex = 2.5, lwd = 3.5, col = col, cexPoint = 1.6,
-                 cexText = 1.6, labels = FALSE)
-  lab = paste(ids, collapse = " - ")
-  adj = c(.5, -1.25)
-  n = nchar(lab)
-  if(k[1] == 0 && n >= 20) adj[1] = 0.25
-  else if(n > 46 - 30*k[1]) adj[1] = 0.5 + (1 - (46 - 30*k[1])/n)
 
-  text(k[1], k[3], lab, cex = 1.5, col = col, adj = adj)
-  text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
+plotKappa = function(ped, kappa, ids, col = "blue") {
+  inbr = ribd::inbreeding(ped, ids)
+  if(length(ids))
+    ids = ids[inbr == 0]
+
+  # Reduce cex if many points
+  cex = 1.5 - 0.1 * (nrow(kappa) %/% 10)
+  cex = max(cex, 0.8)
+
+  # Triangle plot
+  gg = showInTriangle(kappa, cex = cex, cexPoint = 1.6, cexText = 1.6,
+                      col = "blue", plotType = "ggplot2")
+  # text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
+
+  # Pedigree in top-right corner (do this first)
+  par(fig = c(.48, .98, .48, .98))
+  plot(ped, hatched = ids)
+  par(new = TRUE)
+  print(gg, newpage = FALSE)
 }
 
