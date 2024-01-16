@@ -566,7 +566,10 @@ server = function(input, output, session) {
 
   plotAlignment = reactive({ #print("align")
     curr = currentPedData()
-    .pedAlignment(curr$ped, twins = curr$twins)
+    arrows = "arrows" %in% input$settings
+    straight = "straightlegs" %in% input$settings
+    .pedAlignment(curr$ped, twins = curr$twins, arrows = arrows,
+                  align = if(straight) c(0,0) else c(1.5,2))
   })
 
   plotAnnotation = reactive({ #print("annot")
