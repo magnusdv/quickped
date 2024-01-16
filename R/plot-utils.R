@@ -32,9 +32,9 @@ breakLabs = function(x, breakAt = "  ") {
   labs
 }
 
-
+# Old version; not used
 plotKappa = function(k, ids, col = "blue") {
-  showInTriangle(k, cex = 2.5, lwd = 3.5, col = "blue", cexPoint = 1.6,
+  showInTriangle(k, cex = 2.5, lwd = 3.5, col = col, cexPoint = 1.6,
                  cexText = 1.6, labels = FALSE)
   lab = paste(ids, collapse = " - ")
   adj = c(.5, -1.25)
@@ -45,3 +45,4 @@ plotKappa = function(k, ids, col = "blue") {
   text(k[1], k[3], lab, cex = 1.5, col = col, adj = adj)
   text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
 }
+

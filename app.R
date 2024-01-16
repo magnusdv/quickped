@@ -5,6 +5,8 @@ suppressPackageStartupMessages({
   library(pedtools)
   library(ribd)
   library(verbalisr)
+  library(ggplot2)
+  library(ggrepel)
 })
 
 
@@ -790,20 +792,25 @@ server = function(input, output, session) {
     ped = currData$ped
     ids = sortIds(ped, ids = sel())
 
-    if(length(ids) != 2) {
-      relText("Please select exactly 2 individuals.")
-      return()
-    }
-
     if(hasMZtwins(currData)) {
       relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
+    if(!length(ids))
+      ids = labels(ped)
+
+    if(length(ids) == 1) {
+      relText("Please select at least 2 individuals (or none).")
+      return()
+    }
+
     inb = ribd::inbreeding(ped, ids)
     if(any(inb > 0)) {
-      relText(c("Kappa coefficients are undefined.","(Some of the individuals are inbred.)"))
-      return()
+      relText(c("Note: Kappa undefined for inbred individuals"))
+      ids = ids[inb == 0]
+      if(length(ids) < 2)
+        return()
     }
 
     k = kappaIBD(ped, ids, simplify = TRUE)
@@ -821,8 +828,18 @@ server = function(input, output, session) {
     ))
   })
 
-  output$plotTriangle = renderPlot(
-    plotKappa(kappa(), ids = sel()),
+  output$plotTriangle = renderPlot({
+      ped = currentPedData()$ped
+      ids = sel()
+      if(length(ids))
+        ids = ids[ribd::inbreeding(ped, ids) == 0]
+
+      print(showInTriangle(kappa(), cex = 1.5, cexPoint = 1.6, cexText = 1.6,
+                     col = "blue", plotType = "ggplot2"))
+      par(fig = c(.5,1,.5,1), new = TRUE)
+      plot(ped, hatched = ids)
+    },
+
     width = 560,
     height = 480,
     res = 72 # to low, but increasing it disturbs everything else
