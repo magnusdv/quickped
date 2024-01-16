@@ -1,3 +1,14 @@
+# QuickPed 3.1.0
+
+* Saving as pdf now uses `cairo_pdf()`, allowing a wider range of characters.
+
+* Improved relationship triangle plot.
+
+* New (experimental) plot options: Arrows and straight legs.
+
+* For regular plot options, replace sliders with numeric inputs.
+
+
 # QuickPed 3.0.3
 
 * Update intro text and citation info.

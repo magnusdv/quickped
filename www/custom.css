@@ -8,16 +8,17 @@
 
 .form-group {margin-bottom: 3px}
 
-.irs-min, .irs-max, .irs-single {display:none; line-height: 0px}
-
-.irs-bar, .irs-bar-edge, .irs-line  {top: 15px !important}
-
-.irs-handle {top: 7px !important;}
-
-.irs {height: 30px; margin-bottom:11px}
 
 #startped + div>.selectize-dropdown {width: 190px !important;}
 
 .optgroup-header {color: black !important; font-weight: bold !important;}
 
 .shiny-file-input-progress {margin-bottom: 10px;}
+
+
+.num-input-row { padding-bottom: 8px; }
+.num-input-row .col-sm-6:first-child { padding-right: 6px; }
+.num-input-row .col-sm-6:last-child  { padding-left: 6px; }
+.shiny-input-number.form-control {
+  padding: 5px 5px 5px 10px; /* top, right, bottom, left */
+}
