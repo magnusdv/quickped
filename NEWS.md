@@ -1,3 +1,8 @@
+# QuickPed 3.1.1
+
+* Better checks of plot setting inputs
+
+
 # QuickPed 3.1.0
 
 * Saving as pdf now uses `cairo_pdf()`, allowing a wider range of characters.
