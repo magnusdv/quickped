@@ -240,7 +240,8 @@ server = function(input, output, session) {
 
 
   updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
-                           deceased = NULL, twins = NULL, clearSel = TRUE, clearInput = TRUE, clearRel = TRUE) {
+                           deceased = NULL, twins = NULL, clearSel = TRUE,
+                           clearInput = TRUE, clearRel = TRUE) {  #print("updatePedData")
     if(is.null(ped) && is.null(aff) && is.null(carrier) && is.null(deceased) && is.null(twins))
       return()
 
@@ -580,25 +581,33 @@ server = function(input, output, session) {
   })
 
   plotScaling = reactive({ #print("scaling")
-    input$width; input$height # react to these also
+    # React to these
+    checknum(input$width, "Width", min = 10, max = Inf)
+    checknum(input$height, "Heigth", min = 10, max = Inf)
+
     align = req(plotAlignment())
     annot = list(textUnder = plotLabs())
-    .pedScaling(align, annot, cex = input$cex, symbolsize = input$symbolsize, margins = rep(input$mar, 4))
+    cex = checknum(input$cex, "Cex", min = 0.01, max = 10)
+    symsize = checknum(input$symbolsize, "Symbols", min = 0.01, max = 10)
+    mar = checknum(input$mar, "Margins", min = 0, max = 10)
+
+    .pedScaling(align, annot, cex = cex, symbolsize = symsize, margins = rep(mar, 4))
   })
 
   output$plot = renderPlot({ #print("plot")
-      dat = tryCatch({
+    dat = tryCatch({
         align = plotAlignment()
         if(anyNA(align$x))
           stop2("Sorry, for some reason this pedigree did align properly.")
         drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
-        },
-        error = errModal)
-      box("outer", col = 1)
-      req(dat) # if unsuccessful, return gracefully
+      },
+      error = errModal)
+    req(dat) # if unsuccessful, return gracefully
+    box("outer", col = 1)
     },
     execOnResize = TRUE, res = 72, # default; seems ok in practice
-    width = function() input$width, height = function() input$height
+    width = function() max(c(1, abs(input$width)), na.rm = TRUE),
+    height = function() max(c(1, abs(input$height)), na.rm = TRUE)
   )
 
   positionDf = reactive({

@@ -35,9 +35,15 @@ errModal = function(..., html = FALSE) {
     mess = paste(lapply(args, toString), collapse = "")
   if(html)
     mess = HTML(mess)
+
   showModal(modalDialog(mess, easyClose = TRUE))
 }
 
+checknum = function(a, var, min = 0, max = Inf) { #print("checknum")
+  if(is.na(a) || a < min || a > max)
+    stop2(sprintf("Invalid value of '%s'", var))
+  a
+}
 # range2seq = function(s) {
 #   rlist = lapply(strsplit(s, ",")[[1]], function(r) {
 #     fromto = as.integer(strsplit(r, "-")[[1]])
