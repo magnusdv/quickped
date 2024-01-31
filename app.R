@@ -798,12 +798,10 @@ server = function(input, output, session) {
 
   ### Triangle plot
 
-  kappa = reactiveVal(NULL)
-
   observeEvent(input$triangle, {
     currData = currentPedData()
     ped = currData$ped
-    ids = sortIds(ped, ids = sel())
+    ids = sel()
 
     if(hasMZtwins(currData)) {
       relText("This feature does not support MZ twin pedigrees.")
@@ -818,23 +816,24 @@ server = function(input, output, session) {
       return()
     }
 
-    inb = ribd::inbreeding(ped, ids)
-    if(any(inb > 0)) {
+    if(any(ribd::inbreeding(ped, ids) > 0))
       relText(c("Note: Kappa undefined for inbred individuals"))
-      ids = ids[inb == 0]
-      if(length(ids) < 2)
-        return()
-    }
-
-    k = kappaIBD(ped, ids, simplify = TRUE)
-    kappa(k)
 
     showModal(modalDialog(
       h3("Relatedness triangle", align = "center"),
       plotOutput("plotTriangle", width = "560px", height = "480px"),
-      footer = tagList(
-        modalButton("Cancel"),
-        downloadButton("saveTriangle", "Download", class = "btn btn-info")
+      footer = tags$div(
+        tags$div(
+          style = "float: left; margin-left:10px; margin-top:5px",
+          radioButtons("trianglemode", NULL, inline = TRUE, selected = "noninbred",
+                       choices = c("Noninbred (κ)" = "noninbred",
+                                   "Inbred (Δ)" = "inbred")),
+        ),
+        tags$div(
+          style = "float: right",
+          modalButton("Cancel"),
+          downloadButton("saveTriangle", "Download", class = "btn btn-info")
+        )
       ),
       size = "m",
       easyClose = TRUE
@@ -842,7 +841,7 @@ server = function(input, output, session) {
   })
 
   output$plotTriangle = renderPlot(
-    plotKappa(currentPedData()$ped, kappa(), sel()),
+    plotKappa(currentPedData()$ped, ids = sel(), mode = input$trianglemode),
     width = 560, height = 480,
     res = 72 # to low, but increasing it disturbs everything else
   )
@@ -851,7 +850,7 @@ server = function(input, output, session) {
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 560*2, height = 480*2, res = 72*2)
-      plotKappa(currentPedData()$ped, kappa(), ids = sel())
+      plotKappa(currentPedData()$ped, ids = sel(), mode = input$trianglemode)
       dev.off()
     },
     contentType = "image/png"
