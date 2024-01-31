@@ -596,12 +596,19 @@ server = function(input, output, session) {
 
   output$plot = renderPlot({ #print("plot")
     dat = tryCatch({
-        align = plotAlignment()
+        align = withCallingHandlers(
+          plotAlignment(),
+          warning = function(w) {
+            if(startsWith(w$message, "Unexpected result in autohint"))
+              invokeRestart("muffleWarning")
+          }
+        )
         if(anyNA(align$x))
           stop2("Sorry, for some reason this pedigree did align properly.")
         drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
       },
       error = errModal)
+
     req(dat) # if unsuccessful, return gracefully
     box("outer", col = 1)
     },
