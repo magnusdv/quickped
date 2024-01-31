@@ -290,6 +290,7 @@ server = function(input, output, session) {
     defaultArgs = list(currData = currentPedData(), aff = character(0), carrier = character(0),
                 twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
                 deceased = character(0), clearInput = FALSE)
+
     args = modifyList(defaultArgs, pedDat)
     do.call(updatePedData, args)
   })

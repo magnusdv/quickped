@@ -85,10 +85,12 @@ BUILTIN_PEDS = list(
   "2nd cousins"  = swpSx(cousinPed(2), 12),
   "Half 1st cousins" = swpSx(halfCousinPed(1), c(4,9)),
   "Half 2nd cousins" = swpSx(halfCousinPed(2), 13),
+  "Ancestral (4 gen)" = ancestralPed(3),
 
   "3/4-siblings" = nuclearPed(2) |> addSon(c(3,5), verbose = F) |> addDaughter(c(4,5)) |> relab(),
   "5/8-siblings" = swpSx(halfSibStack(2), 8),
   "Full sib mating" = fullSibMating(1),
+  "Half sib triangle" = halfSibTriangle(4),
   "Double 1st cousins" = swpSx(doubleFirstCousins(), 10),
   "Double 2nd cousins A" = swpSx(doubleCousins(degree1 = 2, degree2 = 2), 18),
   "Double 2nd cousins B" = mergePed(cousinPed(2), nuclearPed(2, sex=2), by = c("4" = 3, "6" = 4), relabel = TRUE),
@@ -140,12 +142,14 @@ BUILTIN_CHOICES = list(
     "1st cousins",
     "2nd cousins",
     "Half 1st cousins",
-    "Half 2nd cousins"
+    "Half 2nd cousins",
+    "Ancestral (4 gen)"
   ),
   `Complex pedigrees` = list(
     "3/4-siblings",
     "5/8-siblings",
     "Full sib mating",
+    "Half sib triangle",
     "Double 1st cousins",
     "Double 2nd cousins A",
     "Double 2nd cousins B",
