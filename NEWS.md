@@ -1,6 +1,8 @@
 # QuickPed 3.2.0
 
-* New feature: Inbred version of IBD triangle
+* New feature: Inbred version of IBD triangle.
+
+* New built-in pedigrees: Ancestral (4 gen) and Half sib triangle.
 
 
 # QuickPed 3.1.1
