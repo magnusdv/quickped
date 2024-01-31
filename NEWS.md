@@ -1,3 +1,8 @@
+# QuickPed 3.2.0
+
+* New feature: Inbred version of IBD triangle
+
+
 # QuickPed 3.1.1
 
 * Better checks of plot setting inputs
