@@ -15,6 +15,9 @@ mylink = function(text, href, .noWS = "outside") {
 .myintersect = function(x, y)
   y[match(x, y, 0L)]
 
+.mysetdiff = function(x, y)
+  unique.default(x[match(x, y, 0L) == 0L])
+
 bigHeading = function(x)
   h4(strong(x), .noWS = "before")
 
@@ -107,14 +110,22 @@ hasMZtwins = function(currData) {
   length(code) > 0 && 1 %in% code
 }
 
-addChild = function(x, id, sex) {
+# TODO: Delete?
+.addChild = function(x, id, sex) {
 
-  id = sortIds(x, id)
+  #id = sortIds(x, id)
 
   if(length(id) > 2)
     stop2("Too many individuals are selected. Current selection: ", id, "<br><br>",
           "To add a child, please indicate one or both parents.")
 
+  if(length(id) == 2) {
+    sx = getSex(x, id)
+    fa = id[sx == 1]
+    mo = id[sx == 2]
+    if(length(fa) != 1 || length(mo) != 1)
+      stop2("Incompatible sex of selected parents")
+  }
   if(length(id) == 1) {
     if(sex == 1)
       return(addSon(x, id, verbose = FALSE))
@@ -143,10 +154,7 @@ addSib = function(x, id, sex) {
   if(id %in% founders(x))
     x = addParents(x, id, verbose = FALSE)
 
-  fa = father(x, id)
-  mo = mother(x, id)
-
-  newped = addChildren(x, father = fa, mother = mo, nch = 1, sex = sex, verbose = FALSE)
+  newped = addChild(x, parents(x, id), sex = sex, verbose = FALSE)
   return(newped)
 }
 
@@ -157,17 +165,17 @@ removeSel = function(currData, ids, updown) {
     error = function(e) conditionMessage(e)
   )
 
-  isEmpty = is.null(newped)
-  discon = is.character(newped) && grepl("disconnected", newped, ignore.case = TRUE)
-
-  errmsg = if(is.character(newped)) newped else NULL
-  if(isEmpty || discon)
-    errmsg = sprintf("Removing %s would leave a disconnected or empty pedigree",
+  errmsg = NULL
+  if(is.character(newped))
+    errmsg = newped
+  else if(is.null(newped) || !is.ped(newped))
+    errmsg = sprintf("Removing %s would leave a empty pedigree",
                      ifelse(length(ids) == 1, paste("individual", ids), "these individuals"))
+
   if(!is.null(errmsg))
     stop2(errmsg)
 
-  newID = newped$ID
+  newID = labels(newped)
   newaff  = .myintersect(currData$aff, newID)
   newcarr = .myintersect(currData$carrier, newID)
   newdec  = .myintersect(currData$deceased, newID)
@@ -183,3 +191,73 @@ sortIds = function(x, ids) {
   ids[order(intern)]
 }
 
+iconButton = function(id, icon, w = 1, size = "m", asp = "1/1") {
+
+  h = switch(match.arg(size), small = 30, medium = 36)
+  istyle = sprintf("background-image: url('%s'); width: 100%%; aspect-ratio: %s;",
+                      icon, asp)
+  actionButton(inputId = id,
+               label = NULL,
+               icon = icon(name = NULL, class = "custom_icon", style = istyle),
+               class = "icon_button",
+               style = sprintf("width: calc((20%% - 4/5*2px)*%d);", w))
+}
+
+
+cleanPedArgs = list(
+  hatched = character(0),
+  aff = character(0),
+  carrier = character(0),
+  deceased = character(0),
+  dashed = character(0),
+  cols = list(border = 1, fill = NA),
+  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))
+)
+
+cleanVec = function(x, val) {
+  if(length(x) == 1 && identical(x, val))
+    return()
+}
+# Update vector x by vector y
+# Alternative syntax: Set value `val` for all elements named by y
+modifyVec = function(x, y, val = NULL) {
+  if(!length(y))
+    return(x)
+
+  # If x has no names, remove
+  if(is.null(names(x)))
+    length(x) = 0
+
+  if(!is.null(val))
+    y = rep(val, length(y)) |> setNames(y)
+
+  res = c(x, y)
+  res[!duplicated.default(names(res), fromLast = TRUE)]
+}
+
+changeSex = function(ped, ids, sex, twins = NULL) {
+
+  if(sex == 0) {
+    if(!all(ids %in% leaves(ped)))
+      stop2("Only individuals without children can have unknown sex")
+    newped = setSex(ped, ids, sex = 0)
+    return(newped)
+  }
+
+  # By now: sex is 1 or 2
+  currentSex = getSex(ped, ids)
+
+  newped = ped |>
+    swapSex(ids[currentSex == (3-sex)], verbose = FALSE) |>
+    setSex(ids[currentSex == 0], sex = sex)
+
+  # Catch discordant swaps for MZ twins
+  if(nrow(mz <- twins[twins$code == 1, , drop = FALSE])) {
+    sx1 = getSex(newped, mz$id1)
+    sx2 = getSex(newped, mz$id2)
+    if(any(sx1 > 0 & sx2 > 0 & sx1 != sx2))
+      stop2("Cannot change sex of one MZ twin")
+  }
+
+  newped
+}

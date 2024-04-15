@@ -12,7 +12,7 @@ updateLabelsData = function(currData, old = NULL, new, .alignment = NULL) {
   }
   else {
     newped = relabel(ped, old = old, new = new, reorder = FALSE)
-    idMap = setNames(newped$ID, ped$ID)
+    idMap = setNames(labels(newped), labels(ped))
   }
 
   newtw = currData$twins
@@ -27,7 +27,7 @@ updateLabelsData = function(currData, old = NULL, new, .alignment = NULL) {
 }
 
 breakLabs = function(x, breakAt = "  ") {
-  labs = x$ID
+  labs = labels(x)
   names(labs) = gsub(breakAt, "\n", labs)
   labs
 }

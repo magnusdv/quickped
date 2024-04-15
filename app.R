@@ -81,43 +81,66 @@ ui = fluidPage(
           wellPanel(style = "height:430px; width:210px",
             bigHeading("Modify"),
             midHeading("Add"),
-            fluidRow(
-              pedButton("addson", "Son", side = "left"),
-              pedButton("adddaughter", "Daughter", side = "right"),
+            fluidRow(style = "margin-left:0px; width: 170px",
+              iconButton("addson", icon = "add-son.svg", size = "m"),
+              iconButton("adddaughter", icon = "add-daughter.svg", size = "m"),
+              iconButton("addsibling", icon = "add-sib.svg", size = "m"),
+              iconButton("addparents", icon = "add-parents.svg", size = "m", w = 2, asp = "2/1"),
+              bsTooltip("addson", "Son"),
+              bsTooltip("adddaughter", "Daughter"),
+              bsTooltip("addsibling", "Sibling"),
+              bsTooltip("addparents", "Parents"),
+            ),
+            midHeading("Sex"),
+            fluidRow(style = "margin-left:0px; width: 170px",
+              iconButton("sex1", icon = "sex-male.svg"),
+              iconButton("sex2", icon = "sex-female.svg"),
+              iconButton("sex0", icon = "sex-unknown.svg"),
+              bsTooltip("sex1", "Male"),
+              bsTooltip("sex2", "Female"),
+              bsTooltip("sex0", "Unknown"),
+            ),
+            midHeading("Symbol"),
+            fluidRow(style = "margin-left:0px; width: 170px",
+              iconButton("clean", icon = "open.svg"),
+              iconButton("hatched", icon = "hatched.svg"),
+              iconButton("carrier", icon = "carrier.svg"),
+              iconButton("deceased", icon = "deceased.svg"),
+              iconButton("dashed", icon = "dashed.svg"),
+            ),
+
+            midHeading("Fill"),
+            fluidRow(style = "margin-left:0px; width: 170px",
+              iconButton("fill-white", icon = "fill-white.svg"),
+              iconButton("fill-black", icon = "fill-black.svg"),
+              iconButton("fill-red", icon = "fill-red.svg"),
+              iconButton("fill-green", icon = "fill-green.svg"),
+              iconButton("fill-blue", icon = "fill-blue.svg"),
+            ),
+            fluidRow(style = "margin-left:0px; width: 170px",
+              iconButton("fill-pink", icon = "fill-pink.svg"),
+              iconButton("fill-cyan", icon = "fill-cyan.svg"),
+              iconButton("fill-magenta", icon = "fill-magenta.svg"),
+              iconButton("fill-yellow", icon = "fill-yellow.svg"),
+              iconButton("fill-gray", icon = "fill-gray.svg"),
             ),
             fluidRow(
-              pedButton("addsibling", "Sibling", side = "left"),
-              pedButton("addparents", "Parents", side = "right"),
-            ),
-            midHeading("Switch"),
-            fluidRow(
-              pedButton("swapsex", "Sex", side = "left"),
-              pedButton("affection", "Affected", side = "right"),
-            ),
-            fluidRow(
-              pedButton("carrier",  "Carrier", side = "left"),
-              pedButton("deceased", "Deceased", side = "right"),
-            ),
-            midHeading("Twins"),
-            fluidRow(
-              pedButton("mz", "MZ", side = "left"),
-              pedButton("dz", "DZ", side = "right")
-            ),
-            midHeading("Remove"),
-            fluidRow(
-              column(6, align = "left", style = "padding-right: 3px;",
-                fluidRow(
-                  column(6, style = "padding-right: 3px;",
-                         actionButton("removeDown", icon("arrow-down"), width = "100%",
-                                      style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
-                  column(6, style = "padding-left: 3px;",
-                         actionButton("removeUp", icon("arrow-up"), width = "100%",
-                                      style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 0px")),
-               )),
-              pedButton("clearselection", "Deselect", side = "right"),
-              bsTooltip("removeDown", HTML("Remove&nbsp;selected + descendants"), placement = "top"),
-              bsTooltip("removeUp", HTML("Remove&nbsp;selected + ancestors"), placement = "top"),
-              bsTooltip("clearselection", "Deselect all", placement = "top"),
+              column(6,
+                 midHeading("Twins"),
+                 fluidRow(
+                   pedButton("mz", "MZ", side = "left"),
+                   pedButton("dz", "DZ", side = "right")
+                 )
+              ),
+              column(6,
+                 midHeading("Remove"),
+                 fluidRow(
+                   pedButton("removeDown", NULL, icon("arrow-down"), side = "left"),
+                   pedButton("removeUp", NULL, icon("arrow-up"), side = "right"),
+                   bsTooltip("removeDown", HTML("Remove&nbsp;selected + descendants"), placement = "top"),
+                   bsTooltip("removeUp", HTML("Remove&nbsp;selected + ancestors"), placement = "top"),
+                  ),
+              ),
             ),
             disabled(actionButton("undo", "Undo", class = "btn btn-warning",
                                   style = "position: absolute; bottom:30px; width: 170px")),
@@ -225,8 +248,10 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  currentPedData = reactiveVal(list(ped = nuclearPed(), aff = character(0), carrier = character(0), deceased = character(0),
-                                    twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))))
+  currentPedData = reactiveVal(list(
+    ped = nuclearPed(), hatched = character(0), aff = character(0),
+    carrier = character(0), deceased = character(0),
+    twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))))
 
   previousStack = reactiveVal(list())
 
@@ -239,19 +264,25 @@ server = function(input, output, session) {
 # Update pedigree ---------------------------------------------------------
 
 
-  updatePedData = function(currData, ped = NULL, aff = NULL, carrier = NULL,
-                           deceased = NULL, twins = NULL, clearSel = TRUE,
-                           clearInput = TRUE, clearRel = TRUE) {  #print("updatePedData")
-    if(is.null(ped) && is.null(aff) && is.null(carrier) && is.null(deceased) && is.null(twins))
+  updatePedData = function(currData, ped = NULL, hatched = NULL, aff = NULL,
+                           carrier = NULL, deceased = NULL, dashed = NULL,
+                           cols = NULL, twins = NULL,
+                           clearSel = TRUE, clearInput = TRUE, clearRel = TRUE) {  #print("updatePedData")
+    if(is.null(ped) && is.null(hatched) && is.null(aff) && is.null(carrier) &&
+       is.null(deceased) && is.null(dashed) && is.null(cols) && is.null(twins))
       return()
 
     if(is.null(ped)) ped = currData$ped
+    if(is.null(hatched)) hatched = currData$hatched
     if(is.null(aff)) aff = currData$aff
     if(is.null(carrier)) carrier = currData$carrier
     if(is.null(deceased)) deceased = currData$deceased
+    if(is.null(dashed)) dashed = currData$dashed
+    if(is.null(cols)) cols = currData$cols
     if(is.null(twins)) twins = currData$twins
 
-    newData = list(ped = ped, aff = aff, carrier = carrier, deceased = deceased, twins = twins)
+    newData = list(ped = ped, hatched = hatched, aff = aff, carrier = carrier,
+                   deceased = deceased, dashed = dashed, cols = cols, twins = twins)
     currentPedData(newData)
 
     # Update stack
@@ -287,9 +318,7 @@ server = function(input, output, session) {
     if(is.ped(pedDat))
       pedDat = list(ped = pedDat)
 
-    defaultArgs = list(currData = currentPedData(), aff = character(0), carrier = character(0),
-                twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)),
-                deceased = character(0), clearInput = FALSE)
+    defaultArgs = c(cleanPedArgs, list(currData = currentPedData(), clearInput = FALSE))
 
     args = modifyList(defaultArgs, pedDat)
     do.call(updatePedData, args)
@@ -300,9 +329,13 @@ server = function(input, output, session) {
     file = req(input$loadped$datapath)
     y = tryCatch(readPed2(file), error = errModal, warning = errModal)
 
-    updatePedData(currentPedData(), ped = req(y$ped), aff = y$aff,
-                  carrier = character(0), deceased = character(0),
-                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
+    pedArgs = c(list(currData = currentPedData(), ped = req(y$ped)), cleanPedArgs)
+
+    # Affected: Black fill
+    if(length(y$aff))
+      pedArgs$cols$fill = rep(1, length(y$aff)) |> setNames(y$aff)
+
+    do.call(updatePedData, pedArgs)
   })
 
   observeEvent(input$randomped, {
@@ -311,12 +344,13 @@ server = function(input, output, session) {
     ped = NULL
     while(is.null(ped)) {
       ped = tryCatch(
-        randomPed(n = n, founders = f, selfing = FALSE) |> relabel(),
+        randomPed(n = n, founders = f, selfing = FALSE, maxDirectGap = 0) |>
+          relabel(),
         error = function(e) NULL, warning = function(e) NULL)
     }
-    updatePedData(currentPedData(), ped = ped, aff = character(0),
-                  carrier = character(0), deceased = character(0),
-                  twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0)))
+
+    pedArgs = c(list(currData = currentPedData(), ped = ped), cleanPedArgs)
+    do.call(updatePedData, pedArgs)
   })
 
 # Modify pedigree ---------------------------------------------------------
@@ -324,16 +358,16 @@ server = function(input, output, session) {
   observeEvent(input$addson, {
     id = req(sel())
     currData = currentPedData()
-    newped = tryCatch(addChild(currData$ped, id, sex = 1),
-                      error = function(e) errModal(e, html = TRUE))
+    newped = tryCatch(addChild(currData$ped, id, sex = 1, verbose = FALSE),
+                      error = function(e) errModal(e))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
   observeEvent(input$adddaughter, {
     id = req(sel())
     currData = currentPedData()
-    newped = tryCatch(addChild(currData$ped, id, sex = 2),
-                      error = function(e) errModal(e, html = TRUE))
+    newped = tryCatch(addChild(currData$ped, id, sex = 2, verbose = FALSE),
+                      error = function(e) errModal(e))
     updatePedData(currData, ped = newped, clearSel = FALSE)
   })
 
@@ -353,59 +387,95 @@ server = function(input, output, session) {
     updatePedData(currData, ped = newped)
   })
 
-  observeEvent(input$swapsex, {
+  observeEvent(input$sex1, {
     currData = currentPedData()
-    id = sel()
-    newped = swapSex(currData$ped, id, verbose = FALSE)
-
-    # Catch discordant swaps for MZ twins
-    tw = currData$twins
-    mz = tw[tw$code == 1, , drop = FALSE]
-    sx1 = getSex(newped, mz$id1)
-    sx2 = getSex(newped, mz$id2)
-    if(any(sx1 != sx2)) {
-      errModal("MZ twins must have the same sex")
-      return()
-    }
-
-    updatePedData(currData, ped = newped, clearSel = length(id) > 1)
+    ids = req(sel())
+    newped = tryCatch(
+      changeSex(currData$ped, ids, sex = 1, twins = currData$twins),
+      error = errModal)
+    updatePedData(currData, ped = newped, clearSel = TRUE)
   })
 
-  observeEvent(input$affection, {
+  observeEvent(input$sex2, {
+    currData = currentPedData()
+    ids = req(sel())
+    newped = tryCatch(
+      changeSex(currData$ped, ids, sex = 2, twins = currData$twins),
+      error = errModal)
+    updatePedData(currData, ped = newped, clearSel = TRUE)
+  })
+
+  observeEvent(input$sex0, {
+    currData = currentPedData()
+    ids = req(sel())
+    newped = tryCatch(changeSex(currData$ped, ids, sex = 0),
+                      error = errModal)
+    updatePedData(currData, ped = newped, clearSel = TRUE)
+  })
+
+  observeEvent(input$clean, {
     id = req(sel())
     currData = currentPedData()
-    aff = currData$aff
-    newAff = setdiff(union(aff, id), intersect(aff, id))
-    updatePedData(currData, aff = newAff, clearSel = length(id) > 1, clearRel = FALSE)
+    newHatch = .mysetdiff(currData$hatched, id)
+    newAff = .mysetdiff(currData$aff, id)
+    newCarr = .mysetdiff(currData$carrier, id)
+    newDec = .mysetdiff(currData$deceased, id)
+    newDash = .mysetdiff(currData$dashed, id)
+    updatePedData(currData, hatched = newHatch, aff = newAff,
+                  carrier = newCarr, deceased = newDec, dashed = newDash,
+                  clearSel = TRUE, clearRel = FALSE)
+  })
 
-    # Update checkbox "Include affection status"
-    inc = input$include
-    newInc = if(length(newAff) == 0) setdiff(inc, "aff") else union(inc, "aff")
-    updateCheckboxGroupInput(session, "include", selected = newInc)
+  observeEvent(input$hatched, {
+    id = req(sel())
+    currData = currentPedData()
+    newHatch = union(currData$hatched, id)
+    updatePedData(currData, hatched = newHatch, clearSel = TRUE, clearRel = FALSE)
   })
 
   observeEvent(input$carrier, {
     id = req(sel())
     currData = currentPedData()
-    carrier = currData$carrier
-    newCarr = setdiff(union(carrier, id), intersect(carrier, id))
-    updatePedData(currData, carrier = newCarr, clearSel = length(id) > 1, clearRel = FALSE)
+    newCarr = union(currData$carrier, id)
+    updatePedData(currData, carrier = newCarr, clearSel = TRUE, clearRel = FALSE)
   })
 
   observeEvent(input$deceased, {
     id = req(sel())
     currData = currentPedData()
-    deceased = currData$deceased
-    newDec = setdiff(union(deceased, id), intersect(deceased, id))
-    updatePedData(currData, deceased = newDec, clearSel = length(id) > 1, clearRel = FALSE)
+    newDec = union(currData$deceased, id)
+    updatePedData(currData, deceased = newDec, clearSel = TRUE, clearRel = FALSE)
   })
+
+  observeEvent(input$dashed, {
+    id = req(sel())
+    currData = currentPedData()
+    newDash = union(currData$dashed, id)
+    updatePedData(currData, dashed = newDash, clearSel = TRUE, clearRel = FALSE)
+  })
+
+  COLS = c(white = 0, black = 1, red = 2, green = 3, blue = 4, cyan = 5,
+           magenta = 6, yellow = 7, gray = 8, pink = "pink")
+  for(cc in names(COLS)) {
+    local({
+    thisCol = cc
+    observeEvent(input[[paste0("fill-", thisCol)]], { #print(paste0("fill-", thisCol))
+       id = req(sel())
+       currData = currentPedData()
+       allcols = currData$col
+       allcols$fill = allcols$fill |> modifyVec(id, val = COLS[[thisCol]])
+       updatePedData(currData, cols = allcols, clearSel = TRUE, clearRel = FALSE)
+     })
+    })
+  }
 
   observeEvent(input$removeDown, {
     ids = req(sel())
     currData = currentPedData()
     newdat = tryCatch(removeSel(currData, ids, "descendants"),
                       error = errModal)
-    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+    updatePedData(currData, ped = newdat$ped, hatched = newdat$hatched,
+                  aff = newdat$aff, carrier = newdat$carr,
                   deceased = newdat$dec, twins = newdat$tw)
   })
 
@@ -414,7 +484,8 @@ server = function(input, output, session) {
     currData = currentPedData()
     newdat = tryCatch(removeSel(currData, ids, "ancestors"),
                       error = errModal)
-    updatePedData(currData, ped = newdat$ped, aff = newdat$aff, carrier = newdat$carr,
+    updatePedData(currData, ped = newdat$ped, hatched = newdat$hatched,
+                  aff = newdat$aff, carrier = newdat$carr,
                   deceased = newdat$dec, twins = newdat$tw)
   })
 
@@ -532,7 +603,7 @@ server = function(input, output, session) {
 
   observeEvent(input$updateLabs, {
     currData = currentPedData()
-    oldlabs = currData$ped$ID
+    oldlabs = labels(currData$ped)
     fields = paste0("lab", seq_along(oldlabs))
     newlabs = vapply(fields, function(s) input[[s]], FUN.VALUE = "1") |>
       as.character() |> trimws()
@@ -576,9 +647,15 @@ server = function(input, output, session) {
   plotAnnotation = reactive({ #print("annot")
     curr = req(currentPedData())
     labs = plotLabs()
-    .pedAnnotation(curr$ped, labs = labs, aff = curr$aff, carrier = curr$carrier,
-                   deceased = curr$deceased, col = list(red = sel()),
-                   lwd = list(`3` = sel()))
+    border = curr$cols$border |> modifyVec(sel(), "red")
+    if(is.null(border))
+      border = 1
+
+    .pedAnnotation(curr$ped, labs = labs, hatched = curr$hatched, hatchDensity = 20,
+                   carrier = curr$carrier, deceased = curr$deceased,
+                   lty = list(dashed = curr$dashed),
+                   col = border, fill = curr$cols$fill,
+                   lwd = list(`3` = sel(), `1.5` = .mysetdiff(curr$dashed, sel())))
   })
 
   plotScaling = reactive({ #print("scaling")
@@ -635,34 +712,27 @@ server = function(input, output, session) {
       return()
 
     currData = currentPedData()
-    id = currData$ped$ID[idInt]
+    id = labels(currData$ped)[idInt]
 
     currSel = sel()
-    if(id %in% currSel)
-      sel(setdiff(currSel, id))
-    else
-      sel(c(currSel, id))
+    newSel = if(id %in% currSel) .mysetdiff(currSel, id) else c(currSel, id)
+    sel(newSel)
   })
 
-  observeEvent(input$ped_dblclick, {
-    posDf = positionDf()
-    idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
-                       threshold = 20, maxpoints = 1)$idInt
-    if(length(idInt) == 0)
-      return()
-
-    currData = currentPedData()
-    ped = currData$ped
-    id = labels(ped)[idInt]
-
-    # Only continue if a leaf is selected
-    req(id %in% leaves(ped))
-
-    # 1,2 --> 0; 0 --> 1
-    newsex = if(getSex(ped, id) > 0) 0 else 1
-    newped = setSex(ped, ids = id, sex = newsex)
-    updatePedData(currData, ped = newped, clearSel = FALSE)
-  })
+  # observeEvent(input$ped_dblclick, {
+  #   posDf = positionDf()
+  #   idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
+  #                      threshold = 20, maxpoints = 1)$idInt
+  #   if(length(idInt) == 0)
+  #     return()
+  #
+  #   currData = currentPedData()
+  #   ped = currData$ped
+  #   id = labels(ped)[idInt]
+  #
+  #   textAnnot = ... # TODO!
+  #   updatePedData(currData, ped = newped, clearSel = FALSE)
+  # })
 
 
   # Save --------------------------------------------------------------------

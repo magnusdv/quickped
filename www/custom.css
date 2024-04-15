@@ -22,3 +22,25 @@
 .shiny-input-number.form-control {
   padding: 5px 5px 5px 10px; /* top, right, bottom, left */
 }
+
+/* icon button, to be combined with style = "background-image: url('...')" */
+.custom_icon {
+  display: inline-block;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+/* the actual buttons holding an icon */
+.icon_button {
+  padding: 0px;
+  margin: 0px 2px 0px 0px;
+  line-height: 0px;
+  float: left;
+  box-sizing: border-box;
+}
+
+.icon_button:last-child {
+  margin-right: 0; /* No margin after the last button */
+}
