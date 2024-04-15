@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 ## What is QuickPed?
 QuickPed is an interactive web application for drawing and analysing pedigrees. A created pedigree may be saved as an image or as a text file in *ped format* (see [below](#ped-files)). You may also obtain various information about the pedigree, including relatedness coefficients and verbal descriptions of relationships.
 
-QuickPed is powered by the [ped suite](https://magnusdv.github.io/pedsuite/) and [kinship2](https://CRAN.R-project.org/package=kinship2) for pedigree plotting. The web app was built with Shiny.
+QuickPed is powered by the [pedsuite](https://magnusdv.github.io/pedsuite/) and [kinship2](https://CRAN.R-project.org/package=kinship2) for pedigree plotting. The web app was built with Shiny.
 
 
 ## Getting started

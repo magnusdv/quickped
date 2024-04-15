@@ -1,3 +1,10 @@
+# QuickPed 4.0.0
+
+* The pedigree builder panel has a brand new look, with a more compact, icon-based design. This gave room for more buttons, including fill colours and new annotations.
+
+* When loading a ped file, it is no longer required that all founders are specified. This resolves a problem for users working with breeding pedigrees, which often leave out founders.
+
+
 # QuickPed 3.2.0
 
 * New feature: Inbred version of IBD triangle.

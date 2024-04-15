@@ -17,8 +17,8 @@ in *ped format* (see [below](#ped-files)). You may also obtain various
 information about the pedigree, including relatedness coefficients and
 verbal descriptions of relationships.
 
-QuickPed is powered by the [ped
-suite](https://magnusdv.github.io/pedsuite/) and
+QuickPed is powered by the
+[pedsuite](https://magnusdv.github.io/pedsuite/) and
 [kinship2](https://CRAN.R-project.org/package=kinship2) for pedigree
 plotting. The web app was built with Shiny.
 
