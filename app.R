@@ -10,7 +10,8 @@ suppressPackageStartupMessages({
 })
 
 VERSION = "4.0.0"
-# DEBUG <<- TRUE; debugCounter <<- 0
+DEBUG = F; debugCounter = 0
+.debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
 ui = fluidPage(
 
