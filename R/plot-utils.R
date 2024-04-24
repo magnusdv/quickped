@@ -1,30 +1,48 @@
 
 
-# Prepare data for updating labels in plot
-updateLabelsData = function(currData, old = NULL, new, .alignment = NULL) {
-  ped = currData$ped
-  reorder = FALSE
+# Prepare data for updating labels
+updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL) {
+  .debug("updateLabelsData")
 
-  # If new = "asPlot" or "generations" (hack needed since pedigree is always reordered)
-  if(is.null(old)) {
-    idMap = relabel(ped, old = NULL, new = new, .alignment = .alignment, returnLabs = TRUE)
-    newped = relabel(ped, old = names(idMap), new = idMap, reorder = TRUE)
+  newdat = list()
+
+  ped = pedigree$ped
+
+  if(identical(new, "asPlot") || identical(new, "generations")) {
+    # hack needed because of reordering (??)
+    idMap = relabel(ped, new = new, .alignment = .alignment, returnLabs = TRUE)
+    newped = relabel(ped, new = idMap, reorder = TRUE)
   }
   else {
-    newped = relabel(ped, old = old, new = new, reorder = FALSE)
+    new = checkNewLabs(new)
+    newped = relabel(ped, new = new, reorder = FALSE)
     idMap = setNames(labels(newped), labels(ped))
   }
 
-  newtw = currData$twins
-  newtw$id1 = idMap[newtw$id1]
-  newtw$id2 = idMap[newtw$id2]
+  newdat$ped = newped
 
-  list(ped = newped,
-       aff = idMap[currData$aff],
-       carrier = idMap[currData$carrier],
-       deceased = idMap[currData$deceased],
-       twins = newtw)
+  if(!is.null(twins <- pedigree$twins)) {
+    twins$id1 = idMap[twins$id1]
+    twins$id2 = idMap[twins$id2]
+    newdat$twins = twins
+  }
+
+  if(!is.null(names(fill <- styles$fill))) {
+    names(fill) = idMap[names(fill)]
+    newdat$fill = fill
+  }
+
+  if(!is.null(textAnnot))
+    newdat$textAnnot = lapply(textAnnot, function(v)
+      setNames(v, idMap[names(v)]))
+
+  for(sty in c("hatched", "carrier", "aff", "dashed", "deceased"))
+    if(!is.null(styles[[sty]]))
+      newdat[[sty]] = idMap[styles[[sty]]]
+
+  newdat
 }
+
 
 breakLabs = function(x, breakAt = "  ") {
   labs = labels(x)
@@ -32,6 +50,26 @@ breakLabs = function(x, breakAt = "  ") {
   labs
 }
 
+
+checkNewLabs = function(labs) {
+  if(dup <- anyDuplicated(labs))
+    stop2("Duplicated ID label: ", labs[dup])
+
+  if(0 %in% labs)
+    stop2('"0" cannot be used as label')
+
+  if("" %in% labs)
+    stop2("Empty labels are not allowed")
+
+  labs
+}
+
+
+formatAnnot = function(textAnnot, cex) {
+  if(is.null(textAnnot))
+    return(NULL)
+  lapply(textAnnot, function(b) list(b, cex = cex, font = 2))
+}
 
 plotKappa = function(ped, ids, mode = "noninbred", col = "blue") {
 

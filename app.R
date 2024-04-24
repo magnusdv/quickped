@@ -172,6 +172,7 @@ ui = fluidPage(
     # Plot window
     column(width = 4, style = "margin-bottom: 15px",
            plotOutput("plot", click = "ped_click",  dblclick = "ped_dblclick", width = "auto", height = "auto"),
+           p("Double-click on an individual to add text", style = "width: 100%; font-size: smaller; text-align: left;")
     ),
 
     # Settings
@@ -212,7 +213,7 @@ ui = fluidPage(
                       ),
 
                      br(),
-                     checkboxGroupInput("settings", "Other options (beta)", selected  = NULL,
+                     checkboxGroupInput("settings", "Other options (beta)", selected = NULL,
                                         c("Straight legs" = "straightlegs", "Arrows" = "arrows")),
                      br(),
                      fluidRow(style = "position: absolute; top:375px",
@@ -252,63 +253,85 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  currentPedData = reactiveVal(list(
-    ped = nuclearPed(), hatched = character(0), aff = character(0),
-    carrier = character(0), deceased = character(0),
-    twins = data.frame(id1 = character(0), id2 = character(0), code = integer(0))))
-
-  previousStack = reactiveVal(list())
+  pedigree = reactiveValues(ped = nuclearPed(1), twins = NULL)
+  styles = reactiveValues(hatched = NULL, carrier = NULL, deceased = NULL,
+                          dashed = NULL, fill = NULL)
+  textAnnot = reactiveVal(NULL)
 
   plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
   sel = reactiveVal(character(0))
-
   relText = reactiveVal(NULL)
 
 
-# Update pedigree ---------------------------------------------------------
+  # Stack of previous states ------------------------------------------------
 
+  previousStack = reactiveVal(list())
+  observe(switch(length(previousStack()) + 1, disable("undo"), enable("undo")))
 
-  updatePedData = function(currData, ped = NULL, hatched = NULL, aff = NULL,
-                           carrier = NULL, deceased = NULL, dashed = NULL,
-                           cols = NULL, twins = NULL,
-                           clearSel = TRUE, clearInput = TRUE, clearRel = TRUE) {  #print("updatePedData")
-    if(is.null(ped) && is.null(hatched) && is.null(aff) && is.null(carrier) &&
-       is.null(deceased) && is.null(dashed) && is.null(cols) && is.null(twins))
+  addCurrentToStack = function() {  .debug("add to stack")
+    stack = previousStack()
+    n = length(stack)
+
+    # Collect state of current reactives in static list
+    curr = c(reactiveValuesToList(pedigree), reactiveValuesToList(styles),
+             list(textAnnot = textAnnot()))
+
+    # If new: add
+    if(n == 0 || !identical(curr, stack[[n]]))
+      previousStack(c(stack, list(curr)))
+  }
+
+  # Main updating function --------------------------------------------------
+
+  updatePed = function(..., addToStack = TRUE, clearSel = NULL,
+                       clearStart = NULL, clearRel = NULL) {  .debug("updateped")
+    if(!length(args <- list(...)))
       return()
 
-    if(is.null(ped)) ped = currData$ped
-    if(is.null(hatched)) hatched = currData$hatched
-    if(is.null(aff)) aff = currData$aff
-    if(is.null(carrier)) carrier = currData$carrier
-    if(is.null(deceased)) deceased = currData$deceased
-    if(is.null(dashed)) dashed = currData$dashed
-    if(is.null(cols)) cols = currData$cols
-    if(is.null(twins)) twins = currData$twins
+    # Push current state to stack
+    if(addToStack)
+      addCurrentToStack()
 
-    newData = list(ped = ped, hatched = hatched, aff = aff, carrier = carrier,
-                   deceased = deceased, dashed = dashed, cols = cols, twins = twins)
-    currentPedData(newData)
+    # Update only given attributes
+    argnames = names(args)
 
-    # Update stack
-    previousStack(c(previousStack(), list(currData)))
-    enable("undo")
+    # Convert empty vectors to explicit NULLs
+    args = lapply(args, function(b) if(length(b)) b else NULL)
+
+    # Update reactives
+    for(a in .myintersect(argnames, c("ped", "twins")))
+      pedigree[[a]] = args[[a]]
+
+    for(a in .myintersect(argnames, names(styles)))
+      styles[[a]] = args[[a]]
+
+    if("textAnnot" %in% argnames)
+      textAnnot(args$textAnnot)
 
     # Clear stuff
-    if(clearInput)
-      updateSelectInput(session, "startped", selected = "")
+    if(clearSel %||% ("textAnnot" %in% argnames))
+      sel(character(0))
 
-    if(clearRel)
+    if(clearRel %||% any(c("ped", "twins") %in% argnames))
       relText(NULL)
 
-    if(clearSel)
-      sel(character(0))
+    if(clearStart %||% any(c("ped", "twins") %in% argnames))
+      updateSelectInput(session, "startped", selected = "")
+  }
+
+  # Reset with a new pedigree  -----------------------------------------------
+
+  resetPed = function(ped, ...) {  .debug("resetped")
+    cleanArgs = list(twins = NULL, hatched = NULL, carrier = NULL, dashed = NULL,
+                     deceased = NULL, fill = NULL, textAnnot = NULL)
+    args = modifyList(cleanArgs, list(ped = ped, ...), keep.null = TRUE)
+    do.call(updatePed, args)
   }
 
 
-# Startped/load -----------------------------------------------------------
+  # Startped/load -----------------------------------------------------------
 
-
-  observeEvent(input$startped, {
+  observeEvent(input$startped, {   .debug("startped")
     choice = req(input$startped)
     params = paramsBuiltin(choice)
 
@@ -318,259 +341,174 @@ server = function(input, output, session) {
     updateNumericInput(session, "symbolsize", value = params$symbolsize)
     updateNumericInput(session, "mar", value = params$mar)
 
-    pedDat = req(BUILTIN_PEDS[[choice]])
-    if(is.ped(pedDat))
-      pedDat = list(ped = pedDat)
+    y = req(BUILTIN_PEDS[[choice]])
+    args = list(ped = y$ped %||% y, clearStart = FALSE,
+                fill = modifyVec(NULL, y$aff, val = 1), carrier = y$carrier)
+    do.call(resetPed, args)
+  }, ignoreInit = TRUE)
 
-    defaultArgs = c(cleanPedArgs, list(currData = currentPedData(), clearInput = FALSE))
-
-    args = modifyList(defaultArgs, pedDat)
-    do.call(updatePedData, args)
-  })
-
-
-  observeEvent(input$loadped, {
+  observeEvent(input$loadped, {   .debug("loadped")
     file = req(input$loadped$datapath)
     y = tryCatch(readPed2(file), error = errModal, warning = errModal)
-
-    pedArgs = c(list(currData = currentPedData(), ped = req(y$ped)), cleanPedArgs)
-
-    # Affected: Black fill
-    if(length(y$aff))
-      pedArgs$cols$fill = rep(1, length(y$aff)) |> setNames(y$aff)
-
-    do.call(updatePedData, pedArgs)
+    resetPed(ped = y$ped, fill = modifyVec(NULL, y$aff, val = 1))
   })
 
-  observeEvent(input$randomped, {
+  observeEvent(input$randomped, {   .debug("random ped")
     n = sample(5:15, size = 1)             # total pedigree size
     f = sample(2:floor((n+1)/2), size = 1) # number of founders
     ped = NULL
     while(is.null(ped)) {
-      ped = tryCatch(
-        randomPed(n = n, founders = f, selfing = FALSE, maxDirectGap = 0) |>
-          relabel(),
-        error = function(e) NULL, warning = function(e) NULL)
+      ped = tryCatch(randomPed(n, f, maxDirectGap = 0) |> relabel(),
+                     error = function(e) NULL, warning = function(e) NULL)
     }
-
-    pedArgs = c(list(currData = currentPedData(), ped = ped), cleanPedArgs)
-    do.call(updatePedData, pedArgs)
+    resetPed(ped = ped)
   })
 
 # Modify pedigree ---------------------------------------------------------
 
-  observeEvent(input$addson, {
+  observeEvent(input$addson, {    .debug("add son")
     id = req(sel())
-    currData = currentPedData()
-    newped = tryCatch(addChild(currData$ped, id, sex = 1, verbose = FALSE),
-                      error = function(e) errModal(e))
-    updatePedData(currData, ped = newped, clearSel = FALSE)
+    tryCatch({
+      updatePed(ped = addSon(pedigree$ped, id, verbose = FALSE))
+    }, error = errModal)
   })
 
-  observeEvent(input$adddaughter, {
+  observeEvent(input$adddaughter, {  .debug("add daughter")
     id = req(sel())
-    currData = currentPedData()
-    newped = tryCatch(addChild(currData$ped, id, sex = 2, verbose = FALSE),
-                      error = function(e) errModal(e))
-    updatePedData(currData, ped = newped, clearSel = FALSE)
+    tryCatch({
+      updatePed(ped = addDaughter(pedigree$ped, id, verbose = FALSE))
+    }, error = errModal)
   })
 
-  observeEvent(input$addsibling, {
+  observeEvent(input$addsibRight, {  .debug("add right sib")
     id = req(sel())
-    currData = currentPedData()
-    newped = tryCatch(addSib(currData$ped, id, sex = 1),
-                      error = function(e) errModal(e, html = TRUE))
-    updatePedData(currData, ped = newped, clearSel = TRUE)
+    tryCatch({
+      updatePed(ped = addSib(pedigree$ped, id, side = "right"))
+    }, error = errModal)
   })
 
-  observeEvent(input$addparents, {
+  observeEvent(input$addsibLeft, {  .debug("add left sib")
     id = req(sel())
-    currData = currentPedData()
-    newped = tryCatch(addParents(currData$ped, id, verbose = FALSE),
-                      error = errModal)
-    updatePedData(currData, ped = newped)
+    tryCatch({
+      updatePed(ped = addSib(pedigree$ped, id, side = "left"))
+    }, error = errModal)
   })
 
-  observeEvent(input$sex1, {
-    currData = currentPedData()
-    ids = req(sel())
-    newped = tryCatch(
-      changeSex(currData$ped, ids, sex = 1, twins = currData$twins),
-      error = errModal)
-    updatePedData(currData, ped = newped, clearSel = TRUE)
-  })
-
-  observeEvent(input$sex2, {
-    currData = currentPedData()
-    ids = req(sel())
-    newped = tryCatch(
-      changeSex(currData$ped, ids, sex = 2, twins = currData$twins),
-      error = errModal)
-    updatePedData(currData, ped = newped, clearSel = TRUE)
-  })
-
-  observeEvent(input$sex0, {
-    currData = currentPedData()
-    ids = req(sel())
-    newped = tryCatch(changeSex(currData$ped, ids, sex = 0),
-                      error = errModal)
-    updatePedData(currData, ped = newped, clearSel = TRUE)
-  })
-
-  observeEvent(input$clean, {
+  observeEvent(input$addparents, {  .debug("add parents")
     id = req(sel())
-    currData = currentPedData()
-    newHatch = .mysetdiff(currData$hatched, id)
-    newAff = .mysetdiff(currData$aff, id)
-    newCarr = .mysetdiff(currData$carrier, id)
-    newDec = .mysetdiff(currData$deceased, id)
-    newDash = .mysetdiff(currData$dashed, id)
-    updatePedData(currData, hatched = newHatch, aff = newAff,
-                  carrier = newCarr, deceased = newDec, dashed = newDash,
-                  clearSel = TRUE, clearRel = FALSE)
+    tryCatch({
+      updatePed(ped = addParents(pedigree$ped, id, verbose = FALSE))
+    }, error = errModal)
   })
 
-  observeEvent(input$hatched, {
+  observeEvent(input$sex1, {    .debug("sex1")
     id = req(sel())
-    currData = currentPedData()
-    newHatch = union(currData$hatched, id)
-    updatePedData(currData, hatched = newHatch, clearSel = TRUE, clearRel = FALSE)
+    tryCatch({
+      ped = changeSex(pedigree$ped, id, sex = 1, twins = pedigree$twins)
+      updatePed(ped = ped)
+    }, error = errModal)
   })
 
-  observeEvent(input$carrier, {
+  observeEvent(input$sex2, {   .debug("sex2")
     id = req(sel())
-    currData = currentPedData()
-    newCarr = union(currData$carrier, id)
-    updatePedData(currData, carrier = newCarr, clearSel = TRUE, clearRel = FALSE)
+    tryCatch({
+      ped = changeSex(pedigree$ped, id, sex = 2, twins = pedigree$twins)
+      updatePed(ped = ped)
+    }, error = errModal)
   })
 
-  observeEvent(input$deceased, {
+  observeEvent(input$sex0, {  .debug("sex0")
     id = req(sel())
-    currData = currentPedData()
-    newDec = union(currData$deceased, id)
-    updatePedData(currData, deceased = newDec, clearSel = TRUE, clearRel = FALSE)
+    tryCatch({
+      ped = changeSex(pedigree$ped, id, sex = 0, twins = pedigree$twins)
+      updatePed(ped = ped)
+    }, error = errModal)
   })
 
-  observeEvent(input$dashed, {
+  observeEvent(input$clean, {   .debug("clear styles")
     id = req(sel())
-    currData = currentPedData()
-    newDash = union(currData$dashed, id)
-    updatePedData(currData, dashed = newDash, clearSel = TRUE, clearRel = FALSE)
+    addCurrentToStack()
+    styles$hatched = setdiff(styles$hatched, id)
+    styles$carrier = setdiff(styles$carrier, id)
+    styles$deceased = setdiff(styles$deceased, id)
+    styles$dashed = setdiff(styles$dashed, id)
+  })
+
+  observeEvent(input$hatched, {    .debug("hatched")
+    updatePed(hatched = union(styles$hatched, req(sel())))
+  })
+
+  observeEvent(input$carrier, {  .debug("carrier")
+    updatePed(carrier = union(styles$carrier, req(sel())))
+  })
+
+  observeEvent(input$deceased, {  .debug("deceased")
+    updatePed(deceased = union(styles$deceased, req(sel())))
+  })
+
+  observeEvent(input$dashed, {  .debug("dashed")
+    updatePed(dashed = union(styles$dashed, req(sel())))
   })
 
   COLS = c(white = 0, black = 1, red = 2, green = 3, blue = 4, cyan = 5,
            magenta = 6, yellow = 7, gray = 8, pink = "pink")
-  for(cc in names(COLS)) {
-    local({
+  for(cc in names(COLS)) local({
     thisCol = cc
-    observeEvent(input[[paste0("fill-", thisCol)]], { #print(paste0("fill-", thisCol))
-       id = req(sel())
-       currData = currentPedData()
-       allcols = currData$col
-       allcols$fill = allcols$fill |> modifyVec(id, val = COLS[[thisCol]])
-       updatePedData(currData, cols = allcols, clearSel = TRUE, clearRel = FALSE)
+    tag = paste0("fill-", thisCol)
+    observeEvent(input[[tag]], {   .debug(tag)
+      fill = modifyVec(styles$fill, req(sel()), val = COLS[[thisCol]])
+      updatePed(fill = fill)
      })
-    })
-  }
-
-  observeEvent(input$removeDown, {
-    ids = req(sel())
-    currData = currentPedData()
-    newdat = tryCatch(removeSel(currData, ids, "descendants"),
-                      error = errModal)
-    updatePedData(currData, ped = newdat$ped, hatched = newdat$hatched,
-                  aff = newdat$aff, carrier = newdat$carr,
-                  deceased = newdat$dec, twins = newdat$tw)
-  })
-
-  observeEvent(input$removeUp, {
-    ids = req(sel())
-    currData = currentPedData()
-    newdat = tryCatch(removeSel(currData, ids, "ancestors"),
-                      error = errModal)
-    updatePedData(currData, ped = newdat$ped, hatched = newdat$hatched,
-                  aff = newdat$aff, carrier = newdat$carr,
-                  deceased = newdat$dec, twins = newdat$tw)
-  })
-
-  observeEvent(input$clearselection, sel(character(0)))
-
-  observeEvent(input$mz, {
-    ids = req(sel())
-    currData = currentPedData()
-    ped = currData$ped
-
-    # Checks
-    err = NULL
-
-    if(length(ids) != 2)
-      err = "To change twin status, please select exactly 2 individuals."
-    else if(all(ids %in% founders(ped)))
-      err = "Founders cannot be twins"
-    else if(!identical(parents(ped, ids[1]), parents(ped, ids[2])))
-      err = "Twins must have the same parents"
-    else if(getSex(ped, ids[1]) != getSex(ped, ids[2]))
-      err = "MZ twins must have the same sex"
-
-    if(!is.null(err)) {
-      errModal(err)
-      return()
-    }
-
-    twins = updateTwins(currData$twins, ids, code = 1L)
-    updatePedData(currData, twins = twins)
-  })
-
-  observeEvent(input$dz, {
-    ids = req(sel())
-    currData = currentPedData()
-    ped = currData$ped
-
-    # Checks
-    err = NULL
-
-    if(length(ids) != 2)
-      err = "To change twin status, please select exactly 2 individuals."
-    else if(all(ids %in% founders(ped)))
-      err = "Founders cannot be twins"
-    else if(!identical(parents(ped, ids[1]), parents(ped, ids[2])))
-      err = "Twins must have the same parents"
-
-    if(!is.null(err)) {
-      errModal(err)
-      return()
-    }
-
-    twins = updateTwins(currData$twins, ids, code = 2L)
-    updatePedData(currData, twins = twins)
   })
 
 
+  # Remove individuals ------------------------------------------------------
 
-# Undo/reset --------------------------------------------------------------
+  observeEvent(input$removeDown, {  .debug("remove down")
+    ids = req(sel())
+    dat = c(reactiveValuesToList(pedigree), reactiveValuesToList(styles),
+            list(textAnnot = textAnnot()))
+    tryCatch({
+      newdat = removeSel(dat, ids = ids, updown = "descendants")
+      do.call(updatePed, newdat)
+    }, error = errModal)
+  })
+
+  observeEvent(input$removeUp, {   .debug("remove down")
+    ids = req(sel())
+    dat = c(reactiveValuesToList(pedigree), reactiveValuesToList(styles),
+            list(textAnnot = textAnnot()))
+    tryCatch({
+      newdat = removeSel(dat, ids = ids, updown = "ancestors")
+      do.call(updatePed, newdat)
+    }, error = errModal)
+  })
+
+  observeEvent(input$twinstatus, {   .debug("twinstatus")
+    ids = req(sel())
+    tryCatch({
+      updatePed(twins = updateTwins(pedigree$ped, pedigree$twins, ids))
+    }, error = errModal)
+  })
+
+  observeEvent(input$clearsel, sel(character(0)))
 
 
-  observeEvent(input$undo, {
+  # Undo/reset --------------------------------------------------------------
+
+  observeEvent(input$undo, {    .debug("undo")
     stack = previousStack()
     len = length(stack)
     if(len == 0)
       return()
 
-    currentPedData(stack[[len]])
+    args = c(stack[[len]], list(addToStack = FALSE))
+    do.call(updatePed, args)
+
     previousStack(stack[-len])
-
-    # Remove invalid IDs from selection
-    sel(intersect(sel(), labels(currentPedData()$ped)))
-
-    if(len == 1)
-      disable("undo")
-
-    # Clear stuff
-    relText(NULL)
-    updateSelectInput(session, "startped", selected = "")
   })
 
-  observeEvent(input$reset, {
+  observeEvent(input$reset, {    .debug("reset")
     if(input$startped == "Trio")
       updateSelectInput(session, "startped", selected = "")
     updateSelectInput(session, "startped", selected = "Trio")
@@ -584,86 +522,70 @@ server = function(input, output, session) {
   })
 
 
+  # Labels ------------------------------------------------------------------
 
-# Labels ------------------------------------------------------------------
-
-  output$labels = renderUI({
-    labs = labels(currentPedData()$ped)
+  output$labels = renderUI({     .debug("labelsUI")
+    labs = labels(pedigree$ped)
     fields = paste0("lab", seq_along(labs))
     lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i]))
   })
 
   observeEvent(input$labs123, { # New labels: 1, 2, ...
-    currData = currentPedData()
-    newData = updateLabelsData(currData, new = "asPlot", .alignment = plotAlignment())
-    do.call(updatePedData, c(list(currData = currData), newData))
+    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "asPlot", .alignment = plotAlignment())
+    newdat$clearSel = newdat$clearRel = TRUE
+    do.call(updatePed, newdat)
   })
 
   observeEvent(input$labsGen, { # New labels: I-1, I-2, ...
-    currData = currentPedData()
-    newData = updateLabelsData(currData, new = "generations", .alignment = plotAlignment())
-    do.call(updatePedData, c(list(currData = currData), newData))
+    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "generations", .alignment = plotAlignment())
+    newdat$clearSel = newdat$clearRel = TRUE
+    do.call(updatePed, newdat)
   })
 
-  observeEvent(input$updateLabs, {
-    currData = currentPedData()
-    oldlabs = labels(currData$ped)
+  observeEvent(input$updateLabs, {  .debug("updatelabs")
+    oldlabs = labels(pedigree$ped)
     fields = paste0("lab", seq_along(oldlabs))
     newlabs = vapply(fields, function(s) input[[s]], FUN.VALUE = "1") |>
       as.character() |> trimws()
 
-    if(identical(newlabs, oldlabs))
+    if(identical(oldlabs, newlabs))
       return()
 
-    err = NULL
-    if(dup <- anyDuplicated(newlabs))
-      err = paste("Duplicated ID label: ", toString(newlabs[dup]))
-    else if(0 %in% newlabs)
-      err = '"0" cannot be used as label'
-    else if("" %in% newlabs)
-      err = "Empty label"
-
-    if(!is.null(err)) {
-      errModal(err)
-      return()
-    }
-
-    newData = updateLabelsData(currData, old = oldlabs, new = newlabs)
-    do.call(updatePedData, c(list(currData = currData), newData))
+    tryCatch({
+      newdat = updateLabelsData(pedigree, styles, textAnnot(), new = newlabs)
+      do.call(updatePed, newdat)
+    }, error = errModal)
   })
-
 
   # Plot --------------------------------------------------------------------
 
-  plotLabs = reactive({ #print("labs")
-    ped = req(currentPedData()$ped)
+  plotLabs = reactive({  .debug("plotlabs")
+    ped = pedigree$ped
     switch(input$showlabs, show = breakLabs(ped), hide = NULL)
   })
 
-  plotAlignment = reactive({ #print("align")
-    curr = currentPedData()
+  plotAlignment = reactive({  .debug("align")
     arrows = "arrows" %in% input$settings
     straight = "straightlegs" %in% input$settings
-    .pedAlignment(curr$ped, twins = curr$twins, arrows = arrows,
+    .pedAlignment(pedigree$ped, twins = pedigree$twins, arrows = arrows,
                   align = if(straight) c(0,0) else c(1.5,2))
   })
 
-  plotAnnotation = reactive({ #print("annot")
-    curr = req(currentPedData())
-    labs = plotLabs()
-    border = curr$cols$border |> modifyVec(sel(), "red")
-    if(is.null(border))
-      border = 1
-
-    .pedAnnotation(curr$ped, labs = labs, hatched = curr$hatched, hatchDensity = 20,
-                   carrier = curr$carrier, deceased = curr$deceased,
-                   lty = list(dashed = curr$dashed),
-                   col = border, fill = curr$cols$fill,
-                   lwd = list(`3` = sel(), `1.5` = .mysetdiff(curr$dashed, sel())))
+  plotAnnotation = reactive({ .debug("annot")
+    .pedAnnotation(req(pedigree$ped),
+                   labs = plotLabs(),
+                   hatched = styles$hatched, hatchDensity = 20,
+                   carrier = styles$carrier,
+                   deceased = styles$deceased,
+                   textAnnot = formatAnnot(textAnnot(), input$cex - 0.2),
+                   col = list(red = sel()),
+                   fill = styles$fill %||% NA,
+                   lty = list(dashed = styles$dashed),
+                   lwd = list(`3` = sel(),
+                              `1.5` = .mysetdiff(styles$dashed, sel())))
   })
 
-  plotScaling = reactive({ #print("scaling")
-    # React to these
+  plotScaling = reactive({  .debug("scaling")
     checknum(input$width, "Width", min = 10, max = Inf)
     checknum(input$height, "Heigth", min = 10, max = Inf)
 
@@ -676,7 +598,7 @@ server = function(input, output, session) {
     .pedScaling(align, annot, cex = cex, symbolsize = symsize, margins = rep(mar, 4))
   })
 
-  output$plot = renderPlot({ #print("plot")
+  output$plot = renderPlot({    .debug("plot")
     dat = tryCatch({
         align = withCallingHandlers(
           plotAlignment(),
@@ -699,7 +621,7 @@ server = function(input, output, session) {
     height = function() max(c(1, abs(input$height)), na.rm = TRUE)
   )
 
-  positionDf = reactive({
+  positionDf = reactive({   .debug("position")
     align = req(plotAlignment())
     scale = plotScaling()
     mat = cbind(x = align$xall,
@@ -708,39 +630,37 @@ server = function(input, output, session) {
     as.data.frame(mat)
   })
 
-  observeEvent(input$ped_click, {
+  # Single click: Text annotation -------------------------------------------
+
+  observeEvent(input$ped_click, {   .debug("pedclick")
     posDf = positionDf()
     idInt = nearPoints(posDf, input$ped_click, xvar = "x", yvar = "y",
-                       threshold = 20, maxpoints = 1)$idInt
-    if(length(idInt) == 0)
-      return()
-
-    currData = currentPedData()
-    id = labels(currData$ped)[idInt]
-
+                       threshold = 20, maxpoints = 1)$idInt |> req()
+    id = labels(pedigree$ped)[idInt]
     currSel = sel()
     newSel = if(id %in% currSel) .mysetdiff(currSel, id) else c(currSel, id)
     sel(newSel)
   })
 
-  # observeEvent(input$ped_dblclick, {
-  #   posDf = positionDf()
-  #   idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
-  #                      threshold = 20, maxpoints = 1)$idInt
-  #   if(length(idInt) == 0)
-  #     return()
-  #
-  #   currData = currentPedData()
-  #   ped = currData$ped
-  #   id = labels(ped)[idInt]
-  #
-  #   textAnnot = ... # TODO!
-  #   updatePedData(currData, ped = newped, clearSel = FALSE)
-  # })
+  # Double click: Text annotation -------------------------------------------
 
+  # Temp copy of textAnnot, to be used in the module.
+  # Could use textAnnot directly, but want to go via pedUpdate (stack etc)
+  textAnnotTemp = reactiveVal()
+
+  observeEvent(input$ped_dblclick, {   .debug("dblclick")
+    posDf = positionDf()
+    idInt = nearPoints(posDf, input$ped_dblclick, xvar = "x", yvar = "y",
+                       threshold = 20, maxpoints = 1)$idInt |> req()
+    id = labels(pedigree$ped)[idInt]
+    isolate(textAnnotTemp(textAnnot()))
+    showAnnotationModal(input, output, session, id, textAnnotTemp)
+  })
+
+  observeEvent(textAnnotTemp(), { .debug("textAnnotTemp")
+    updatePed(textAnnot = textAnnotTemp())})
 
   # Save --------------------------------------------------------------------
-
 
   output$savePed = downloadHandler(
     filename = "quickped.ped",
@@ -749,13 +669,14 @@ server = function(input, output, session) {
       inclFamid = "famid" %in% input$include
       inclAff = "aff" %in% input$include
 
-      currData = currentPedData()
-      ped = currData$ped
+      ped = pedigree$ped
       df = as.data.frame(ped)
       if(inclFamid)
         df = cbind(famid = 1, df)
-      if(inclAff)
-        df = cbind(df, aff = ifelse(labels(ped) %in% currData$aff, 2, 1))
+      if(inclAff) {
+        aff = union(styles$hatched, names(styles$fill))
+        df = cbind(df, aff = ifelse(labels(ped) %in% aff, 2, 1))
+      }
 
       write.table(df, file = con, col.names = inclHead, row.names = FALSE,
                   quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
@@ -782,7 +703,7 @@ server = function(input, output, session) {
     contentType = "application/pdf"
   )
 
-# Relationships ------------------------------------------------
+  # Relationships ------------------------------------------------
 
   dlg = modalDialog(
     h3(id = "title-h3", "Download table of pairwise coefficients"),
@@ -819,16 +740,14 @@ server = function(input, output, session) {
     )
   )
 
-  observeEvent(input$coeffTable, {
-    currData = currentPedData()
-    ped = currData$ped
-    ids = sel()
-
-    if(hasMZtwins(currData)) {
+  observeEvent(input$coeffTable, {   .debug("coeffTable")
+    if(1 %in% pedigree$twins$code) {
       relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
+    ped = pedigree$ped
+    ids = sel()
     if(!length(ids))
       ids = labels(ped)
     updateTextInput(session, "coeffIds", value = toString(sortIds(ped, ids)))
@@ -841,30 +760,22 @@ server = function(input, output, session) {
   output$saveCoeffTable = downloadHandler(
     filename = "quickped-relatedness.txt",
     content = function(file) {
+      idsTxt = req(input$coeffIds)
+
       tryCatch({
-        ids = trimws(strsplit(req(input$coeffIds), ",")[[1]])
-        ped = currentPedData()$ped
-
-        # Coefficients selected
-        coeff = input$coeffSelect
-
-        # Autosomal and/or X?
-        chr = input$coeffChrom
-        if(!length(chr))
-          stop("Please select chromosome type")
-        Xchrom = if(length(chr) == 2) NA else chr == "X"
-
-        # Self relationships?
+        ids = trimws(strsplit(idsTxt, ",")[[1]])
+        coeff = input$coeffSelect # coefficients selected
         self = "self" %in% input$coeffInclude
 
-        # Compute table
-        tab = coeffTable(ped, ids, coeff = coeff, Xchrom = Xchrom, self = self)
+        if(!length(chr <- input$coeffChrom))
+          stop2("Please select chromosome type")
+        Xchrom = if(length(chr) == 2) NA else chr == "X"
 
-        # Write to file
+        # Compute table
+        tab = coeffTable(pedigree$ped, ids, coeff = coeff, Xchrom = Xchrom, self = self)
+
         write.table(tab, file = file, col.names = TRUE, row.names = FALSE,
                     quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
-
-        # Close window
         removeModal()
       },
       error = errModal)
@@ -873,19 +784,16 @@ server = function(input, output, session) {
 
   ### Triangle plot
 
-  observeEvent(input$triangle, {
-    currData = currentPedData()
-    ped = currData$ped
-    ids = sel()
-
-    if(hasMZtwins(currData)) {
+  observeEvent(input$triangle, {   .debug("triangle")
+    if(1 %in% pedigree$twins$code) {
       relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
+    ped = pedigree$ped
+    ids = sel()
     if(!length(ids))
       ids = labels(ped)
-
     if(length(ids) == 1) {
       relText("Please select at least 2 individuals (or none).")
       return()
@@ -916,33 +824,32 @@ server = function(input, output, session) {
   })
 
   output$plotTriangle = renderPlot(
-    plotKappa(currentPedData()$ped, ids = sel(), mode = input$trianglemode),
+    plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode),
     width = 560, height = 480,
-    res = 72 # to low, but increasing it disturbs everything else
+    res = 72 # too low, but increasing it disturbs everything else
   )
 
   output$saveTriangle = downloadHandler(
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 560*2, height = 480*2, res = 72*2)
-      plotKappa(currentPedData()$ped, ids = sel(), mode = input$trianglemode)
+      plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode)
       dev.off()
     },
     contentType = "image/png"
   )
 
-  observeEvent(input$describe, {
-    currData = currentPedData()
-    ped = req(currData$ped)
+  observeEvent(input$describe, {   .debug("describe")
+    if(1 %in% pedigree$twins$code) {
+      relText("This feature does not support MZ twin pedigrees.")
+      return()
+    }
+
+    ped = req(pedigree$ped)
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
       relText("Please select exactly 2 individuals.")
-      return()
-    }
-
-    if(hasMZtwins(currData)) {
-      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
@@ -954,20 +861,19 @@ server = function(input, output, session) {
 
 
 
-  observeEvent(input$coeffs, {
-    currData = currentPedData()
-    ped = req(currData$ped)
-    ids = sortIds(ped, ids = sel())
-
-    N = length(ids)
-    if(!N %in% 1:2) {
-      relText(c("Please select 1 or 2 individuals.",
-                "(Or click the Table button for more options.)"))
+  observeEvent(input$coeffs, {   .debug("coeffs")
+    if(1 %in% pedigree$twins$code) {
+      relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
-    if(hasMZtwins(currData)) {
-      relText("This feature does not support MZ twin pedigrees.")
+    ped = req(pedigree$ped)
+    ids = sortIds(ped, ids = sel())
+    N = length(ids)
+
+    if(!N %in% 1:2) {
+      relText(c("Please select 1 or 2 individuals.",
+                "(Or click the Table button for more options.)"))
       return()
     }
 
