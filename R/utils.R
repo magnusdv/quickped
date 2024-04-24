@@ -1,10 +1,16 @@
 ### Helper functions for the QuickPed app
 
+.debug = function(msg)
+  if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
+
 stop2 = function (...) {
   a = lapply(list(...), toString)
   a = append(a, list(call. = FALSE))
   do.call(stop, a)
 }
+
+`%||%` = function(x,y)
+  if(is.null(x)) y else x
 
 mylink = function(text, href, .noWS = "outside") {
   if(missing(href))

@@ -9,8 +9,8 @@ suppressPackageStartupMessages({
   library(ggrepel)
 })
 
-
 VERSION = "4.0.0"
+# DEBUG <<- TRUE; debugCounter <<- 0
 
 ui = fluidPage(
 
