@@ -23,6 +23,10 @@
   padding: 5px 5px 5px 10px; /* top, right, bottom, left */
 }
 
+.shiny-input-text.form-control::placeholder {
+  font-weight: normal !important; /* Always normal font for placeholder */
+}
+
 /* icon button, to be combined with style = "background-image: url('...')" */
 .custom_icon {
   display: inline-block;
@@ -51,3 +55,4 @@
 
 #clearsel {
   padding:5px; border:none; background-color: inherit;
+}
