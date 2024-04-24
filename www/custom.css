@@ -37,10 +37,17 @@
   padding: 0px;
   margin: 0px 2px 0px 0px;
   line-height: 0px;
-  float: left;
   box-sizing: border-box;
 }
 
 .icon_button:last-child {
   margin-right: 0; /* No margin after the last button */
 }
+
+/* Needed because tooltip */
+#addparents {
+  margin-right: 0;
+}
+
+#clearsel {
+  padding:5px; border:none; background-color: inherit;
