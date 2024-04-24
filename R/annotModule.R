@@ -61,7 +61,12 @@ showAnnotationModal = function(input, output, session, id, annot) {  .debug("ope
       modalButton("Cancel"),
       actionButton(ns("save"), "Save", class = "btn btn-primary")
     ),
-    easyClose = TRUE
+    tags$script(HTML("
+        $(document).on('keydown', function(event) {
+          if(event.keyCode == 13) {
+            $('#textAnnot-save').click();
+          }
+        });"))
   ))
 
   observeEvent(input[[ns("save")]], {  .debug("save-textAnnot")
