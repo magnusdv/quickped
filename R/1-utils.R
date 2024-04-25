@@ -9,10 +9,10 @@ stop2 = function (...) {
 `%||%` = function(x,y)
   if(is.null(x)) y else x
 
-mylink = function(text, href, .noWS = "outside") {
+mylink = function(text, href, .noWS = "outside", ...) {
   if(missing(href))
     href = text
-  shiny::a(text, href = href, .noWS = .noWS, target = "_blank")
+  shiny::a(text, href = href, .noWS = .noWS, target = "_blank", ...)
 }
 
 .myintersect = function(x, y)
