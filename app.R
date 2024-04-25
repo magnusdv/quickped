@@ -527,8 +527,10 @@ server = function(input, output, session) {
 
   output$labels = renderUI({     .debug("labelsUI")
     labs = labels(pedigree$ped)
-    fields = paste0("lab", seq_along(labs))
-    lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i]))
+    n = length(labs)
+    fields = paste0("lab", seq_len(n))
+    h = if(n < 10) 24 else if (n < 20) 21 else 18
+    lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i], height = h))
   })
 
   observeEvent(input$labs123, { # New labels: 1, 2, ...

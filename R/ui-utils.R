@@ -22,9 +22,9 @@ errModal = function(..., html = FALSE) {
   showModal(modalDialog(mess, easyClose = TRUE))
 }
 
-textInput2 = function(inputId, value) {
+textInput2 = function(inputId, value, height) {
   w  = textInput(inputId, label = NULL, value = value, width = "100%")
-  w$children[[2]]$attribs[["style"]] = "padding-top: 1px; padding-bottom: 1px; height: 24px;"
+  w$children[[2]]$attribs[["style"]] = sprintf("padding-top: 1px; padding-bottom: 1px; height: %dpx;", height)
   w
 }
 
