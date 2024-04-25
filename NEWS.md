@@ -1,9 +1,20 @@
 # QuickPed 4.0.0
 
-* The pedigree builder panel has a brand new look, with a more compact, icon-based design. This gave room for more buttons, including fill colours and new annotations.
+## New features
+* New icon-based design for pedigree building! Explanations for the icons are displayed as tooltips when you hover over a button.
 
-* When loading a ped file, it is no longer required that all founders are specified. This resolves a problem for users working with breeding pedigrees, which often leave out founders.
+* New siblings are now always placed next to the selected individual. Previously, the "Add sibling" button produced a new sib at the right-most end of the sibship in question.
 
+* A new button for adding a sibling to the *left* of the selected individual.
+
+* Detailed text annotations can now be added around and inside each pedigree symbol. Double-click an individual to open a popup window for text entry. Emoticons are allowed! 😂
+
+* New styling options, including hatched pedigree symbols and a selection of fill colours.
+
+* The method for changing sex has been updated. New buttons, featuring icons for *Male*, *Female*, and *Unknown*, allow you to set the sex of selected individuals directly. These replace the previous *Sex* button, which swapped males with females. As before, spouses of the affected individuals will be automatically updated as needed.
+
+* When loading *ped* files, it is no longer required that founders are included. This update resolves an issue for users working with animal pedigrees, which often omit founders.
+ 
 
 # QuickPed 3.2.0
 
