@@ -56,3 +56,21 @@
 #clearsel {
   padding:5px; border:none; background-color: inherit;
 }
+
+#banner {
+ position: absolute;
+ top: 8px;
+ right: 10%;
+ background-color: yellow;
+ color: #333;  /* Dark text color */
+ padding: 5px 20px;
+ border-radius: 2px;
+ font-size: 16px;
+ text-align: center;
+ box-shadow: 0 3px 6px rgba(0,0,0,0.1);  /* Subtle shadow for depth */
+ z-index: 1000;
+}
+
+#banner p {margin: 0px}
+#big-text { font-size: 30px; font-family: 'Lobster', cursive;}
+#small-text { font-size: 11px;}

@@ -17,11 +17,19 @@ ui = fluidPage(
 
   includeCSS("www/custom.css"),
   tags$head(includeHTML("GA.html")),
+  tags$head(tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lobster&display=swap")),
   useShinyjs(),
+
+  tags$div(id = "banner",
+        p(id="big-text", "New app design!"),
+        p("Discover the ", mylink("new features", href="https://github.com/magnusdv/quickped/blob/master/NEWS.md", style = "font-weight:bold;")),
+        p(id="small-text", "Or stay with the old version: ", a("QuickPed3", href="https://magnusdv.shinyapps.io/quickped-32/"), "")
+  ),
+
 
   # Application title
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
-  tags$style(HTML("#title-h2 {background-color: gray; color: white; padding: 15px}")),
+  tags$style(HTML("#title-h2 {background-color: #f0f4f7; color: #505050; padding: 15px}")),
 
   p(bold("Purpose: "), style = "margin: 0 0 5px",
     "QuickPed lets you rapidly create attractive pedigree plots, save them as images or text files, and analyse the relationships within them."),
@@ -40,7 +48,6 @@ ui = fluidPage(
     ital("BMC Bioinformatics"), ", ", bold("23"), ". DOI:",
     mylink("10.1186/s12859-022-04759-y", "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y"),
     "."),
-
 
   fluidRow(
 
@@ -343,8 +350,10 @@ server = function(input, output, session) {
     updateNumericInput(session, "mar", value = params$mar)
 
     y = req(BUILTIN_PEDS[[choice]])
-    args = list(ped = y$ped %||% y, clearStart = FALSE,
-                fill = modifyVec(NULL, y$aff, val = 1), carrier = y$carrier)
+    args = list(ped = y$ped %||% y,
+                fill = modifyVec(NULL, y$aff, val = 1),
+                carrier = y$carrier,
+                clearStart = FALSE)
     do.call(resetPed, args)
   }, ignoreInit = TRUE)
 
