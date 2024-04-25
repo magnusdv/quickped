@@ -23,21 +23,21 @@ readPed2 = function(pedfile) {
 
   # At least 3 rows?
   if(nrow(df) < 3)
-    stop("Only ", nrow(df), " rows found in the pedigree file; expected at least 3.")
+    stop2("Only ", nrow(df), " rows found in the pedigree file; expected at least 3.")
 
   # Remove first column if family ID
   fstname = tolower(names(df)[1])
   hasFamid = fstname %in% c("fid", "famid") || identical(df[1,1], df[2,1])
   if(hasFamid) {
     if(length(unique.default(df[[1]])) > 1)
-      stop("The loaded pedigree has multiple components. Only connected pedigrees are allowed.")
+      stop2("The file contains multiple families. Only 1 pedigree is allowed.")
     df[[1]] = NULL
   }
 
   # Now check columns
   NC = ncol(df)
   if(NC < 3)
-    stop("Only ", ncol(df), " columns found in the pedigree file; expected at least 4 (id, fid, mid, sex).",
+    stop2("Only ", ncol(df), " columns found in the pedigree file; expected at least 4 (id, fid, mid, sex).",
          "\n\nColumn separator guessed: ", if(sep == "\t") "tab" else "<whitespace>")
 
   # If 5th column present, interpret as affection status
@@ -52,10 +52,10 @@ readPed2 = function(pedfile) {
   names(df) = c("id", "fid", "mid", if(NC > 3) "sex")
 
   # Convert to ped object
-  ped = as.ped(df)
+  ped = as.ped(df, addMissingFounders = TRUE, verbose = FALSE)
 
   if(!is.ped(ped))
-    stop("The loaded pedigree has multiple components. Only connected pedigrees are allowed.")
+    stop2("The loaded pedigree has multiple components. Only connected pedigrees are allowed.")
 
   # Affected individuals
   aff = if(hasAff) ped$ID[affcodes == 2] else character(0)
