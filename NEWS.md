@@ -1,3 +1,10 @@
+# QuickPed 4.1.0
+
+## New features
+
+* New button "R code" for saving/copying code reproducing the plot in R.
+
+
 # QuickPed 4.0.0
 
 ## New features
