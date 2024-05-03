@@ -65,10 +65,10 @@ checkNewLabs = function(labs) {
 }
 
 
-formatAnnot = function(textAnnot, cex) {
+formatAnnot = function(textAnnot, cex, font = 2, col = "blue") {
   if(is.null(textAnnot))
     return(NULL)
-  lapply(textAnnot, function(b) list(b, cex = cex, font = 2))
+  lapply(textAnnot, function(b) list(b, cex = cex, font = font, col = col))
 }
 
 plotKappa = function(ped, ids, mode = "noninbred", col = "blue") {

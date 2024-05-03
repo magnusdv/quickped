@@ -7,6 +7,8 @@ suppressPackageStartupMessages({
   library(verbalisr)
   library(ggplot2)
   library(ggrepel)
+  library(glue)
+  library(lubridate)
 })
 
 VERSION = "4.0.0"
@@ -223,13 +225,14 @@ ui = fluidPage(
                      br(),
                      checkboxGroupInput("settings", "Other options (beta)", selected = NULL,
                                         c("Straight legs" = "straightlegs", "Arrows" = "arrows")),
-                     br(),
+
+                     actionButton("rcode", "R code", style = "background: lightgoldenrodyellow; font-family:monospace; font-weight: bolder; padding:0px; width: 100%;"),
                      fluidRow(style = "position: absolute; top:375px",
                        column(width = 6, align = "left", style = "padding-right:5px;",
-                              downloadButton("savePlotPng", "PNG", class = "btn btn-info", style = "padding-left:8px;width: 100%;"),
+                              downloadButton("savePlotPng", "PNG", class = "btn btn-info", style = "padding-inline:8px; width:100%;"),
                        ),
                        column(width = 6, align = "right", style = "padding-left:5px;",
-                              downloadButton("savePlotPdf", "PDF", class = "btn btn-info", style = "padding-left:8px;width: 100%;"),
+                              downloadButton("savePlotPdf", "PDF", class = "btn btn-info", style = "padding-inline:8px; width:100%;"),
                        )
                      )
            ),
@@ -325,6 +328,8 @@ server = function(input, output, session) {
 
     if(clearStart %||% any(c("ped", "twins") %in% argnames))
       updateSelectInput(session, "startped", selected = "")
+
+    codeTxt(NULL)
   }
 
   # Reset with a new pedigree  -----------------------------------------------
@@ -611,6 +616,7 @@ server = function(input, output, session) {
   })
 
   output$plot = renderPlot({    .debug("plot")
+    # Plot, but catch various errors & warnings
     dat = tryCatch({
         align = withCallingHandlers(
           plotAlignment(),
@@ -625,10 +631,10 @@ server = function(input, output, session) {
       },
       error = errModal)
 
-    req(dat) # if unsuccessful, return gracefully
-    box("outer", col = 1)
+      box("outer", col = 1)
+      req(dat) # if unsuccessful, return gracefully
     },
-    execOnResize = TRUE, res = 72, # default; seems ok in practice
+    execOnResize = TRUE, res = 72, # default; seems OK in practice
     width = function() max(c(1, abs(input$width)), na.rm = TRUE),
     height = function() max(c(1, abs(input$height)), na.rm = TRUE)
   )
@@ -767,7 +773,6 @@ server = function(input, output, session) {
   })
 
 
-
   # Action when clicking "Download" in the modal dialog
   output$saveCoeffTable = downloadHandler(
     filename = "quickped-relatedness.txt",
@@ -852,12 +857,12 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$describe, {   .debug("describe")
+    ped = req(pedigree$ped)
     if(1 %in% pedigree$twins$code) {
       relText("This feature does not support MZ twin pedigrees.")
       return()
     }
 
-    ped = req(pedigree$ped)
     ids = sortIds(ped, ids = sel())
 
     if(length(ids) != 2) {
@@ -870,8 +875,6 @@ server = function(input, output, session) {
     txt = gsub("([[:graph:]])  ([[:graph:]])", "\\1 \\2", txt) # remove double spaces
     relText(txt)
   })
-
-
 
   observeEvent(input$coeffs, {   .debug("coeffs")
     if(1 %in% pedigree$twins$code) {
@@ -939,6 +942,43 @@ server = function(input, output, session) {
   })
 
   output$description = renderText(req(relText()), sep = "\n")
+
+  # Generate R code----------------------------------------------------------
+
+  codeTxt = reactiveVal(NULL)
+
+  # Render in modal dialog, created with createCodeModal when pressing rcode button (see below)
+  output$showCode = renderText(req(codeTxt()))
+
+  observeEvent(input$copyCode, {
+    if (!is.null(codeTxt())) {
+      utils::writeClipboard(codeTxt())
+    }
+  })
+
+  output$saveCode = downloadHandler(
+    filename = "quickped.R",
+    content = function(con) {
+      cat(codeTxt(), file = con)
+      removeModal()
+    }
+  )
+
+  observeEvent(input$rcode, {   .debug("R code")
+    code = generateCode(ped = req(pedigree$ped),
+                        twins = pedigree$twins,
+                        styles = reactiveValuesToList(styles),
+                        textAnnot = textAnnot(),
+                        cex = input$cex,
+                        symbolsize = input$symbolsize,
+                        margins = input$mar,
+                        width = input$width,
+                        height = input$height)
+
+    codeTxt(code)
+    showModal(createCodeModal())
+  })
+
 }
 
 
