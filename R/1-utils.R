@@ -81,6 +81,28 @@ addSib = function(x, id, sex = 1, side = c("right", "left")) {
   reorderPed(newped, ord)
 }
 
+addPar = function(x, ids) {
+  n = length(ids)
+  pars = ids[-1] # parents, if more than 1 is selected
+  parsex = getSex(x, pars)
+  fa = mo = NULL
+  if(n == 3) {
+    if(parsex[1] == 1 && parsex[2] == 2)      {fa = pars[1]; mo = pars[2]}
+    else if(parsex[1] == 2 && parsex[2] == 1) {fa = pars[2]; mo = pars[1]}
+    else
+      stop2("Incompatible sex of selected parents: ", ids[2:3])
+  }
+  else if(n == 2) {
+    if(parsex[1] == 1) fa = ids[2]
+    else if(parsex[1] == 2) mo = ids[2]
+    else
+      stop2("Cannot use individuals of uknown sex as parent: ", ids[2])
+  }
+  else if(n != 1)
+    stop2("Too many individuals selected")
+  newped = addParents(x, ids[1], father = fa, mother = mo, verbose = F)
+}
+
 # No reactives here! `dat` contains all elements
 removeSel = function(dat, ids, updown) {
   newped = removeIndividuals(dat$ped, ids, remove = updown, verbose = FALSE)

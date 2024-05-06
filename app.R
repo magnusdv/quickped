@@ -410,10 +410,20 @@ server = function(input, output, session) {
   })
 
   observeEvent(input$addparents, {  .debug("add parents")
-    id = req(sel())
+    ids = req(sel()) # If multiple, the first is interpreted as child, followed by parents
+    ok = FALSE
     tryCatch({
-      updatePed(ped = addParents(pedigree$ped, id, verbose = FALSE))
+      updatePed(ped = addPar(pedigree$ped, ids))
+      ok = TRUE
     }, error = errModal)
+
+    if(ok && length(ids) %in% 2:3)
+      showModal(modalDialog(
+        HTML("NOTE: When 2 or 3 individuals are selected, adding parents works by
+         considering the order in which the individuals where selected.
+         The first is interpreted as the child, followed by its designated parent(s).<br><br>
+         If this was not the intended action, simply press <b>Undo</b> after closing this message."),
+      footer = modalButton("OK")))
   })
 
   observeEvent(input$sex1, {    .debug("sex1")

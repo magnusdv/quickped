@@ -4,6 +4,7 @@
 
 * New button "R code" for saving/copying code reproducing the plot in R.
 
+* The 'Add parents' button now supports assigning existing pedigree members as parents. When 2 or 3 individuals are selected, the first is treated as the child, followed by its designated parent(s).
 
 # QuickPed 4.0.0
 
@@ -14,7 +15,7 @@
 
 * A new button for adding a sibling to the *left* of the selected individual.
 
-* Detailed text annotations can now be added around and inside each pedigree symbol. Double-click an individual to open a popup window for text entry. Emoticons are allowed! 😂
+* Detailed text annotations can now be added around and inside each pedigree symbol. Double-click an individual to open a popup window for text entry. Emojis are allowed! 😂
 
 * New styling options, including hatched pedigree symbols and a selection of fill colours.
 
