@@ -4,7 +4,7 @@ createCodeModal = function() {
     verbatimTextOutput("showCode", placeholder = FALSE),
     footer = tagList(
       modalButton("Close"),
-      actionButton("copyCode", "Copy", class = "btn btn-success"),
+      #actionButton("copyCode", "Copy", class = "btn btn-success"),
       downloadButton("saveCode", "Save", class="btn btn-info")
     )
   )
@@ -38,7 +38,7 @@ generateCode = function(ped, twins = NULL, styles = NULL, textAnnot = NULL, cex 
                         width, height) {
   pedDf = as.data.frame(ped)
 
-  params = c("x",
+  params = c(glue("x, cex = {cex}, symbolsize = {symbolsize}, margins = {margins}"),
     if(!is.null(styles$hatched)) glue("hatched = {vec2ascii(sortIds(ped, styles$hatched))}"),
     if(!is.null(styles$carrier)) glue("carrier = {vec2ascii(sortIds(ped, styles$carrier))}"),
     if(!is.null(styles$deceased)) glue("deceased = {vec2ascii(sortIds(ped, styles$deceased))}"),
@@ -53,22 +53,20 @@ generateCode = function(ped, twins = NULL, styles = NULL, textAnnot = NULL, cex 
       anna = textAnnot[[a]]
       vec1 = namedvec2ascii(anna[[1]])
       pars = unlist(anna[-1])
+      ischar = is.na(suppressWarnings(as.numeric(pars)))
+      pars[ischar] = paste0('"', pars[ischar], '"')
       txtPars = toString(glue("{validName(names(pars))} = {pars}"))
       glue("{a} = list({vec1}, {txtPars})")
     })
     txtAnnChar = glue_collapse(txtAnnList, sep = ",\n              ")
-    txtAnn = glue('
+    txtAnn = glue('\n
     # Text annotations
-    textAnnot = list({txtAnnChar})
-
+    textAnnot = list({txtAnnChar})\n
     ')
     params = c(params, glue("textAnnot = textAnnot"))
   }
   else
     txtAnn = ""
-
-  # Simple parameters
-  params = c(params, glue("cex = {cex}, symbolsize = {symbolsize}, margins = {margins}"))
 
   # Complete text template
   txt = '
@@ -87,7 +85,6 @@ generateCode = function(ped, twins = NULL, styles = NULL, textAnnot = NULL, cex 
           fid = {vec2ascii(pedDf$fid)},
           mid = {vec2ascii(pedDf$mid)},
           sex = {vec2ascii(pedDf$sex)})
-
   {txtAnn}
   # Plot
   plot({glue_collapse(params, sep = ",\n       ")})

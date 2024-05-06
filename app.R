@@ -960,11 +960,11 @@ server = function(input, output, session) {
   # Render in modal dialog, created with createCodeModal when pressing rcode button (see below)
   output$showCode = renderText(req(codeTxt()))
 
-  observeEvent(input$copyCode, {
-    if (!is.null(codeTxt())) {
-      utils::writeClipboard(codeTxt())
-    }
-  })
+  # observeEvent(input$copyCode, {
+  #   if (!is.null(codeTxt())) {
+  #     utils::writeClipboard(codeTxt())
+  #   }
+  # })
 
   output$saveCode = downloadHandler(
     filename = "quickped.R",
