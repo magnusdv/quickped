@@ -12,15 +12,16 @@
 ## What is QuickPed?
 
 QuickPed is an interactive web application for drawing and analysing
-pedigrees. A created pedigree may be saved as an image or as a text file
-in *ped format* (see [below](#ped-files)). You may also obtain various
-information about the pedigree, including relatedness coefficients and
-verbal descriptions of relationships.
+pedigrees. A created pedigree may be saved as an image, as a *.ped* file
+(see [below](#ped-files)) or in the form of R code to reproduce the
+plot. You may also obtain various information about the pedigree,
+including relatedness coefficients and verbal descriptions of
+relationships.
 
 QuickPed is powered by the
-[pedsuite](https://magnusdv.github.io/pedsuite/) and
-[kinship2](https://CRAN.R-project.org/package=kinship2) for pedigree
-plotting. The web app was built with Shiny.
+[pedsuite](https://magnusdv.github.io/pedsuite/), and uses
+[kinship2](https://CRAN.R-project.org/package=kinship2) for plot
+alignment calculations. The web app was built with Shiny.
 
 ## Getting started
 
@@ -34,22 +35,44 @@ attributes like sex, affection status, twin status and ID labels.
 ## Tips and tricks
 
 - **Selecting individuals**. Select/deselect pedigree members by
-  clicking on them. Selected individuals are shown in red colour. Pro
-  tip: To deselect everyone, click the “Deselect” button under the
-  “Remove” heading.
+  clicking on them. Selected individuals are shown in red colour. To
+  deselect everyone, click the
+  <img src="www/hand-pointer-strikethrough.svg" height = "18px" width = "18px" style="border: 1px solid gray; border-radius: 3px;">
+  button.
+
+- **Adding parents**. If you select a single founder and click “Add
+  Parents,” new parents will be created for this individual. From
+  version 4.1.1, you can also assign *existing* members as parents.
+  First, select the child, then the intended parent(s) — the order of
+  selection matters! Finally, click “Add Parents.”
+
 - **Labels**: Automatic labelling of the pedigree members are available
   in two different formats. The button marked `1,2,..` applies numeric
   labels to all individuals, in the order of their appearance in the
   pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the
   members generation-wise, using roman numerals to indicate the
   generation number.
-- **Unknown sex**. If you double click on a pedigree member, its symbol
-  will change into a diamond representing unknown sex. Double click
-  again to revert. Note: Only pedigree *leaves* (members without
-  children) may have unknown sex.
+
+- **Line breaks in labels**. By default, pedigree labels are folded
+  automatically to width approximately 12 characters. To insert hard
+  line breaks, use a double space. For instance, if you want “King Lear”
+  to appear on two lines, modify the label to “King␣␣Lear”, i.e., with
+  two spaces between the words.
+
+- **Text annotation**. Double clicking on a pedigree member opens a
+  popup window, in which text may be added around and inside the symbol
+  for this individual.
+
 - **Plot settings**. If the pedigree gets too large, increase the plot
   region using the control panel on the far right. Here you may also
   adjust the margins, the size of pedigree symbols and text labels.
+
+- **R code**. The “R code” button, located on the right side of
+  QuickPed, opens a text window containing R code that reproduces the
+  current pedigree plot. By saving this to a .R file, or simply
+  copy-pasting the code into R, you can explore further plot options
+  (see `?pedtools::plot.ped` for lots of examples!) or use the pedigree
+  as starting point for analysis with the **pedsuite**.
 
 ## Built-in pedigrees
 
@@ -81,27 +104,36 @@ are available:
 
 ## Relationship information
 
-The buttons `Coeffs` and `Describe` can be used to analyse the
-relatedness between selected individuals in the current pedigree.
+Under `Relationships` there are four buttons offering different analyses
+of relationships within the loaded pedigree. The buttons are, in order:
 
-- `Coeffs`: This prints a variety of pedigree coefficients.
+- **Describe relationship**. Prints a standardised description of the
+  relationship between two selected individuals. The text is generated
+  by [verbalisr](https://github.com/magnusdv/verbalisr).
 
-  - The inbreeding coefficient of each individual (this works for any
-    number of selected members).
+- **Calculate coefficients**. Prints the most important relatedness
+  coefficients between two selected individuals:
+
+  - The inbreeding coefficient of each individual.
   - The kinship coefficient $\varphi$.
-  - The IBD coefficients $\kappa = (\kappa_0, \kappa_1, \kappa_2)$,
-    defined as the probabilities of sharing 0, 1, and 2 alleles
-    identical by descent (IBD). These are well-defined only if both
-    individuals are non-inbred.
-  - The 9 condensed identity coefficients of Jacquard,
-    $\Delta = (\Delta_1, ..., \Delta_9)$.
+  - The degree of relationship.
+  - The IBD coefficients $\kappa = (\kappa_0, \kappa_1, \kappa_2)$, if
+    both individuals are non-inbred.
+  - The condensed identity coefficients
+    $\Delta = (\Delta_1, ..., \Delta_9)$, if either individual is
+    inbred.
 
-  More information about these coefficients can be found in the
-  documentation of the [ribd](https://github.com/magnusdv/ribd) package,
-  which is used in the calculations.
+- **Relatedness triangle**. Produces a plot representing the IBD
+  coefficients $\kappa$ as a point in a *relatedness triangle*.
 
-- `Describe`: This prints a verbal description of the relationship,
-  generated by [verbalisr](https://github.com/magnusdv/verbalisr).
+- **Table of coefficients**. Activates a popup window where the user can
+  choose among a variety of coefficients, including detailed identity
+  and X-chromosomal coefficients, to be computed for each pair of
+  pedigree members. Generates a tab-separated file for download.
+
+More information about these coefficients can be found in the
+documentation of the [ribd](https://github.com/magnusdv/ribd) package,
+which is used in the calculations.
 
 ## Ped files
 
@@ -135,5 +167,6 @@ column may not be needed in non-medical applications. These and other
 details may be specified when using QuickPed.
 
 Some pedigree information may be shown on the plot, but is *not* stored
-in the ped file. In the current version of QuickPed, this includes twin
-relationships, and also `deceased` status.
+in the ped file. In the current version of QuickPed, this includes
+colours, text annotations (expect main labels), twin relationships, and
+`deceased` status.
