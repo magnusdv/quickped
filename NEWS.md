@@ -1,10 +1,17 @@
-# QuickPed 4.1.0
+# QuickPed 4.1.1
 
 ## New features
 
-* New button "R code" for saving/copying code reproducing the plot in R.
+* New "R code" button to generate R code reproducing the current pedigree plot.
 
 * The 'Add parents' button now supports assigning existing pedigree members as parents. When 2 or 3 individuals are selected, the first is treated as the child, followed by its designated parent(s).
+
+## Bug fixes
+
+* Fixed error message when removing individuals disconnects the pedigree.
+
+* Fixed a bug where previous labels of selected individuals persisted in the background, causing havoc.
+
 
 # QuickPed 4.0.0
 

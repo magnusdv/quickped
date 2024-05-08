@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-VERSION = "4.1.0"
+VERSION = "4.1.1"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
