@@ -594,6 +594,11 @@ server = function(input, output, session) {
   plotAlignment = reactive({  .debug("align")
     arrows = "arrows" %in% input$settings
     straight = "straightlegs" %in% input$settings
+
+    # Safety check (should be avoided elsewhere)
+    if(is.pedList(pedigree$ped))
+      stop2("Disconnected pedigree")
+
     .pedAlignment(pedigree$ped, twins = pedigree$twins, arrows = arrows,
                   align = if(straight) c(0,0) else c(1.5,2))
   })
@@ -635,6 +640,7 @@ server = function(input, output, session) {
               invokeRestart("muffleWarning")
           }
         )
+
         if(anyNA(align$x))
           stop2("Sorry, for some reason this pedigree did align properly.")
         drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())

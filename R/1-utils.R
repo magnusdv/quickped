@@ -109,7 +109,11 @@ removeSel = function(dat, ids, updown) {
 
   if(is.null(newped))
     stop2(sprintf("Removing %s would leave a empty pedigree",
-                  ifelse(length(ids) == 1, paste("individual", ids), "these individuals")))
+                  ifelse(length(ids) == 1, sprintf("'%s'", ids), "these individuals")))
+
+  if(is.pedList(newped))
+    stop2(sprintf("Removing %s would disconnect the pedigree, which is currently not supported",
+                  ifelse(length(ids) == 1, sprintf("'%s'", ids), "these individuals")))
 
   newlabs = labels(newped)
 
@@ -140,12 +144,6 @@ sortIds = function(x, ids) {
   intern = internalID(x, ids)
   ids[order(intern)]
 }
-
-
-# cleanVec = function(x, val) {
-#   if(length(x) == 1 && identical(x, val))
-#     return()
-# }
 
 
 # Update vector x by vector y
