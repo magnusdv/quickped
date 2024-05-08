@@ -48,3 +48,17 @@ iconButton = function(id, icon, float = "left") {
                class = "icon_button",
                style = sprintf("width: calc(20%% - 4/5*2px); float: %s;", float))
 }
+
+parentMessage = modalDialog(
+  title = "Parent Assignment Guidance",
+  HTML("When 2 or 3 individuals are selected, adding parents works by
+    considering the order in which the individuals were selected.
+    The first is interpreted as the child, followed by its designated parent(s).<br><br>
+    If this was not the intended action, simply press <b>Undo</b> after closing this message."),
+  footer = tagList(
+    div(style = "display: inline-block; vertical-align: middle;",
+        checkboxInput("suppressParentMessage", "Don't show this message again")),
+    div(style = "display: inline-block; vertical-align: middle; margin-left: 20px;",
+        modalButton("OK"))
+  )
+)

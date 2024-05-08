@@ -269,7 +269,7 @@ server = function(input, output, session) {
                           dashed = NULL, fill = NULL)
   textAnnot = reactiveVal(NULL)
 
-  plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
+  #plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
   sel = reactiveVal(character(0))
   relText = reactiveVal(NULL)
 
@@ -417,13 +417,8 @@ server = function(input, output, session) {
       ok = TRUE
     }, error = errModal)
 
-    if(ok && length(ids) %in% 2:3)
-      showModal(modalDialog(
-        HTML("NOTE: When 2 or 3 individuals are selected, adding parents works by
-         considering the order in which the individuals where selected.
-         The first is interpreted as the child, followed by its designated parent(s).<br><br>
-         If this was not the intended action, simply press <b>Undo</b> after closing this message."),
-      footer = modalButton("OK")))
+    if(ok && length(ids) %in% 2:3 && !isTRUE(input$suppressParentMessage))
+      showModal(parentMessage)
   })
 
   observeEvent(input$sex1, {    .debug("sex1")
