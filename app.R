@@ -580,6 +580,7 @@ server = function(input, output, session) {
 
     tryCatch({
       newdat = updateLabelsData(pedigree, styles, textAnnot(), new = newlabs)
+      newdat$clearSel = newdat$clearRel = TRUE
       do.call(updatePed, newdat)
     }, error = errModal)
   })
