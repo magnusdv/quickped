@@ -52,7 +52,7 @@ generateCode = function(ped, twins = NULL, styles = NULL, textAnnot = NULL, cex 
   if(!is.null(twins)) {
     twinData = glue("\n
     # Twins
-    twins = data.frame(id1 = {twins$id1}, id2 = {twins$id2}, code = {twins$code})\n
+    twins = data.frame(id1 = {vec2ascii(twins$id1)}, id2 = {vec2ascii(twins$id2)}, code = {twins$code})\n
     ")
     params = c(params, "twins = twins")
   }
