@@ -143,14 +143,14 @@ ui = fluidPage(
               column(6,
                 midHeading("Twins"),
                 actionButton("twinstatus", "MZ / DZ", width = "100%",
-                  style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 3px")
+                  style = "padding-top: 5px; padding-bottom: 5px; padding-left: 0px; padding-right: 3px"),
+                bsTooltip("twinstatus", HTML("Change twin status"), placement = "top"),
               ),
               column(6,
                  midHeading("Remove"),
                  fluidRow(
                    pedButton("removeDown", NULL, icon("arrow-down"), side = "left"),
                    pedButton("removeUp", NULL, icon("arrow-up"), side = "right"),
-                   bsTooltip("twins", HTML("Change twin status"), placement = "top"),
                    bsTooltip("removeDown", HTML("Remove&nbsp;selected + descendants"), placement = "top"),
                    bsTooltip("removeUp", HTML("Remove&nbsp;selected + ancestors"), placement = "top"),
                   ),
