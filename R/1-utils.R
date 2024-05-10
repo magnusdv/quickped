@@ -100,7 +100,8 @@ addPar = function(x, ids) {
   }
   else if(n != 1)
     stop2("Too many individuals selected")
-  newped = addParents(x, ids[1], father = fa, mother = mo, verbose = F)
+
+  addParents(x, ids[1], father = fa, mother = mo, verbose = F)
 }
 
 # No reactives here! `dat` contains all elements

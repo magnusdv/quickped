@@ -614,8 +614,8 @@ server = function(input, output, session) {
   })
 
   plotScaling = reactive({  .debug("scaling")
-    checknum(input$width, "Width", min = 10, max = Inf)
-    checknum(input$height, "Heigth", min = 10, max = Inf)
+    checknum(input$width, "Width", min = 100, max = Inf)
+    checknum(input$height, "Heigth", min = 100, max = Inf)
 
     align = req(plotAlignment())
     annot = list(textUnder = plotLabs())
@@ -627,6 +627,7 @@ server = function(input, output, session) {
   })
 
   output$plot = renderPlot({    .debug("plot")
+
     # Plot, but catch various errors & warnings
     dat = tryCatch({
         align = withCallingHandlers(
@@ -636,19 +637,19 @@ server = function(input, output, session) {
               invokeRestart("muffleWarning")
           }
         )
-
         if(anyNA(align$x))
           stop2("Sorry, for some reason this pedigree did align properly.")
-        drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
+        scale = plotScaling()
+        annot = plotAnnotation()
+        drawPed(align, annotation = annot, scaling = scale)
       },
-      error = errModal)
+      error = errModal) |> req()
 
       box("outer", col = 1)
-      req(dat) # if unsuccessful, return gracefully
     },
     execOnResize = TRUE, res = 72, # default; seems OK in practice
-    width = function() max(c(1, abs(input$width)), na.rm = TRUE),
-    height = function() max(c(1, abs(input$height)), na.rm = TRUE)
+    width = function() max(c(100, abs(input$width)), na.rm = TRUE),
+    height = function() max(c(100, abs(input$height)), na.rm = TRUE)
   )
 
   positionDf = reactive({   .debug("position")
@@ -715,21 +716,33 @@ server = function(input, output, session) {
 
   output$savePlotPng = downloadHandler(
     filename = "quickped.png",
-    content = function(con) {
-      png(con, width = input$width, height = input$height)
-      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
-      dev.off()
-    },
+    content = function(con)
+      tryCatch({
+        align = plotAlignment()
+        scale = plotScaling()
+        annot = plotAnnotation()
+
+        png(con, width = input$width, height = input$height)
+        drawPed(align, annotation = annot, scaling = scale)
+        dev.off()
+      },
+      error = errModal),
     contentType = "image/png"
   )
 
   output$savePlotPdf = downloadHandler(
     filename = "quickped.pdf",
-    content = function(file) {
-      cairo_pdf(file, width = input$width/72, height = input$height/72)
-      drawPed(plotAlignment(), annotation = plotAnnotation(), scaling = plotScaling())
-      dev.off()
-    },
+    content = function(file)
+      tryCatch({
+        align = plotAlignment()
+        scale = plotScaling()
+        annot = plotAnnotation()
+
+        cairo_pdf(file, width = input$width/72, height = input$height/72)
+        drawPed(align, annotation = annot, scaling = scale)
+        dev.off()
+      },
+      error = errModal),
     contentType = "application/pdf"
   )
 
@@ -973,7 +986,8 @@ server = function(input, output, session) {
     content = function(con) {
       cat(codeTxt(), file = con)
       removeModal()
-    }
+    },
+    contentType = "text/plain"
   )
 
   observeEvent(input$rcode, {   .debug("R code")
