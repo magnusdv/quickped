@@ -853,7 +853,7 @@ server = function(input, output, session) {
   })
 
   output$plotTriangle = renderPlot(
-    plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode),
+    plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode, pedArrows = "arrows" %in% input$settings),
     width = 560, height = 480,
     res = 72 # too low, but increasing it disturbs everything else
   )
@@ -862,7 +862,7 @@ server = function(input, output, session) {
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 560*2, height = 480*2, res = 72*2)
-      plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode)
+      plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode, pedArrows = "arrows" %in% input$settings)
       dev.off()
     },
     contentType = "image/png"
