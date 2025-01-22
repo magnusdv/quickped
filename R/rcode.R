@@ -34,11 +34,13 @@ namedvec2ascii = function(x) {
   sprintf("c(%s)", toString(args))
 }
 
-generateCode = function(ped, twins = NULL, styles = NULL, textAnnot = NULL, cex = 1, symbolsize = 1, margins = 1,
+generateCode = function(ped, twins = NULL, miscarriage = NULL, styles = NULL,
+                        textAnnot = NULL, cex = 1, symbolsize = 1, margins = 1,
                         width, height) {
   pedDf = as.data.frame(ped)
 
   params = c(glue("x, cex = {cex}, symbolsize = {symbolsize}, margins = {margins}"),
+    if(!is.null(miscarriage)) glue("miscarriage = {vec2ascii(sortIds(ped, miscarriage))}"),
     if(!is.null(styles$hatched)) glue("hatched = {vec2ascii(sortIds(ped, styles$hatched))}"),
     if(!is.null(styles$carrier)) glue("carrier = {vec2ascii(sortIds(ped, styles$carrier))}"),
     if(!is.null(styles$deceased)) glue("deceased = {vec2ascii(sortIds(ped, styles$deceased))}"),

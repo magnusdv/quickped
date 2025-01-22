@@ -90,8 +90,16 @@ ui = fluidPage(
         # Second control column
         column(width = 6,
           wellPanel(style = "height:430px; width:210px",
-            bigHeading("Modify"),
-            midHeading("Add"),
+            div(style = "display: flex; flex-wrap: nowrap; align-items: center; width: 100%; justify-content: space-between;",
+              bigHeading("Modify"),
+              actionButton("clearsel", label = NULL,
+                icon = icon(name = NULL, class = "custom_icon",
+                            style = "background-image: url('hand-pointer-strikethrough.svg'); width: 20px; aspect-ratio: 1/1;"),
+                class = "icon_button",
+                style = "float:left"),
+              bsTooltip("clearsel", HTML("Deselect<br>all")),
+            ),
+            midHeading("Add", style = "margin-top: 2.5px"),
             fluidRow(style = "margin-left:0px; width: 170px",
               iconButton("addson", icon = "add-son.svg"),
               iconButton("adddaughter", icon = "add-daughter.svg"),
@@ -100,20 +108,20 @@ ui = fluidPage(
               iconButton("addparents", icon = "add-parents.svg"),
             ),
             bsTooltip("addson", "Add son"),
-              bsTooltip("adddaughter", "Add daughter"),
-              bsTooltip("addsibRight", "Add sibling to the right"),
-              bsTooltip("addsibLeft", "Add sibling to the left"),
-              bsTooltip("addparents", "Add parents"),
+            bsTooltip("adddaughter", "Add daughter"),
+            bsTooltip("addsibRight", "Add sibling to the right"),
+            bsTooltip("addsibLeft", "Add sibling to the left"),
+            bsTooltip("addparents", "Add parents"),
             midHeading("Sex"),
             fluidRow(style = "margin-left:0px; width: 170px",
               iconButton("sex1", icon = "sex-male.svg"),
               iconButton("sex2", icon = "sex-female.svg"),
               iconButton("sex0", icon = "sex-unknown.svg"),
-              iconButton("clearsel", icon = "hand-pointer-strikethrough.svg", float = "right"),
+              iconButton("sex3", icon = "sex-miscarriage.svg"),
               bsTooltip("sex1", "Male"),
               bsTooltip("sex2", "Female"),
               bsTooltip("sex0", "Unknown"),
-              bsTooltip("clearsel", HTML("Deselect<br>all")),
+              bsTooltip("sex3", "Miscarriage"),
             ),
             midHeading("Style"),
             fluidRow(style = "margin-left:0px; width: 170px",
@@ -264,12 +272,10 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  pedigree = reactiveValues(ped = nuclearPed(1), twins = NULL)
+  pedigree = reactiveValues(ped = nuclearPed(1), twins = NULL, miscarriage = NULL)
   styles = reactiveValues(hatched = NULL, carrier = NULL, deceased = NULL,
                           dashed = NULL, fill = NULL)
   textAnnot = reactiveVal(NULL)
-
-  #plotdat = reactiveValues(alignment = NULL, scaling = NULL, annotation = NULL)
   sel = reactiveVal(character(0))
   relText = reactiveVal(NULL)
 
@@ -310,7 +316,7 @@ server = function(input, output, session) {
     args = lapply(args, function(b) if(length(b)) b else NULL)
 
     # Update reactives
-    for(a in .myintersect(argnames, c("ped", "twins")))
+    for(a in .myintersect(argnames, c("ped", "twins", "miscarriage")))
       pedigree[[a]] = args[[a]]
 
     for(a in .myintersect(argnames, names(styles)))
@@ -335,7 +341,8 @@ server = function(input, output, session) {
   # Reset with a new pedigree  -----------------------------------------------
 
   resetPed = function(ped, ...) {  .debug("resetped")
-    cleanArgs = list(twins = NULL, hatched = NULL, carrier = NULL, dashed = NULL,
+    cleanArgs = list(twins = NULL, miscarriage = NULL, hatched = NULL,
+                     carrier = NULL, dashed = NULL,
                      deceased = NULL, fill = NULL, textAnnot = NULL)
     args = modifyList(cleanArgs, list(ped = ped, ...), keep.null = TRUE)
     do.call(updatePed, args)
@@ -384,6 +391,8 @@ server = function(input, output, session) {
   observeEvent(input$addson, {    .debug("add son")
     id = req(sel())
     tryCatch({
+      if(id %in% pedigree$miscarriage)
+        stop2("Cannot add children to a miscarriage")
       updatePed(ped = addSon(pedigree$ped, id, verbose = FALSE))
     }, error = errModal)
   })
@@ -391,6 +400,8 @@ server = function(input, output, session) {
   observeEvent(input$adddaughter, {  .debug("add daughter")
     id = req(sel())
     tryCatch({
+      if(id %in% pedigree$miscarriage)
+        stop2("Cannot add children to a miscarriage")
       updatePed(ped = addDaughter(pedigree$ped, id, verbose = FALSE))
     }, error = errModal)
   })
@@ -425,7 +436,7 @@ server = function(input, output, session) {
     id = req(sel())
     tryCatch({
       ped = changeSex(pedigree$ped, id, sex = 1, twins = pedigree$twins)
-      updatePed(ped = ped)
+      updatePed(ped = ped, miscarriage = .mysetdiff(pedigree$miscarriage, id))
     }, error = errModal)
   })
 
@@ -433,7 +444,7 @@ server = function(input, output, session) {
     id = req(sel())
     tryCatch({
       ped = changeSex(pedigree$ped, id, sex = 2, twins = pedigree$twins)
-      updatePed(ped = ped)
+      updatePed(ped = ped, miscarriage = .mysetdiff(pedigree$miscarriage, id))
     }, error = errModal)
   })
 
@@ -441,7 +452,16 @@ server = function(input, output, session) {
     id = req(sel())
     tryCatch({
       ped = changeSex(pedigree$ped, id, sex = 0, twins = pedigree$twins)
-      updatePed(ped = ped)
+      updatePed(ped = ped, miscarriage = .mysetdiff(pedigree$miscarriage, id))
+    }, error = errModal)
+  })
+
+  observeEvent(input$sex3, {   .debug("miscarriage")
+    id = req(sel())
+    tryCatch({
+      if(!all(id %in% leaves(pedigree$ped)))
+        stop2("A parent cannot be a miscarriage")
+      updatePed(miscarriage = union(pedigree$miscarriage, id), clearSel = TRUE)
     }, error = errModal)
   })
 
@@ -596,6 +616,7 @@ server = function(input, output, session) {
       stop2("Disconnected pedigree")
 
     .pedAlignment(pedigree$ped, twins = pedigree$twins, arrows = arrows,
+                  miscarriage = pedigree$miscarriage,
                   align = if(straight) c(0,0) else c(1.5,2))
   })
 
@@ -993,6 +1014,7 @@ server = function(input, output, session) {
   observeEvent(input$rcode, {   .debug("R code")
     code = generateCode(ped = req(pedigree$ped),
                         twins = pedigree$twins,
+                        miscarriage = pedigree$miscarriage,
                         styles = reactiveValuesToList(styles),
                         textAnnot = textAnnot(),
                         cex = input$cex,

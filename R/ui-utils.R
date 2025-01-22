@@ -1,8 +1,8 @@
 bigHeading = function(x)
   h4(strong(x), .noWS = "before")
 
-midHeading = function(x)
-  h5(strong(x), style = "margin-bottom: 0px;")
+midHeading = function(x, style = NULL)
+  h5(strong(x), style = paste("margin-bottom: 0px;", style))
 
 bold = function(x) strong(x, .noWS = "outside")
 ital = function(x) em(x, .noWS = "outside")
@@ -42,6 +42,7 @@ pedButton = function(id, label, side = NULL, ...) {
 
 iconButton = function(id, icon, float = "left") {
   istyle = sprintf("background-image: url('%s'); width: 100%%; aspect-ratio: 1/1;", icon)
+
   actionButton(inputId = id,
                label = NULL,
                icon = icon(name = NULL, class = "custom_icon", style = istyle),

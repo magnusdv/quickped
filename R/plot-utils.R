@@ -27,6 +27,10 @@ updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL)
     newdat$twins = twins
   }
 
+  if(!is.null(misc <- pedigree$miscarriage)) {
+    newdat$miscarriage = idMap[misc]
+  }
+
   if(!is.null(names(fill <- styles$fill))) {
     names(fill) = idMap[names(fill)]
     newdat$fill = fill

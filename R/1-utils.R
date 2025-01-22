@@ -122,10 +122,13 @@ removeSel = function(dat, ids, updown) {
   newtw = dat$twins
   newtw = newtw[newtw$id1 %in% newlabs & newtw$id2 %in% newlabs, , drop = FALSE]
 
+  # Miscarriage
+  misc = dat$miscarriage
+  newmisc = .myintersect(misc, newlabs)
+
   # Styles except 'fill'
   sty = c("hatched", "carrier", "dashed", "deceased") |> setNames(nm = _)
   newstyles = lapply(sty, function(s) .myintersect(dat[[s]], newlabs))
-
 
   # Style 'fill'
   fill = dat$fill
@@ -136,7 +139,8 @@ removeSel = function(dat, ids, updown) {
   newText = newText[lengths(newText) > 0]
 
   # Collect everything in one list
-  newdat = c(list(ped = newped, twins = newtw), newstyles, list(textAnnot = newText))
+  newdat = c(list(ped = newped, twins = newtw, miscarriage = newmisc),
+             newstyles, list(textAnnot = newText))
 
   newdat
 }
