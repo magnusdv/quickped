@@ -22,11 +22,11 @@ ui = fluidPage(
   tags$head(tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lobster&display=swap")),
   useShinyjs(),
 
-  tags$div(id = "banner",
-        p(id="big-text", "New app design!"),
-        p("Discover the ", mylink("new features", href="https://github.com/magnusdv/quickped/blob/master/NEWS.md", style = "font-weight:bold;")),
-        p(id="small-text", "Or stay with the old version: ", mylink("QuickPed3", href="https://magnusdv.shinyapps.io/quickped-32/"))
-  ),
+  # tags$div(id = "banner",
+  #       p(id="big-text", "New app design!"),
+  #       p("Discover the ", mylink("new features", href="https://github.com/magnusdv/quickped/blob/master/NEWS.md", style = "font-weight:bold;")),
+  #       p(id="small-text", "Or stay with the old version: ", mylink("QuickPed3", href="https://magnusdv.shinyapps.io/quickped-32/"))
+  # ),
 
 
   # Application title
