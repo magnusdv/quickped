@@ -75,7 +75,7 @@ formatAnnot = function(textAnnot, cex, font = 2, col = "blue") {
   lapply(textAnnot, function(b) list(b, cex = cex, font = font, col = col))
 }
 
-plotKappa = function(ped, ids, mode = "noninbred", pedArrows = FALSE) {
+plotKappa = function(ped, ids, mode = "noninbred", ...) {
 
   if(!length(ids))
     ids = labels(ped)
@@ -121,7 +121,7 @@ plotKappa = function(ped, ids, mode = "noninbred", pedArrows = FALSE) {
 
   # Pedigree in top-right corner (do this first)
   par(fig = c(.49, .98, .49, .98))
-  tryCatch(plot(ped, autoScale = T, hatched = ids, arrows = pedArrows),
+  tryCatch(plot(ped, autoScale = T, hatched = ids, ...),
            error = function(e) return(invisible()))
   par(new = TRUE)
   print(gg, newpage = FALSE)

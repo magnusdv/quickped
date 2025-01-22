@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-VERSION = "4.1.1"
+VERSION = "4.2.0"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
@@ -391,7 +391,7 @@ server = function(input, output, session) {
   observeEvent(input$addson, {    .debug("add son")
     id = req(sel())
     tryCatch({
-      if(id %in% pedigree$miscarriage)
+      if(any(id %in% pedigree$miscarriage))
         stop2("Cannot add children to a miscarriage")
       updatePed(ped = addSon(pedigree$ped, id, verbose = FALSE))
     }, error = errModal)
@@ -400,7 +400,7 @@ server = function(input, output, session) {
   observeEvent(input$adddaughter, {  .debug("add daughter")
     id = req(sel())
     tryCatch({
-      if(id %in% pedigree$miscarriage)
+      if(any(id %in% pedigree$miscarriage))
         stop2("Cannot add children to a miscarriage")
       updatePed(ped = addDaughter(pedigree$ped, id, verbose = FALSE))
     }, error = errModal)
@@ -887,7 +887,8 @@ server = function(input, output, session) {
   })
 
   output$plotTriangle = renderPlot(
-    plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode, pedArrows = "arrows" %in% input$settings),
+    plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode,
+              arrows = "arrows" %in% input$settings, miscarriage = pedigree$miscarriage),
     width = 560, height = 480,
     res = 72 # too low, but increasing it disturbs everything else
   )
@@ -896,7 +897,8 @@ server = function(input, output, session) {
     filename = "triangle.png",
     content = function(file) {
       png(file, width = 560*2, height = 480*2, res = 72*2)
-      plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode, pedArrows = "arrows" %in% input$settings)
+      plotKappa(pedigree$ped, ids = sel(), mode = input$trianglemode,
+                arrows = "arrows" %in% input$settings, miscarriage = pedigree$miscarriage)
       dev.off()
     },
     contentType = "image/png"

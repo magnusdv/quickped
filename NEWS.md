@@ -1,3 +1,22 @@
+# QuickPed 4.2.0
+
+## New features
+
+* New "miscarriage" button for representing miscarriages with triangle symbols.
+
+* The "Clear selection" button was moved to the top of the "Modify" frame, to make room for the "miscarriage" button.
+
+* The "R code" output now displays time in UTC.
+
+## Bug fixes
+
+* Improved error handling when drawing and saving pedigree plots.
+
+* Fix bug affecting twin status in the "R code" output.
+
+* In the IBD triangle plots, allow arrow mode in the inset pedigree.
+
+
 # QuickPed 4.1.1
 
 ## New features
