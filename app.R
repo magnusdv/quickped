@@ -31,21 +31,19 @@ ui = fluidPage(
 
   # Application title
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
-  tags$style(HTML("#title-h2 {background-color: #f0f4f7; color: #505050; padding: 15px}")),
+  tags$style(HTML("#title-h2 {background-color: #f0f4f7; color: #505050; padding: 12px 15px}")),
 
   p(bold("Purpose: "), style = "margin: 0 0 5px",
     "QuickPed lets you rapidly create attractive pedigree plots, save them as images or text files, and analyse the relationships within them."),
 
   p(bold("Instructions: "), style = "margin: 0 0 5px",
-    "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.
-    For example, to add a male child, select the parent(s) and press the ",
-    img(src = "add-son.svg", height = "18px", width = "18px", style="border: 1px solid gray; border-radius: 3px;"), "icon.",
-    "Check out the ",
+    "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.",
+    "The ",
     mylink("online user manual", "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html"),
-    " for various tips and tricks, including an introduction to relatedness coefficients."),
+    " has many tips and tricks, including an introduction to relatedness coefficients."),
 
   p(bold("Citation: "), style = "margin: 0 0 10px",
-    "If you use QuickPed in a publication, please cite this paper: ",
+    "If you use QuickPed in a publication, please cite: ",
     "Vigeland MD (2022). QuickPed: an online tool for drawing pedigrees and analysing relatedness. ",
     ital("BMC Bioinformatics"), ", ", bold("23"), ". DOI:",
     mylink("10.1186/s12859-022-04759-y", "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-022-04759-y"),
@@ -261,11 +259,11 @@ ui = fluidPage(
 
   p("This is QuickPed version", VERSION, "(",
     mylink("changelog", "https://github.com/magnusdv/quickped/blob/master/NEWS.md"), ").",
-    "QuickPed is powered by the ",
-    mylink("pedsuite", "https://magnusdv.github.io/pedsuite/"),
-    " and uses ",
-    mylink("kinship2", "https://cran.r-project.org/package=kinship2"),
-    " for alignment calculations.",
+    # "QuickPed is powered by the ",
+    # mylink("pedsuite", "https://magnusdv.github.io/pedsuite/"),
+    # " and uses ",
+    # mylink("kinship2", "https://cran.r-project.org/package=kinship2"),
+    # " for alignment calculations.",
     "If you find something that isn't working properly, please file a bug report at ",
     mylink("https://github.com/magnusdv/quickped/issues"), "."),
 )
