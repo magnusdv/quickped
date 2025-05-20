@@ -44,6 +44,7 @@ generateCode = function(ped, twins = NULL, miscarriage = NULL, styles = NULL,
     if(!is.null(styles$hatched)) glue("hatched = {vec2ascii(sortIds(ped, styles$hatched))}"),
     if(!is.null(styles$carrier)) glue("carrier = {vec2ascii(sortIds(ped, styles$carrier))}"),
     if(!is.null(styles$deceased)) glue("deceased = {vec2ascii(sortIds(ped, styles$deceased))}"),
+    if(!is.null(styles$proband)) glue("proband = {vec2ascii(sortIds(ped, styles$proband))}"),
     if(!is.null(styles$dashed)) glue("lty = list(`2` = {vec2ascii(sortIds(ped, styles$dashed))})"),
     if(!is.null(styles$fill)) glue("fill = {namedvec2ascii(styles$fill)}"),
     NULL

@@ -127,7 +127,7 @@ removeSel = function(dat, ids, updown) {
   newmisc = .myintersect(misc, newlabs)
 
   # Styles except 'fill'
-  sty = c("hatched", "carrier", "dashed", "deceased") |> setNames(nm = _)
+  sty = c("hatched", "carrier", "dashed", "deceased", "proband") |> setNames(nm = _)
   newstyles = lapply(sty, function(s) .myintersect(dat[[s]], newlabs))
 
   # Style 'fill'

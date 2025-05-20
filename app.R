@@ -118,10 +118,12 @@ ui = fluidPage(
               iconButton("sex2", icon = "sex-female.svg"),
               iconButton("sex0", icon = "sex-unknown.svg"),
               iconButton("sex3", icon = "sex-miscarriage.svg"),
+              iconButton("proband", icon = "proband-arrow.svg"),
               bsTooltip("sex1", "Male"),
               bsTooltip("sex2", "Female"),
               bsTooltip("sex0", "Unknown"),
               bsTooltip("sex3", "Miscarriage"),
+              bsTooltip("proband", "Proband"),
             ),
             midHeading("Style"),
             fluidRow(style = "margin-left:0px; width: 170px",
@@ -274,7 +276,7 @@ server = function(input, output, session) {
 
   pedigree = reactiveValues(ped = nuclearPed(1), twins = NULL, miscarriage = NULL)
   styles = reactiveValues(hatched = NULL, carrier = NULL, deceased = NULL,
-                          dashed = NULL, fill = NULL)
+                          dashed = NULL, fill = NULL, proband = NULL)
   textAnnot = reactiveVal(NULL)
   sel = reactiveVal(character(0))
   relText = reactiveVal(NULL)
@@ -342,7 +344,7 @@ server = function(input, output, session) {
 
   resetPed = function(ped, ...) {  .debug("resetped")
     cleanArgs = list(twins = NULL, miscarriage = NULL, hatched = NULL,
-                     carrier = NULL, dashed = NULL,
+                     carrier = NULL, dashed = NULL, proband = NULL,
                      deceased = NULL, fill = NULL, textAnnot = NULL)
     args = modifyList(cleanArgs, list(ped = ped, ...), keep.null = TRUE)
     do.call(updatePed, args)
@@ -490,6 +492,11 @@ server = function(input, output, session) {
     updatePed(dashed = union(styles$dashed, req(sel())))
   })
 
+  observeEvent(input$proband, {  .debug("proband")
+    s = req(sel())
+    updatePed(proband = setdiff(union(styles$proband, s), intersect(styles$proband, s)))
+  })
+
   COLS = c(white = 0, black = 1, red = 2, green = 3, blue = 4, cyan = 5,
            magenta = 6, yellow = 7, gray = 8, pink = "pink")
   for(cc in names(COLS)) local({
@@ -626,6 +633,7 @@ server = function(input, output, session) {
                    hatched = styles$hatched, hatchDensity = 20,
                    carrier = styles$carrier,
                    deceased = styles$deceased,
+                   proband = styles$proband,
                    textAnnot = formatAnnot(textAnnot(), input$cex - 0.2),
                    col = list(red = sel()),
                    fill = styles$fill %||% NA,
@@ -639,7 +647,7 @@ server = function(input, output, session) {
     checknum(input$height, "Heigth", min = 100, max = Inf)
 
     align = req(plotAlignment())
-    annot = list(textUnder = plotLabs())
+    annot = list(textUnder = plotLabs(), probandTF = pedigree$ped$ID %in% styles$proband)
     cex = checknum(input$cex, "Cex", min = 0.01, max = 10)
     symsize = checknum(input$symbolsize, "Symbols", min = 0.01, max = 10)
     mar = checknum(input$mar, "Margins", min = 0, max = 10)

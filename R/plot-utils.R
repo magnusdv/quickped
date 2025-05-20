@@ -40,7 +40,7 @@ updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL)
     newdat$textAnnot = lapply(textAnnot, function(v)
       setNames(v, idMap[names(v)]))
 
-  for(sty in c("hatched", "carrier", "aff", "dashed", "deceased"))
+  for(sty in c("hatched", "carrier", "aff", "dashed", "deceased", "proband"))
     if(!is.null(styles[[sty]]))
       newdat[[sty]] = idMap[styles[[sty]]]
 

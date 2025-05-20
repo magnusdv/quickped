@@ -49,9 +49,8 @@
 }
 
 /* Needed because tooltip */
-#addparents {
-  margin-right: 0;
-}
+#proband {margin-right: 0;}
+#addparents  {margin-right: 0;}
 
 #clearsel {
   padding:5px; border:none; background-color: inherit;
