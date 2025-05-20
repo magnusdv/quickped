@@ -1,3 +1,8 @@
+# QuickPed 4.3.0
+
+* New button for adding proband arrows.
+
+
 # QuickPed 4.2.0
 
 ## New features

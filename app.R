@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-VERSION = "4.2.0"
+VERSION = "4.3.0"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
@@ -112,7 +112,7 @@ ui = fluidPage(
             bsTooltip("addsibRight", "Add sibling to the right"),
             bsTooltip("addsibLeft", "Add sibling to the left"),
             bsTooltip("addparents", "Add parents"),
-            midHeading("Sex"),
+            midHeading("Symbol"),
             fluidRow(style = "margin-left:0px; width: 170px",
               iconButton("sex1", icon = "sex-male.svg"),
               iconButton("sex2", icon = "sex-female.svg"),
