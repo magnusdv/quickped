@@ -1,6 +1,12 @@
 # QuickPed 4.3.0
 
+## New features
+
 * New button for adding proband arrows.
+
+## Bug fixes
+
+* Fix crashes occurring when trying to update an empty pedigree.
 
 
 # QuickPed 4.2.0

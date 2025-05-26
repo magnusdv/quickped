@@ -306,7 +306,7 @@ server = function(input, output, session) {
       return()
 
     # Push current state to stack
-    if(addToStack)
+    if(addToStack && !is.null(pedigree$ped))
       addCurrentToStack()
 
     # Update only given attributes
@@ -577,21 +577,24 @@ server = function(input, output, session) {
     lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i], height = h))
   })
 
-  observeEvent(input$labs123, { # New labels: 1, 2, ...
+  observeEvent(input$labs123, { .debug("labs123")
+    req(pedigree$ped)
     newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "asPlot", .alignment = plotAlignment())
     newdat$clearSel = newdat$clearRel = TRUE
     do.call(updatePed, newdat)
   })
 
-  observeEvent(input$labsGen, { # New labels: I-1, I-2, ...
+  observeEvent(input$labsGen, { .debug("labs-I1-I2-I3")
+    req(pedigree$ped)
     newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "generations", .alignment = plotAlignment())
     newdat$clearSel = newdat$clearRel = TRUE
     do.call(updatePed, newdat)
   })
 
   observeEvent(input$updateLabs, {  .debug("updatelabs")
-    oldlabs = labels(pedigree$ped)
+    oldlabs = labels(pedigree$ped) |> req() # abort if empty
     fields = paste0("lab", seq_along(oldlabs))
+
     newlabs = vapply(fields, function(s) input[[s]], FUN.VALUE = "1") |>
       as.character() |> trimws()
 
@@ -816,7 +819,7 @@ server = function(input, output, session) {
       return()
     }
 
-    ped = pedigree$ped
+    ped = pedigree$ped |> req() # abort if empty
     ids = sel()
     if(!length(ids))
       ids = labels(ped)
@@ -859,7 +862,7 @@ server = function(input, output, session) {
       return()
     }
 
-    ped = pedigree$ped
+    ped = pedigree$ped |> req() # abort if empty
     ids = sel()
     if(!length(ids))
       ids = labels(ped)
