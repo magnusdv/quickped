@@ -22,10 +22,10 @@ errModal = function(..., html = FALSE) {
   showModal(modalDialog(mess, easyClose = TRUE))
 }
 
-textInput2 = function(inputId, value, height) {
-  w  = textInput(inputId, label = NULL, value = value, width = "100%")
-  w$children[[2]]$attribs[["style"]] = sprintf("padding-top: 1px; padding-bottom: 1px; height: %dpx;", height)
-  w
+
+slimButton = function(id, label, fill) {
+  sty = sprintf("background-color: %s;", fill)
+  actionButton(id, label, class = "btn-slim btn-sm", width = "100%", style = sty)
 }
 
 pedButton = function(id, label, side = NULL, ...) {

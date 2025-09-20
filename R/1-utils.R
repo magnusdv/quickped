@@ -118,6 +118,9 @@ removeSel = function(dat, ids, updown) {
 
   newlabs = labels(newped)
 
+  # Hidden labels
+  newhide = .myintersect(dat$hidelabs, newlabs)
+
   # Twin data
   newtw = dat$twins
   newtw = newtw[newtw$id1 %in% newlabs & newtw$id2 %in% newlabs, , drop = FALSE]
@@ -139,7 +142,7 @@ removeSel = function(dat, ids, updown) {
   newText = newText[lengths(newText) > 0]
 
   # Collect everything in one list
-  newdat = c(list(ped = newped, twins = newtw, miscarriage = newmisc),
+  newdat = c(list(ped = newped, hidelabs = newhide, twins = newtw, miscarriage = newmisc),
              newstyles, list(textAnnot = newText))
 
   newdat

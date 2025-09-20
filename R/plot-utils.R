@@ -21,6 +21,10 @@ updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL)
 
   newdat$ped = newped
 
+  if(!is.null(hide <- pedigree$hidelabs)) {
+    newdat$hidelabs = idMap[hide]
+  }
+
   if(!is.null(twins <- pedigree$twins)) {
     twins$id1 = idMap[twins$id1]
     twins$id2 = idMap[twins$id2]

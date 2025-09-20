@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-VERSION = "4.3.0"
+VERSION = "4.4.0"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
@@ -201,13 +201,17 @@ ui = fluidPage(
             style = "min-height:100%; width:200px",
             bigHeading("Labels"),
             fluidRow(
-              column(width = 6, align = "left", style = "padding-right:5px; padding-bottom:7px;",
-                     actionButton("labs123", "1, 2, 3, ..", width = "100%",  style = "background-color: lightgray;")),
-              column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:7px;",
-                     actionButton("labsGen", "I-1, I-2, ..", width = "100%",style = "background-color: lightgray;"))
+              column(width = 6, align = "left", style = "padding-right:5px; padding-bottom:5px;",
+                     slimButton("labs123", "1, 2, 3, ..", "lightcyan")),
+              column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:5px;",
+                     slimButton("labsGen", "I-1, I-2, ..", "lightcyan"))
             ),
-            radioButtons("showlabs", label = NULL, choices = c("Show all" = "show", "Hide all" = "hide"),
-                         inline = TRUE, selected = "show", width = "100%"),
+            fluidRow(
+              column(width = 6, align = "left", style = "padding-right:5px; padding-bottom:5px;",
+                     slimButton("showAll", "Show all", "pink")),
+              column(width = 6, align = "right", style = "padding-left:5px; padding-bottom:5px;",
+                     slimButton("hideAll", "Hide all", "pink"))
+            ),
             uiOutput("labels"),
             actionButton("updateLabs", "Update", width = "100%",
                         class = "btn btn-success", style = "margin-top: 10px;"),
@@ -272,7 +276,8 @@ ui = fluidPage(
 
 server = function(input, output, session) {
 
-  pedigree = reactiveValues(ped = nuclearPed(1), twins = NULL, miscarriage = NULL)
+  pedigree = reactiveValues(ped = nuclearPed(1), hidelabs = NULL,
+                            twins = NULL, miscarriage = NULL)
   styles = reactiveValues(hatched = NULL, carrier = NULL, deceased = NULL,
                           dashed = NULL, fill = NULL, proband = NULL)
   textAnnot = reactiveVal(NULL)
@@ -302,6 +307,7 @@ server = function(input, output, session) {
 
   updatePed = function(..., addToStack = TRUE, clearSel = NULL,
                        clearStart = NULL, clearRel = NULL) {  .debug("updateped")
+
     if(!length(args <- list(...)))
       return()
 
@@ -316,7 +322,7 @@ server = function(input, output, session) {
     args = lapply(args, function(b) if(length(b)) b else NULL)
 
     # Update reactives
-    for(a in .myintersect(argnames, c("ped", "twins", "miscarriage")))
+    for(a in .myintersect(argnames, c("ped", "hidelabs", "twins", "miscarriage")))
       pedigree[[a]] = args[[a]]
 
     for(a in .myintersect(argnames, names(styles)))
@@ -341,8 +347,8 @@ server = function(input, output, session) {
   # Reset with a new pedigree  -----------------------------------------------
 
   resetPed = function(ped, ...) {  .debug("resetped")
-    cleanArgs = list(twins = NULL, miscarriage = NULL, hatched = NULL,
-                     carrier = NULL, dashed = NULL, proband = NULL,
+    cleanArgs = list(hidelabs = NULL, twins = NULL, miscarriage = NULL,
+                     hatched = NULL, carrier = NULL, dashed = NULL, proband = NULL,
                      deceased = NULL, fill = NULL, textAnnot = NULL)
     args = modifyList(cleanArgs, list(ped = ped, ...), keep.null = TRUE)
     do.call(updatePed, args)
@@ -558,9 +564,6 @@ server = function(input, output, session) {
       updateSelectInput(session, "startped", selected = "")
     updateSelectInput(session, "startped", selected = "Trio")
 
-    # Show labels
-    updateRadioButtons(session, "showlabs", selected = "show")
-
     # Reset settings (main plot settings reset in 'startped')
     updateCheckboxGroupInput(session, "settings", selected = character(0))
     updateCheckboxGroupInput(session, "include", selected = "head")
@@ -569,24 +572,67 @@ server = function(input, output, session) {
 
   # Labels ------------------------------------------------------------------
 
-  output$labels = renderUI({     .debug("labelsUI")
-    labs = labels(pedigree$ped)
+
+  output$labels = renderUI({ .debug("labfields")
+    labs = pedigree$ped$ID |> req()
     n = length(labs)
-    fields = paste0("lab", seq_len(n))
+    txtids = paste0("lab", seq_len(n))
+    boxids = paste0("show", seq_len(n))
+    show = !labs %in% isolate(pedigree$hidelabs)
     h = if(n < 10) 24 else if (n < 20) 21 else 18
-    lapply(seq_along(labs), function(i) textInput2(fields[i], value = labs[i], height = h))
+    tagList(
+      lapply(seq_len(n), function(i) {
+        div(class = "label-row",
+            div(class = "txt", textInput(txtids[i], label = NULL, value = labs[i], width = "100%")),
+            div(class = "chk", checkboxInput(boxids[i], label = NULL, value = show[i]))
+        )
+      }),
+      tags$style(HTML(sprintf(
+        ".label-row .txt .form-control{height:%dpx; line-height:%dpx}
+         .label-row .chk{height:%dpx;", h, h, h))),
+    )
+  })
+
+  observeEvent(input$showAll, {  .debug("showAll")
+    if(!setequal(pedigree$hidelabs, NULL))
+      updatePed(hidelabs = NULL)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$hideAll, {  .debug("hideAll")
+    labs = req(pedigree$ped$ID)
+    if(!setequal(pedigree$hidelabs, labs))
+    updatePed(hidelabs = labs)
+  }, ignoreInit = TRUE)
+
+  observeEvent(pedigree$hidelabs, {  .debug("hidelabs")
+    labs = pedigree$ped$ID |> req()
+    show = !labs %in% pedigree$hidelabs
+    for(i in seq_along(labs))
+      updateCheckboxInput(session, paste0("show", i), value = show[i])
+  }, ignoreNULL = FALSE, ignoreInit = T)
+
+  observe({  .debug("labcheckbox")
+    labs = isolate(pedigree$ped$ID) |> req()
+    boxids = paste0("show", seq_along(labs))
+    vals = unlist(lapply(boxids, function(id) input[[id]]))
+    req(!is.null(vals))
+    newhide = labs[!vals]
+    if(!setequal(newhide, isolate(pedigree$hidelabs)))
+      isolate(updatePed(hidelabs = newhide))
   })
 
   observeEvent(input$labs123, { .debug("labs123")
     req(pedigree$ped)
-    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "asPlot", .alignment = plotAlignment())
+    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "asPlot",
+                              .alignment = plotAlignment())
     newdat$clearSel = newdat$clearRel = TRUE
     do.call(updatePed, newdat)
   })
 
   observeEvent(input$labsGen, { .debug("labs-I1-I2-I3")
     req(pedigree$ped)
-    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "generations", .alignment = plotAlignment())
+    newdat = updateLabelsData(pedigree, styles, textAnnot(), new = "generations",
+                              .alignment = plotAlignment())
     newdat$clearSel = newdat$clearRel = TRUE
     do.call(updatePed, newdat)
   })
@@ -611,8 +657,10 @@ server = function(input, output, session) {
   # Plot --------------------------------------------------------------------
 
   plotLabs = reactive({  .debug("plotlabs")
-    ped = pedigree$ped
-    switch(input$showlabs, show = breakLabs(ped), hide = NULL)
+    labs = pedigree$ped |> breakLabs()
+    if(length(pedigree$hidelabs))
+      labs[labs %in% pedigree$hidelabs] = ""
+    labs
   })
 
   plotAlignment = reactive({  .debug("align")
@@ -1024,6 +1072,7 @@ server = function(input, output, session) {
 
   observeEvent(input$rcode, {   .debug("R code")
     code = generateCode(ped = req(pedigree$ped),
+                        labs = plotLabs(),
                         twins = pedigree$twins,
                         miscarriage = pedigree$miscarriage,
                         styles = reactiveValuesToList(styles),

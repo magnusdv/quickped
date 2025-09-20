@@ -73,3 +73,23 @@
 #banner p {margin: 0px}
 #big-text { font-size: 30px; font-family: 'Lobster', cursive;}
 #small-text { font-size: 11px;}
+
+
+/* Labels with checkbox */
+.label-row {display:flex;align-items:center;width:100%; margin-bottom:3px}
+.label-row .txt {flex:1;min-width:0}
+.label-row .txt .form-group {margin:0}
+.label-row .txt .form-control {padding:2px 2px 0px 10px;}
+
+.label-row .chk {display:flex;align-items:center;margin-left:6px; padding-top:2px}
+.label-row .chk .checkbox {margin:0}
+.label-row .chk .checkbox label {margin:0;padding:0}
+.label-row .chk .checkbox input[type="checkbox"] {
+  position:static;
+  margin:0;
+  vertical-align:middle;
+  accent-color:lightgray;
+}
+
+.btn-slim{padding:0; border-color:#888}
+.btn-slim:hover,.btn-slim:focus{border-color:#444}
