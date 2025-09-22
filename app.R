@@ -215,6 +215,10 @@ ui = fluidPage(
             uiOutput("labels"),
             actionButton("updateLabs", "Update", width = "100%",
                         class = "btn btn-success", style = "margin-top: 10px;"),
+            bsTooltip("labs123", HTML("Relabel by<br>plot order"), placement = "left",
+                      options = list(container = "body")),
+            bsTooltip("labsGen", HTML("Relabel by<br>generation"), placement = "right",
+                      options = list(container = "body")),
    ),
         ),
 
