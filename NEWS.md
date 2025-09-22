@@ -1,10 +1,13 @@
+# QuickPed 4.4.0
+
+* Added checkboxes for hiding/showing individual labels.
+
+* Restyled buttons for automatic labels, added tooltips with explanations.
+
+
 # QuickPed 4.3.0
 
-## New features
-
 * New button for adding proband arrows.
-
-## Bug fixes
 
 * Fix crashes occurring when trying to update an empty pedigree.
 
