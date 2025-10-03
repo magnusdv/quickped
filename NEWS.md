@@ -1,3 +1,8 @@
+# QuickPed 4.4.1
+
+* Fixed a bug that sometimes disabled the "hide" checkboxes when loading a pedigree.
+
+
 # QuickPed 4.4.0
 
 * Added checkboxes for hiding/showing individual labels.
