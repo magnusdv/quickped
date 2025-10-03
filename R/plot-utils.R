@@ -52,8 +52,9 @@ updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL)
 }
 
 
-breakLabs = function(x, breakAt = "  ") {
-  labs = labels(x)
+breakLabs = function(labs, breakAt = "  ") {
+  if(!length(labs))
+    return(labs)
   names(labs) = gsub(breakAt, "\n", labs)
   labs
 }

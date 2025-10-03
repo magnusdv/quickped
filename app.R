@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(lubridate)
 })
 
-VERSION = "4.4.0"
+VERSION = "4.4.1"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
@@ -602,7 +602,7 @@ server = function(input, output, session) {
   observeEvent(input$hideAll, {  .debug("hideAll")
     labs = req(pedigree$ped$ID)
     if(!setequal(pedigree$hidelabs, labs))
-    updatePed(hidelabs = labs)
+      updatePed(hidelabs = labs)
   }, ignoreInit = TRUE)
 
   observeEvent(pedigree$hidelabs, {  .debug("hidelabs")
@@ -612,14 +612,21 @@ server = function(input, output, session) {
       updateCheckboxInput(session, paste0("show", i), value = show[i])
   }, ignoreNULL = FALSE, ignoreInit = T)
 
-  observe({  .debug("labcheckbox")
+
+  boxValues = reactive({  .debug("boxvector")
+    labs = isolate(pedigree$ped$ID)
+    boxids = paste0("show", 1:100) # ad hoc! Needed because of race condition
+    vals = lapply(boxids, \(id) input[[id]])[seq_along(labs)]
+    unlist(vals)
+  })
+
+  observeEvent(boxValues(), {  .debug("boxchange")
     labs = isolate(pedigree$ped$ID) |> req()
-    boxids = paste0("show", seq_along(labs))
-    vals = unlist(lapply(boxids, function(id) input[[id]]))
-    req(!is.null(vals))
-    newhide = labs[!vals]
+    vals = boxValues()
+    req(length(vals) == length(labs)) # avoid
+    newhide = labs[!boxValues()]
     if(!setequal(newhide, isolate(pedigree$hidelabs)))
-      isolate(updatePed(hidelabs = newhide))
+      updatePed(hidelabs = newhide)
   })
 
   observeEvent(input$labs123, { .debug("labs123")
@@ -658,7 +665,8 @@ server = function(input, output, session) {
   # Plot --------------------------------------------------------------------
 
   plotLabs = reactive({  .debug("plotlabs")
-    labs = pedigree$ped |> breakLabs()
+    labs0 = req(pedigree$ped$ID)
+    labs = breakLabs(labs0)
     if(length(pedigree$hidelabs))
       labs[labs %in% pedigree$hidelabs] = ""
     labs
