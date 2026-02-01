@@ -58,28 +58,6 @@ updateTwins = function(ped, twins, ids) {
   if(nrow(twins)) twins else NULL
 }
 
-addSib = function(x, id, sex = 1, side = c("right", "left")) {
-
-  if(length(id) > 1)
-    stop2("To add a sibling, please select exactly one individual. Current selection: ", sortIds(x, id))
-
-  if(!is.ped(x))
-    stop2("Cannot add sibling to disconnected pedigree")
-
-  if(id %in% founders(x))
-    x = addParents(x, id, verbose = FALSE)
-
-  newped = addChild(x, parents(x, id), sex = sex, verbose = FALSE)
-
-  # Reorder so that new sib comes directly before or after (default) `id`
-  idInt = internalID(x, id)
-  n = length(x$ID)
-  ord = switch(match.arg(side),
-               left = c(seq_len(idInt-1), n+1, idInt:n),
-               right = c(seq_len(idInt), n+1, if(idInt < n) seq.int(idInt+1, n)))
-
-  reorderPed(newped, ord)
-}
 
 addPar = function(x, ids) {
   n = length(ids)

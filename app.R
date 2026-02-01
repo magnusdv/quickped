@@ -416,14 +416,14 @@ server = function(input, output, session) {
   observeEvent(input$addsibRight, {  .debug("add right sib")
     id = req(sel())
     tryCatch({
-      updatePed(ped = addSib(pedigree$ped, id, side = "right"))
+      updatePed(ped = addSibling(pedigree$ped, id, side = "right"))
     }, error = errModal)
   })
 
   observeEvent(input$addsibLeft, {  .debug("add left sib")
     id = req(sel())
     tryCatch({
-      updatePed(ped = addSib(pedigree$ped, id, side = "left"))
+      updatePed(ped = addSibling(pedigree$ped, id, side = "left"))
     }, error = errModal)
   })
 
