@@ -64,7 +64,6 @@
  color: #333;  /* Dark text color */
  padding: 5px 20px;
  border-radius: 2px;
- font-size: 14px;
  text-align: center;
  box-shadow: 0 6px 10px rgba(0,0,0,0.5);  /* Subtle shadow for depth */
  z-index: 1000;

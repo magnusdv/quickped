@@ -63,3 +63,19 @@ parentMessage = modalDialog(
         modalButton("OK"))
   )
 )
+
+newsBanner = function(id, version, releaseDate, days = 14) {
+  date = as.Date(releaseDate)
+  if (Sys.Date() > date + days) return(NULL)
+
+  tags$div(
+    id = id,
+    p(style = "font-size:18px; font-weight: bold; font-style: italic;",
+      sprintf("Update %s", format(date, "%Y-%m-%d"))),
+    p(style = "font-size:16px;",
+      sprintf("Version %s: ", version),
+      mylink("NEWS", style = "font-weight:bold;",
+             href = "https://github.com/magnusdv/quickped/blob/master/NEWS.md")
+    )
+  )
+}

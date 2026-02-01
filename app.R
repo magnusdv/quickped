@@ -13,6 +13,7 @@ suppressPackageStartupMessages({
 })
 
 VERSION = "4.4.1"
+RELEASE_DATE = "2025"
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 
@@ -23,9 +24,7 @@ ui = fluidPage(
   tags$head(tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lobster&display=swap")),
   useShinyjs(),
 
-  tags$div(id = "banner", p(id="big-text", sprintf("Version %s", VERSION)),
-         p("Check out the ", mylink("NEWS", href="https://github.com/magnusdv/quickped/blob/master/NEWS.md", style = "font-weight:bold;")),
-   ),
+  newsBanner("banner", VERSION, RELEASE_DATE, days = 14),
 
   # Application title
   h2(id = "title-h2", "QuickPed: An Interactive Pedigree Creator"),
