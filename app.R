@@ -12,8 +12,9 @@ suppressPackageStartupMessages({
   library(writexl)
 })
 
-VERSION = "4.4.1"
-RELEASE_DATE = "2025"
+VERSION = "4.5.0"
+RELEASE_DATE = "2026-02-01"
+
 DEBUG = F; debugCounter = 0
 .debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
 

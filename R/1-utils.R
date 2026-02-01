@@ -183,7 +183,7 @@ preparePedFile = function(ped, famid = FALSE, aff = NULL) {
 
   df = as.data.frame(ped)
   if(famid)
-    df = cbind(famid = 1, df)
+    df = cbind(famid = "1", df)
   if(!is.null(aff)) {
     df = cbind(df, aff = ifelse(labels(ped) %in% aff, 2, 1))
   }

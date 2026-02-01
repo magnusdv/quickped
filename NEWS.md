@@ -1,3 +1,10 @@
+# QuickPed 4.5.0
+
+* Added `XLSX` download button to export the pedigree table as an Excel file.
+
+* NEWS banner now shows the release date and is displayed only for 14 days after each release.
+
+
 # QuickPed 4.4.1
 
 * Fixed a bug that sometimes disabled the "hide" checkboxes when loading a pedigree.
