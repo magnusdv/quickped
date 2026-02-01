@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
   library(ggrepel)
   library(glue)
   library(lubridate)
+  library(writexl)
 })
 
 VERSION = "4.4.1"
@@ -255,7 +256,14 @@ ui = fluidPage(
                      bigHeading("Ped file"),
                      checkboxGroupInput("include", "Include", selected  = "head",
                                         c("Headers" = "head", "Family ID" = "famid", "Affection status" = "aff")),
-                     downloadButton("savePed", "Save ped file", class="btn btn-info", style = "width: 100%;"),
+                     fluidRow(
+                       column(width = 6, align = "left", style = "padding-right:5px;",
+                              downloadButton("savePed", "PED", class = "btn btn-info", style = "padding-inline:8px; width:100%;"),
+                       ),
+                       column(width = 6, align = "right", style = "padding-left:5px;",
+                              downloadButton("saveXlsx", "XLSX", class = "btn btn-info", style = "padding-inline:4px; width:100%;"),
+                       )
+                     ),
            )
         ),
       )
@@ -783,21 +791,29 @@ server = function(input, output, session) {
   output$savePed = downloadHandler(
     filename = "quickped.ped",
     content = function(con) {
-      inclHead = "head" %in% input$include
-      inclFamid = "famid" %in% input$include
-      inclAff = "aff" %in% input$include
+      header = "head" %in% input$include
+      famid  = "famid" %in% input$include
+      useaff = "aff" %in% input$include
+      aff = if(useaff) as.character(c(styles$hatched, names(styles$fill)))
 
-      ped = pedigree$ped
-      df = as.data.frame(ped)
-      if(inclFamid)
-        df = cbind(famid = 1, df)
-      if(inclAff) {
-        aff = union(styles$hatched, names(styles$fill))
-        df = cbind(df, aff = ifelse(labels(ped) %in% aff, 2, 1))
-      }
+      df = preparePedFile(pedigree$ped, famid = famid, aff = aff)
 
-      write.table(df, file = con, col.names = inclHead, row.names = FALSE,
+      write.table(df, file = con, col.names = header, row.names = FALSE,
                   quote = FALSE, sep = "\t", fileEncoding = "UTF-8")
+    }
+  )
+
+  output$saveXlsx = downloadHandler(
+    filename = "quickped.xlsx",
+    content = function(file) {
+      header = "head" %in% input$include
+      famid  = "famid" %in% input$include
+      useaff = "aff" %in% input$include
+      aff = if(useaff) union(styles$hatched, names(styles$fill))
+
+      df = preparePedFile(pedigree$ped, famid = famid, aff = aff)
+
+      writexl::write_xlsx(df, path = file, col_names = header)
     }
   )
 

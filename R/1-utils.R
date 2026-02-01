@@ -177,3 +177,15 @@ changeSex = function(ped, ids, sex, twins = NULL) {
 
   newped
 }
+
+# Convert ped to data.frame, adding famid and aff columns if needed
+preparePedFile = function(ped, famid = FALSE, aff = NULL) {
+
+  df = as.data.frame(ped)
+  if(famid)
+    df = cbind(famid = 1, df)
+  if(!is.null(aff)) {
+    df = cbind(df, aff = ifelse(labels(ped) %in% aff, 2, 1))
+  }
+  df
+}
