@@ -10,27 +10,25 @@ createCodeModal = function() {
   )
 }
 
+
 vec2ascii = function(x) {
-  if(is.character(x))
-    x = paste0('"', x, '"')
   if(length(x) == 0)
     return(NULL)
+  if(is.character(x))
+    x = encodeString(x, quote = '"')
   if(length(x) == 1)
     return(x)
   sprintf("c(%s)", toString(x))
 }
 
-validName = function(nms) {
-  invalid = make.names(nms) != nms
-  if(any(invalid))
-    nms[invalid] = sprintf("`%s`", nms[invalid])
-  nms
-}
-
 namedvec2ascii = function(x) {
+  nms = names(x)
+  if(is.null(nms) || anyNA(nms))
+    stop("namedvec2ascii(): names must be non-NA", call. = FALSE)
+  nms = encodeString(nms, quote = '"')
   if(is.character(x))
-    x[] = paste0('"', x, '"')
-  args = glue("{validName(names(x))} = {x}")
+    x[] = encodeString(x, quote = '"')
+  args = glue("{nms} = {x}")
   sprintf("c(%s)", toString(args))
 }
 
@@ -66,14 +64,15 @@ generateCode = function(ped, labs, twins = NULL, miscarriage = NULL, styles = NU
   # Text annotations (list)
   txtAnn = NULL
   if(!is.null(textAnnot <- formatAnnot(textAnnot, cex = cex))) {
+
     txtAnnList = sapply(names(textAnnot), function(a) {
       anna = textAnnot[[a]]
       vec1 = namedvec2ascii(anna[[1]])
       pars = unlist(anna[-1])
       ischar = is.na(suppressWarnings(as.numeric(pars)))
-      pars[ischar] = paste0('"', pars[ischar], '"')
-      txtPars = toString(glue("{validName(names(pars))} = {pars}"))
-      glue("{a} = list({vec1}, {txtPars})")
+      pars[ischar] = encodeString(pars[ischar], quote = '"')
+      txtPars = toString(glue("{encodeString(names(pars), quote = '\"')} = {pars}"))
+      glue("{encodeString(a, quote = '\"')} = list({vec1}, {txtPars})")
     })
     txtAnnChar = glue_collapse(txtAnnList, sep = ",\n              ")
     txtAnn = glue('\n
