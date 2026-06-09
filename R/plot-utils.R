@@ -61,7 +61,7 @@ breakLabs = function(labs, breakAt = "  ") {
 
 
 checkNewLabs = function(labs) {
-  if(dup <- anyDuplicated(labs))
+  if(dup <- anyDuplicated.default(labs))
     stop2("Duplicated ID label: ", labs[dup])
 
   if(0 %in% labs)

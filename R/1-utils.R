@@ -21,6 +21,8 @@ mylink = function(text, href, .noWS = "outside", ...) {
 .mysetdiff = function(x, y)
   unique.default(x[match(x, y, 0L) == 0L])
 
+.mysetequal = function(x, y)
+  !anyNA(match(x, y)) && !anyNA(match(y, x))
 
 checknum = function(a, var, min = 0, max = Inf) { #print("checknum")
   if(is.na(a) || a < min || a > max)
@@ -153,7 +155,7 @@ modifyVec = function(x, y, val = NULL) {
 changeSex = function(ped, ids, sex, twins = NULL) {
 
   if(sex == 0) {
-    if(!all(ids %in% leaves(ped)))
+    if(anyNA(match(ids, leaves(ped))))
       stop2("Only individuals without children can have unknown sex")
     newped = setSex(ped, ids, sex = 0)
     return(newped)

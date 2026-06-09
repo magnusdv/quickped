@@ -474,7 +474,7 @@ server = function(input, output, session) {
   observeEvent(input$sex3, {   .debug("miscarriage")
     id = req(sel())
     tryCatch({
-      if(!all(id %in% leaves(pedigree$ped)))
+      if(anyNA(match(id, leaves(pedigree$ped))))
         stop2("A parent cannot be a miscarriage")
       updatePed(miscarriage = union(pedigree$miscarriage, id), clearSel = TRUE)
     }, error = errModal)
@@ -587,7 +587,7 @@ server = function(input, output, session) {
     n = length(labs)
     txtids = paste0("lab", seq_len(n))
     boxids = paste0("show", seq_len(n))
-    show = !labs %in% isolate(pedigree$hidelabs)
+    show = labs %notin% isolate(pedigree$hidelabs)
     h = if(n < 10) 24 else if (n < 20) 21 else 18
     tagList(
       lapply(seq_len(n), function(i) {
@@ -615,7 +615,7 @@ server = function(input, output, session) {
 
   observeEvent(pedigree$hidelabs, {  .debug("hidelabs")
     labs = pedigree$ped$ID |> req()
-    show = !labs %in% pedigree$hidelabs
+    show = labs %notin% pedigree$hidelabs
     for(i in seq_along(labs))
       updateCheckboxInput(session, paste0("show", i), value = show[i])
   }, ignoreNULL = FALSE, ignoreInit = T)
@@ -1016,7 +1016,7 @@ server = function(input, output, session) {
     ids = sortIds(ped, ids = sel())
     N = length(ids)
 
-    if(!N %in% 1:2) {
+    if(N %notin% 1:2) {
       relText(c("Please select 1 or 2 individuals.",
                 "(Or click the Table button for more options.)"))
       return()
