@@ -19,7 +19,7 @@ including relatedness coefficients and verbal descriptions of
 relationships.
 
 QuickPed is powered by the
-[pedsuite](https://magnusdv.github.io/pedsuite/), and uses
+[pedsuite](https://pedsuite.org/), and uses
 [kinship2](https://CRAN.R-project.org/package=kinship2) for plot
 alignment calculations. The web app was built with Shiny.
 

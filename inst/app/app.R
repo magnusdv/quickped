@@ -37,7 +37,7 @@ ui = fluidPage(
   p(bold("Instructions: "), style = "margin: 0 0 5px",
     "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.",
     "The ",
-    mylink("online user manual", "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html"),
+    mylink("online user manual", "https://pedsuite.org/articles/web_only/quickped.html"),
     " has many tips and tricks, including an introduction to relatedness coefficients."),
 
   p(bold("Citation: "), style = "margin: 0 0 10px",
@@ -273,7 +273,7 @@ ui = fluidPage(
   p("This is QuickPed version", VERSION, "(",
     mylink("changelog", "https://github.com/magnusdv/quickped/blob/master/NEWS.md"), ").",
     # "QuickPed is powered by the ",
-    # mylink("pedsuite", "https://magnusdv.github.io/pedsuite/"),
+    # mylink("pedsuite", "https://pedsuite.org/"),
     # " and uses ",
     # mylink("kinship2", "https://cran.r-project.org/package=kinship2"),
     # " for alignment calculations.",
