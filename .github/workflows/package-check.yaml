@@ -1,0 +1,36 @@
+name: R package
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: rocker/r2u:24.04@sha256:dc2a96c3b368969635c25c177c64514ba8e37cf2259dd3584de7c33520191d92
+    env:
+      # Check the declared package dependencies independently of project startup.
+      R_PROFILE_USER: /dev/null
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system build dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y --no-install-recommends curl libuv1-dev pandoc libjs-mathjax
+      - name: Install declared dependencies
+        run: >-
+          Rscript -e 'install.packages("remotes");
+          remotes::install_deps(dependencies = TRUE, upgrade = "never")'
+      - name: Check README rendering
+        run: Rscript -e 'rmarkdown::render("README.Rmd", quiet = TRUE)'
+      - name: Build and check the installed package
+        run: |
+          R CMD build . --no-build-vignettes
+          R CMD check --no-manual --no-build-vignettes quickped_*.tar.gz
+          grep -q '^Status: OK' quickped.Rcheck/00check.log
