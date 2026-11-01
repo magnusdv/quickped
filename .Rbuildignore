@@ -1,0 +1,14 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.git$
+^\.gitignore$
+^\.github$
+^\.positai$
+^\.httr-oauth$
+^Rprof\.out$
+^LICENSE$
+^README\.Rmd$
+^README_files$
+^cran-comments\.md$
+^inst/shiny/rsconnect$
+^inst/shiny/\.rsconnect_profile$

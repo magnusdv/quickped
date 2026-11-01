@@ -1,0 +1,13 @@
+#' @seealso [launchApp]
+#' @keywords internal
+#' @importFrom ggplot2 coord_fixed
+#' @importFrom ggrepel geom_text_repel
+#' @importFrom glue glue
+#' @importFrom lubridate now
+#' @importFrom pedtools nuclearPed
+#' @importFrom ribd kinship
+#' @importFrom shinyBS bsTooltip
+#' @importFrom shinyjs useShinyjs
+#' @importFrom verbalisr verbalise
+#' @importFrom writexl write_xlsx
+"_PACKAGE"
