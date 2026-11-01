@@ -1,5 +1,15 @@
 ### Helper functions for the QuickPed app
 
+# Keep debug state in Shiny's shared app environment, not the user's workspace.
+DEBUG = FALSE
+debugCounter = 0L
+.debug = function(msg) {
+  if(DEBUG) {
+    debugCounter <<- debugCounter + 1L
+    cat(debugCounter, msg, "\n")
+  }
+}
+
 stop2 = function (...) {
   a = lapply(list(...), toString)
   a = append(a, list(call. = FALSE))

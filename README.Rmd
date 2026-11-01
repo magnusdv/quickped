@@ -8,6 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   fig.align = "center",
+  fig.path = "man/figures/README-",
   comment = "#>",
   dpi = 300
 )
@@ -22,8 +23,18 @@ knitr::opts_chunk$set(
 ## What is QuickPed?
 QuickPed is an interactive web application for drawing and analysing pedigrees. A created pedigree may be saved as an image, as a *.ped* file (see [below](#ped-files)) or in the form of R code to reproduce the plot. You may also obtain various information about the pedigree, including relatedness coefficients and verbal descriptions of relationships.
 
-QuickPed is powered by the [pedsuite](https://magnusdv.github.io/pedsuite/), and uses [kinship2](https://CRAN.R-project.org/package=kinship2) for plot alignment calculations. The web app was built with Shiny.
+QuickPed is powered by the [pedsuite](https://magnusdv.github.io/pedsuite/). The web app was built with Shiny.
 
+
+## Run locally from R
+
+QuickPed can also be run as an R package. Install the development version from
+GitHub and launch the app. This will open QuickPed in your browser. 
+
+```{r, eval = FALSE}
+pak::pak("magnusdv/quickped")
+quickped::launchApp()
+```
 
 ## Getting started
 Creating pedigrees with QuickPed is very intuitive: Select a suitable start pedigree and modify it as needed. You may also load an existing ped file (see below). Modifications are done by clicking on one or several individuals and then applying appropriate buttons, for instance to add children, siblings or parents. At any time you may change attributes like sex, affection status, twin status and ID labels. 
@@ -34,7 +45,7 @@ Creating pedigrees with QuickPed is very intuitive: Select a suitable start pedi
 
 * __Adding parents__. If you select a single founder and click "Add Parents," new parents will be created for this individual. From version 4.1.1, you can also assign _existing_ members as parents. First, select the child, then the intended parent(s) — the order of selection matters! Finally, click "Add Parents."
 
-* __Labels__: Automatic labelling of the pedigree members are available in two different formats. The button marked `1,2,..` applies numeric labels to all individuals, in the order of their appearance in the pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the members generation-wise, using roman numerals to indicate the generation number. 
+* __Labels__: Automatic labelling of the pedigree members are available in two different formats. The button marked `1,2,..` applies numeric labels to all individuals, in the order of their appearance in the pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the members generation-wise, using Roman numerals to indicate the generation number. 
 
 * __Line breaks in labels__. By default, pedigree labels are folded automatically to width approximately 12 characters. To insert hard line breaks, use a double space. For instance, if you want "King Lear" to appear on two lines, modify the label to "King`r knitr::asis_output("\U2423\U2423")`Lear", i.e., with two spaces between the words.
 

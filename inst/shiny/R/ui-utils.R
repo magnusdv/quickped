@@ -65,8 +65,12 @@ parentMessage = modalDialog(
 )
 
 newsBanner = function(id, version, releaseDate, days = 14) {
+  if(is.null(releaseDate))
+    return(NULL)
+
   date = as.Date(releaseDate)
-  if (Sys.Date() > date + days) return(NULL)
+  if(Sys.Date() > date + days)
+    return(NULL)
 
   tags$div(
     id = id,

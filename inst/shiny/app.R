@@ -12,17 +12,13 @@ suppressPackageStartupMessages({
   library(writexl)
 })
 
-VERSION = "4.5.0"
-RELEASE_DATE = "2026-02-01"
-
-DEBUG = F; debugCounter = 0
-.debug <<- function(msg) if(DEBUG) cat(debugCounter <<- debugCounter+1, msg, "\n")
+VERSION = packageDescription("quickped")$Version
+RELEASE_DATE = NULL
 
 ui = fluidPage(
 
   includeCSS("www/custom.css"),
   tags$head(includeHTML("GA.html")),
-  tags$head(tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lobster&display=swap")),
   useShinyjs(),
 
   newsBanner("banner", VERSION, RELEASE_DATE, days = 14),
@@ -841,6 +837,8 @@ server = function(input, output, session) {
         scale = plotScaling()
         annot = plotAnnotation()
 
+        if(!capabilities("cairo"))
+          stop2("PDF export is unavailable in this environment. Please use PNG export instead.")
         cairo_pdf(file, width = input$width/72, height = input$height/72)
         drawPed(align, annotation = annot, scaling = scale)
         dev.off()

@@ -1,19 +1,23 @@
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GS6Y2GK1H0"></script>
-
+<!-- Analytics is enabled only on the existing public deployment. -->
 <script>
+function buttonClick(buttonId) {}
+
+if (window.location.hostname === "magnusdv.shinyapps.io") {
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  window.gtag = function() { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', 'G-GS6Y2GK1H0');
 
-  gtag('config', 'G-GS6Y2GK1H0');
-</script>
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-GS6Y2GK1H0';
+  document.head.appendChild(script);
 
-<script>
-function buttonClick(buttonId) {
-  gtag('event', 'click', {
-    'event_category': 'button',
-    'event_label': buttonId
-  });
+  window.buttonClick = function(buttonId) {
+    window.gtag('event', 'click', {
+      'event_category': 'button',
+      'event_label': buttonId
+    });
+  };
 }
 </script>

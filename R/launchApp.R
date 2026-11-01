@@ -3,8 +3,7 @@
 #' Launch the QuickPed application for creating and analysing pedigrees.
 #'
 #' @param launch.browser Whether to open the app in a browser. Default: TRUE.
-#' @param ... Further arguments passed to [shiny::runApp()], such as `port`,
-#'   `host` and `quiet`.
+#' @param ... Further arguments passed to [shiny::runApp()].
 #'
 #' @return The value returned by [shiny::runApp()].
 #'

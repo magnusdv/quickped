@@ -19,9 +19,19 @@ including relatedness coefficients and verbal descriptions of
 relationships.
 
 QuickPed is powered by the
-[pedsuite](https://magnusdv.github.io/pedsuite/), and uses
-[kinship2](https://CRAN.R-project.org/package=kinship2) for plot
-alignment calculations. The web app was built with Shiny.
+[pedsuite](https://magnusdv.github.io/pedsuite/). The web app was built
+with Shiny.
+
+## Run locally from R
+
+QuickPed can also be run as an R package. Install the development
+version from GitHub and launch the app. This will open QuickPed in your
+browser.
+
+``` r
+pak::pak("magnusdv/quickped")
+quickped::launchApp()
+```
 
 ## Getting started
 
@@ -50,7 +60,7 @@ attributes like sex, affection status, twin status and ID labels.
   in two different formats. The button marked `1,2,..` applies numeric
   labels to all individuals, in the order of their appearance in the
   pedigree plot. Alternatively, the `I-1, I-2,..` button numbers the
-  members generation-wise, using roman numerals to indicate the
+  members generation-wise, using Roman numerals to indicate the
   generation number.
 
 - **Line breaks in labels**. By default, pedigree labels are folded
@@ -143,7 +153,7 @@ software for pedigree analysis.
 
 For a simple illustration, consider this pedigree:
 
-<img src="README_files/figure-gfm/trio-ped-1.png" width="25%" style="display: block; margin: auto;" />
+<img src="man/figures/README-trio-ped-1.png" alt="" width="25%" style="display: block; margin: auto;" />
 
 A text file describing this pedigree may contain the following.
 
