@@ -1,0 +1,10 @@
+bibentry(
+  bibtype = "Article",
+  title = "QuickPed: an online tool for drawing pedigrees and analysing relatedness",
+  author = person("Magnus D.", "Vigeland"),
+  journal = "BMC Bioinformatics",
+  year = "2022",
+  volume = "23",
+  pages = "220",
+  doi = "10.1186/s12859-022-04759-y"
+)
