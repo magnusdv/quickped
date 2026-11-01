@@ -15,5 +15,5 @@
 launchApp = function(launch.browser = TRUE, ...) {
   appDir = system.file("shiny", package = "quickped", mustWork = TRUE)
   suppressPackageStartupMessages(
-    shiny::runApp(appDir, launch.browser = launch.browser, ...))
+    shiny::startApp(appDir, launch.browser = launch.browser, ...))
 }
