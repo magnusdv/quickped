@@ -10,5 +10,6 @@
 ^README\.Rmd$
 ^README_files$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
 ^inst/shiny/rsconnect$
 ^inst/shiny/\.rsconnect_profile$

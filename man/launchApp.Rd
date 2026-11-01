@@ -9,10 +9,10 @@ launchApp(launch.browser = TRUE, ...)
 \arguments{
 \item{launch.browser}{Whether to open the app in a browser. Default: TRUE.}
 
-\item{...}{Further arguments passed to \code{\link[shiny:runApp]{shiny::runApp()}}.}
+\item{...}{Further arguments passed to \code{\link[shiny:startApp]{shiny::startApp()}}.}
 }
 \value{
-The value returned by \code{\link[shiny:runApp]{shiny::runApp()}}.
+The value returned by \code{\link[shiny:startApp]{shiny::startApp()}}.
 }
 \description{
 Launch the QuickPed application for creating and analysing pedigrees.

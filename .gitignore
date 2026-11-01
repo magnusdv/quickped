@@ -3,4 +3,7 @@
 .Rproj.user
 .httr-oauth
 Rprof.out
-.positai
+notes-private
+cran-comments.md
+CRAN-SUBMISSION
+inst/shiny/rsconnect
