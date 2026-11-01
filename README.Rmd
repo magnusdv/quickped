@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 ## What is QuickPed?
 QuickPed is an interactive web application for drawing and analysing pedigrees. A created pedigree may be saved as an image, as a *.ped* file (see [below](#ped-files)) or in the form of R code to reproduce the plot. You may also obtain various information about the pedigree, including relatedness coefficients and verbal descriptions of relationships.
 
-QuickPed is powered by the [pedsuite](https://magnusdv.github.io/pedsuite/). The web app was built with Shiny.
+QuickPed is powered by the [pedsuite](https://pedsuite.org/). The web app was built with Shiny.
 
 
 ## Run locally from R
@@ -41,7 +41,7 @@ Creating pedigrees with QuickPed is very intuitive: Select a suitable start pedi
 
 ## Tips and tricks
 
-* __Selecting individuals__. Select/deselect pedigree members by clicking on them. Selected individuals are shown in red colour. To deselect everyone, click the <img src="www/hand-pointer-strikethrough.svg" height = "18px" width = "18px" style="border: 1px solid gray; border-radius: 3px;"> button.
+* __Selecting individuals__. Select/deselect pedigree members by clicking on them. Selected individuals are shown in red colour. To deselect everyone, click the <img src="inst/shiny/www/hand-pointer-strikethrough.svg" height = "18px" width = "18px" style="border: 1px solid gray; border-radius: 3px;"> button.
 
 * __Adding parents__. If you select a single founder and click "Add Parents," new parents will be created for this individual. From version 4.1.1, you can also assign _existing_ members as parents. First, select the child, then the intended parent(s) — the order of selection matters! Finally, click "Add Parents."
 

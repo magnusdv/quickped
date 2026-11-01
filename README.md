@@ -18,9 +18,8 @@ plot. You may also obtain various information about the pedigree,
 including relatedness coefficients and verbal descriptions of
 relationships.
 
-QuickPed is powered by the
-[pedsuite](https://magnusdv.github.io/pedsuite/). The web app was built
-with Shiny.
+QuickPed is powered by the [pedsuite](https://pedsuite.org/). The web
+app was built with Shiny.
 
 ## Run locally from R
 
@@ -47,7 +46,7 @@ attributes like sex, affection status, twin status and ID labels.
 - **Selecting individuals**. Select/deselect pedigree members by
   clicking on them. Selected individuals are shown in red colour. To
   deselect everyone, click the
-  <img src="www/hand-pointer-strikethrough.svg" height = "18px" width = "18px" style="border: 1px solid gray; border-radius: 3px;">
+  <img src="inst/shiny/www/hand-pointer-strikethrough.svg" height = "18px" width = "18px" style="border: 1px solid gray; border-radius: 3px;">
   button.
 
 - **Adding parents**. If you select a single founder and click “Add
