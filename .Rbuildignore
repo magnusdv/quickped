@@ -1,9 +1,9 @@
+^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.git$
 ^\.gitignore$
 ^\.github$
-^\.positai$
 ^\.httr-oauth$
 ^Rprof\.out$
 ^LICENSE$
