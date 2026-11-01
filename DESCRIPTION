@@ -1,6 +1,6 @@
 Package: quickped
 Title: Interactive Pedigree Creation and Analysis
-Version: 4.5.0
+Version: 4.6.0
 Authors@R:
     person("Magnus Dehli", "Vigeland", , "m.d.vigeland@medisin.uio.no",
            role = c("aut", "cre"),

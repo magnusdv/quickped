@@ -1,3 +1,8 @@
+# QuickPed 4.6.0
+
+* QuickPed is now also distributed as an R package, launched with `quickped::launchApp()`.
+
+
 # QuickPed 4.5.0
 
 * Added `XLSX` download button to export the pedigree table as an Excel file.
