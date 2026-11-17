@@ -1,3 +1,9 @@
+# QuickPed 4.6.1
+
+* Start migrating to the new URL: https://quickped.pedsuite.org/.
+
+* A new button *Use pedplot* allows the user to switch to the new plot engine, **pedplot**. As this is still in development, the button is mainly for testing. In time **pedplot** will replace the current **kinship2**-based engine. 
+
 # QuickPed 4.6.0
 
 * QuickPed is now also distributed as an R package, launched with `quickped::launchApp()`.
