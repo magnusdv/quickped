@@ -9,8 +9,11 @@ updateLabelsData = function(pedigree, styles, textAnnot, new, .alignment = NULL)
   ped = pedigree$ped
 
   if(identical(new, "asPlot") || identical(new, "generations")) {
-    # hack needed because of reordering (??)
-    idMap = relabel(ped, new = new, .alignment = .alignment, returnLabs = TRUE)
+    # Find labels in plot order before reordering the pedigree
+    if(inherits(.alignment, "pedalign"))
+      idMap = pedplotLabels(.alignment, new)
+    else
+      idMap = relabel(ped, new = new, .alignment = .alignment, returnLabs = TRUE)
     newped = relabel(ped, new = idMap, reorder = TRUE)
   }
   else {

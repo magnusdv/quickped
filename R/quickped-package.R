@@ -4,6 +4,7 @@
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom glue glue
 #' @importFrom lubridate now
+#' @importFrom pedplot plotPed
 #' @importFrom pedtools nuclearPed
 #' @importFrom ribd kinship
 #' @importFrom shinyBS bsTooltip

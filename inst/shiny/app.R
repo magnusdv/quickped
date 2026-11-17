@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   library(shinyBS)
   library(shinyjs)
   library(pedtools)
+  loadNamespace("pedplot") # Avoid masking pedtools::drawPed
   library(ribd)
   library(verbalisr)
   library(ggplot2)
@@ -33,7 +34,7 @@ ui = fluidPage(
   p(bold("Instructions: "), style = "margin: 0 0 5px",
     "Choose a suitable start pedigree and modify it by clicking on individuals and using appropriate buttons.",
     "The ",
-    mylink("online user manual", "https://magnusdv.github.io/pedsuite/articles/web_only/quickped.html"),
+    mylink("online user manual", "https://pedsuite.org/articles/web_only/quickped.html"),
     " has many tips and tricks, including an introduction to relatedness coefficients."),
 
   p(bold("Citation: "), style = "margin: 0 0 10px",
@@ -232,9 +233,9 @@ ui = fluidPage(
                         column(12, numericInput("mar", "Margins", value = 3, min = 0.1, max = 10, step = 0.1))
                       ),
 
-                     br(),
                      checkboxGroupInput("settings", "Other options (beta)", selected = NULL,
-                                        c("Straight legs" = "straightlegs", "Arrows" = "arrows")),
+                                        c("Use pedplot" = "pedplot", "Straight legs" = "straightlegs",
+                                          "Arrows" = "arrows")),
 
                      actionButton("rcode", "R code", style = "background: lightgoldenrodyellow; font-family:monospace; font-weight: bolder; padding:0px; width: 100%;"),
                      fluidRow(style = "position: absolute; top:375px",
@@ -268,11 +269,6 @@ ui = fluidPage(
 
   p("This is QuickPed version", VERSION, "(",
     mylink("changelog", "https://github.com/magnusdv/quickped/blob/master/NEWS.md"), ").",
-    # "QuickPed is powered by the ",
-    # mylink("pedsuite", "https://magnusdv.github.io/pedsuite/"),
-    # " and uses ",
-    # mylink("kinship2", "https://cran.r-project.org/package=kinship2"),
-    # " for alignment calculations.",
     "If you find something that isn't working properly, please file a bug report at ",
     mylink("https://github.com/magnusdv/quickped/issues"), "."),
 )
@@ -668,6 +664,19 @@ server = function(input, output, session) {
 
   # Plot --------------------------------------------------------------------
 
+  usePedplot = reactive("pedplot" %in% input$settings && NROW(pedigree$twins) == 0L)
+  pedplotPos = reactiveVal(NULL)
+
+  # Twins require pedtools; other unavailable controls retain their settings
+  observe({
+    twins = NROW(pedigree$twins) > 0L
+    toggleState(selector = "#settings input[value='pedplot']", condition = !twins)
+    if(twins && "pedplot" %in% input$settings)
+      updateCheckboxGroupInput(session, "settings", selected = .mysetdiff(input$settings, "pedplot"))
+    toggleState(selector = "#settings input:not([value='pedplot'])", condition = !usePedplot())
+    toggleState("rcode", condition = !usePedplot())
+  })
+
   plotLabs = reactive({  .debug("plotlabs")
     labs0 = req(pedigree$ped$ID)
     labs = breakLabs(labs0)
@@ -683,6 +692,9 @@ server = function(input, output, session) {
     # Safety check (should be avoided elsewhere)
     if(is.pedList(pedigree$ped))
       stop2("Disconnected pedigree")
+
+    if(usePedplot())
+      return(pedplot::alignPed(as.data.frame(pedigree$ped)))
 
     .pedAlignment(pedigree$ped, twins = pedigree$twins, arrows = arrows,
                   miscarriage = pedigree$miscarriage,
@@ -717,10 +729,25 @@ server = function(input, output, session) {
     .pedScaling(align, annot, cex = cex, symbolsize = symsize, margins = rep(mar, 4))
   })
 
+  pedplotArguments = reactive({
+    checknum(input$width, "Width", min = 100, max = Inf)
+    checknum(input$height, "Height", min = 100, max = Inf)
+    pedplotArgs(pedigree$ped, plotLabs(), styles, sel(), textAnnot(),
+                pedigree$miscarriage, input$cex, input$symbolsize, input$mar)
+  })
+
   output$plot = renderPlot({    .debug("plot")
 
     # Plot, but catch various errors & warnings
     dat = tryCatch({
+      pedplotPos(NULL)
+      if(usePedplot()) {
+        symbols = drawPedplot(plotAlignment(), pedplotArguments())
+        # Save click positions only from the screen device
+        pedplotPos(pedplotPositions(symbols))
+        symbols
+      }
+      else {
         align = withCallingHandlers(
           plotAlignment(),
           warning = function(w) {
@@ -733,17 +760,19 @@ server = function(input, output, session) {
         scale = plotScaling()
         annot = plotAnnotation()
         drawPed(align, annotation = annot, scaling = scale)
-      },
-      error = errModal) |> req()
+      }
+    }, error = errModal) |> req()
 
-      box("outer", col = 1)
-    },
+    box("outer", col = 1)
+  },
     execOnResize = TRUE, res = 72, # default; seems OK in practice
     width = function() max(c(100, abs(input$width)), na.rm = TRUE),
     height = function() max(c(100, abs(input$height)), na.rm = TRUE)
   )
 
   positionDf = reactive({   .debug("position")
+    if(usePedplot())
+      return(req(pedplotPos()))
     align = req(plotAlignment())
     scale = plotScaling()
     mat = cbind(x = align$xall,
@@ -818,12 +847,12 @@ server = function(input, output, session) {
     content = function(con)
       tryCatch({
         align = plotAlignment()
-        scale = plotScaling()
-        annot = plotAnnotation()
-
         png(con, width = input$width, height = input$height)
-        drawPed(align, annotation = annot, scaling = scale)
-        dev.off()
+        on.exit(dev.off(), add = TRUE)
+        if(usePedplot())
+          drawPedplot(align, pedplotArguments())
+        else
+          drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
       },
       error = errModal),
     contentType = "image/png"
@@ -834,14 +863,14 @@ server = function(input, output, session) {
     content = function(file)
       tryCatch({
         align = plotAlignment()
-        scale = plotScaling()
-        annot = plotAnnotation()
-
         if(!capabilities("cairo"))
           stop2("PDF export is unavailable in this environment. Please use PNG export instead.")
         cairo_pdf(file, width = input$width/72, height = input$height/72)
-        drawPed(align, annotation = annot, scaling = scale)
-        dev.off()
+        on.exit(dev.off(), add = TRUE)
+        if(usePedplot())
+          drawPedplot(align, pedplotArguments())
+        else
+          drawPed(align, annotation = plotAnnotation(), scaling = plotScaling())
       },
       error = errModal),
     contentType = "application/pdf"
@@ -1094,6 +1123,7 @@ server = function(input, output, session) {
   )
 
   observeEvent(input$rcode, {   .debug("R code")
+    req(!usePedplot())
     code = generateCode(ped = req(pedigree$ped),
                         labs = plotLabs(),
                         twins = pedigree$twins,

@@ -13,7 +13,7 @@ Description: A 'shiny' application for creating, editing and plotting
     relationships and relatedness triangle plots. The application is
     built on the 'pedsuite' packages for pedigree analysis.
 License: GPL-3
-URL: https://magnusdv.shinyapps.io/quickped/,
+URL: https://quickped.pedsuite.org/,
     https://github.com/magnusdv/quickped
 BugReports: https://github.com/magnusdv/quickped/issues
 Depends:
@@ -23,6 +23,7 @@ Imports:
     ggrepel,
     glue,
     lubridate,
+    pedplot (>= 0.1.0),
     pedtools (>= 2.10.0),
     ribd,
     shiny (>= 1.14.0),

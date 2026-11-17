@@ -18,7 +18,10 @@ readPed2 = function(pedfile) {
   header = grepl("id", line1, ignore.case = TRUE) && grepl("sex", line1, ignore.case = TRUE)
 
   # Read table
-  df = read.table(pedfile, sep = sep, header = header, colClasses = "character",
+  #df = read.table(pedfile, sep = sep, header = header, colClasses = "character",
+  #                check.names = FALSE, quote = "\"", encoding = "UTF-8")
+  df = read.table(text = readLines(pedfile, warn = FALSE, encoding = "UTF-8"),
+                  sep = sep, header = header, colClasses = "character",
                   check.names = FALSE, quote = "\"", encoding = "UTF-8")
 
   # At least 3 rows?
