@@ -87,7 +87,7 @@ BUILTIN_PEDS = list(
   "Half 2nd cousins" = swpSx(halfCousinPed(2), 13),
   "Ancestral (4 gen)" = ancestralPed(3),
 
-  "3/4-siblings" = nuclearPed(2) |> addSon(c(3,5), verbose = F) |> addDaughter(c(4,5)) |> relab(),
+  "3/4-siblings" = nuclearPed(2) |> addSon(c(3,5), verbose = FALSE) |> addDaughter(c(4,5)) |> relab(),
   "5/8-siblings" = swpSx(halfSibStack(2), 8),
   "Full sib mating" = fullSibMating(1),
   "Half sib triangle" = halfSibTriangle(4),

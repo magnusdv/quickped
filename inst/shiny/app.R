@@ -614,7 +614,7 @@ server = function(input, output, session) {
     show = labs %notin% pedigree$hidelabs
     for(i in seq_along(labs))
       updateCheckboxInput(session, paste0("show", i), value = show[i])
-  }, ignoreNULL = FALSE, ignoreInit = T)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
 
 
   boxValues = reactive({  .debug("boxvector")

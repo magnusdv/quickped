@@ -106,7 +106,7 @@ are available:
   Queen Victoria, showing the X-linked inheritance of *haemophilia*.
   Adapted from Figure S1 of [Genotype Analysis Identifies the Cause of
   the “Royal Disease”](https://doi.org/10.1126/science.1180660).
-- `Tutankhamun`: The family tree of the Egyptian pharao Tutankhamun, as
+- `Tutankhamun`: The family tree of the Egyptian pharaoh Tutankhamun, as
   inferred from genetic evidence presented by Hawass et al. (2010),
   [Ancestry and Pathology in King Tutankhamun’s
   Family](https://doi.org/10.1001/jama.2010.121).
