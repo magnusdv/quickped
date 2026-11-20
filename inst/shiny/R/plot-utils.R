@@ -85,48 +85,47 @@ plotKappa = function(ped, ids, mode = "noninbred", ...) {
   if(!length(ids))
     ids = labels(ped)
 
+  # Coefficients
+  coefs = NULL
   if(mode == "noninbred") {
-    inbr = ribd::inbreeding(ped, ids)
-    ids = ids[inbr == 0]
-    if(length(ids) >= 2)
+    ids = ids[ribd::inbreeding(ped, ids) == 0]
+    if(length(ids) >=2)
       coefs = kappaIBD(ped, ids, inbredAction = 0, simplify = FALSE)
-    else
-      # hack! TODO: Remove when showInTriangle works with NULL
-      coefs = data.frame(kappa0 = -1, kappa2 = -1)
+  }
+  else if(length(ids) >= 2) {
+    coefs = identityCoefs(ped, ids, simplify = FALSE)
+    coefs$k0 = coefs$D2 + coefs$D4 + coefs$D6 + coefs$D9
+    coefs$k1 = coefs$D3 + coefs$D5 + coefs$D8
+    coefs$k2 = coefs$D1 + coefs$D7
+  }
+
+  # Axis labels
+  if(mode == "noninbred") {
     xlab = expression(kappa[0])
     ylab = expression(kappa[2])
-  }
-  else {
-    j = identityCoefs(ped, ids, simplify = FALSE)
-    j$k0 = j$D2 + j$D4 + j$D6 +j$D9
-    j$k1 = j$D3 + j$D5 + j$D8
-    j$k2 = j$D1 + j$D7
-    coefs = j
+  } else {
     xlab = expression(Delta[2]+Delta[4]+Delta[6]+Delta[9])
     ylab = expression(Delta[1]+Delta[7])
-    }
-
+  }
 
   # Reduce cex if many points
-  cex = 1.5 - 0.1 * (nrow(coefs) %/% 10)
-  cex = max(cex, 0.8)
+  cex = max(1.5 - 0.1*(NROW(coefs) %/% 10), 0.8)
 
   # Triangle plot
   gg = showInTriangle(coefs, cex = cex, cexPoint = 1.6, cexText = 1.6, col = "blue",
                       plotType = "ggplot2", xlab = xlab, ylab = ylab)
-
-  # TODO fix view for hack
-  if("kappa0" %in% names(coefs) && coefs$kappa0[1] == -1)
-    gg = suppressMessages(gg + coord_fixed(ratio = 1, clip = "off", xlim = c(0,1), ylim = c(0,1)))
 
   if(mode == "inbred")
     gg = gg + ggplot2::theme(axis.title.y = element_text(angle = 90))
 
   # text(.45, .45, 'inadmissible region', cex = 1.2, srt = -45)
 
+  oldpar = par(no.readonly = TRUE)
+  on.exit(par(oldpar), add = TRUE)
+
   # Pedigree in top-right corner (do this first)
   par(fig = c(.49, .98, .49, .98))
-  tryCatch(plot(ped, autoScale = T, hatched = ids, ...),
+  tryCatch(plot(ped, autoScale = TRUE, hatched = ids, ...),
            error = function(e) return(invisible()))
   par(new = TRUE)
   print(gg, newpage = FALSE)
