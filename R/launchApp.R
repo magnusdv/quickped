@@ -9,7 +9,17 @@
 #'
 #' @examples
 #'
-#' if(interactive()) launchApp()
+#' if(interactive())
+#'   launchApp()
+#'
+#' \dontshow{
+#' # Smoke test for CRAN
+#' if(!interactive()) {
+#'   handle = launchApp(launch.browser = FALSE, quiet = TRUE)
+#'   stopifnot(handle$status() == "running")
+#'   handle$stop()
+#' }
+#' }
 #'
 #' @export
 launchApp = function(launch.browser = TRUE, ...) {
